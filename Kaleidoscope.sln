@@ -3,8 +3,36 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RuntimeCore", "RuntimeCore\RuntimeCore.shproj", "{669423E3-A296-4266-AA66-7A3A9D7D4FDB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Runtime", "Runtime", "{54985728-DED9-47DB-8825-05B5CCA0B788}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kalc", "kalc\kalc.csproj", "{354564C4-28CA-42C8-8BD9-F1F8B0B5CB6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaleidoscope", "Kaleidoscope\Kaleidoscope.csproj", "{6252BEF1-AC40-4743-88C8-014313BED809}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RuntimeCore\RuntimeCore.projitems*{669423e3-a296-4266-aa66-7a3a9d7d4fdb}*SharedItemsImports = 13
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{354564C4-28CA-42C8-8BD9-F1F8B0B5CB6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{354564C4-28CA-42C8-8BD9-F1F8B0B5CB6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{354564C4-28CA-42C8-8BD9-F1F8B0B5CB6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{354564C4-28CA-42C8-8BD9-F1F8B0B5CB6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6252BEF1-AC40-4743-88C8-014313BED809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6252BEF1-AC40-4743-88C8-014313BED809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6252BEF1-AC40-4743-88C8-014313BED809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6252BEF1-AC40-4743-88C8-014313BED809}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{669423E3-A296-4266-AA66-7A3A9D7D4FDB} = {54985728-DED9-47DB-8825-05B5CCA0B788}
 	EndGlobalSection
 EndGlobal
