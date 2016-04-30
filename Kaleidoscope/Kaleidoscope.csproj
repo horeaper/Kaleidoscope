@@ -36,8 +36,30 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="IncludeHeaderFile.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SourceTextFile.cs" />
+    <Compile Include="Primitive\SourceTextFile.cs" />
+    <Compile Include="Tokenizer\ContextualKeywordType.cs" />
+    <Compile Include="Tokenizer\FloatNumberType.cs" />
+    <Compile Include="Tokenizer\IntegerNumberType.cs" />
+    <Compile Include="Tokenizer\KeywordType.cs" />
+    <Compile Include="Tokenizer\PreprocessorType.cs" />
+    <Compile Include="Tokenizer\SymbolType.cs" />
+    <Compile Include="Tokenizer\Token.cs" />
+    <Compile Include="Tokenizer\TokenCharacter.cs" />
+    <Compile Include="Tokenizer\TokenComment.cs" />
+    <Compile Include="Tokenizer\TokenDecimalNumber.cs" />
+    <Compile Include="Tokenizer\TokenDocumentComment.cs" />
+    <Compile Include="Tokenizer\TokenFloatNumber.cs" />
+    <Compile Include="Tokenizer\TokenIdentifier.cs" />
+    <Compile Include="Tokenizer\TokenPreprocessor.cs" />
+    <Compile Include="Tokenizer\TokenSignedNumber.cs" />
+    <Compile Include="Tokenizer\TokenKeyword.cs" />
+    <Compile Include="Tokenizer\TokenString.cs" />
+    <Compile Include="Tokenizer\TokenSymbol.cs" />
+    <Compile Include="Tokenizer\TokenTrivia.cs" />
+    <Compile Include="Tokenizer\TokenUnsignedNumber.cs" />
+    <Compile Include="Tokenizer\TriviaType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -48,6 +70,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope
 {
@@ -18,6 +19,7 @@ Options:
   -debug            Set transpiler's output to debug mode
   -inc <folder>     Specify C++ header files search path
   -header <file>    Include additional C++ header file
+  -clang <params>   Set clang's parse parameters
 
 Internal options:
   -mini             Enable mini mode (don't include standard libraries)
@@ -30,7 +32,7 @@ Internal options:
 			public string FileContent;
 		}
 
-		static void WriteError(string text)
+		static void WriteParamError(string text)
 		{
 			Console.WriteLine("kalc: " + text);
 		}
@@ -41,7 +43,7 @@ Internal options:
 				return ProcessCommandArguments(File.ReadAllLines(filePath));
 			}
 			catch (IOException) {
-				WriteError("Cannot open input file: " + filePath);
+				WriteParamError("Cannot open input file: " + filePath);
 				return null;
 			}
 		}
@@ -79,13 +81,17 @@ Internal options:
 								includeSearchPaths.Add(args[currentIndex]);
 							}
 							else {
-								WriteError("cannot find include directory: " + args[currentIndex]);
+								WriteParamError("cannot find include directory: " + args[currentIndex]);
 								return null;
 							}
 							break;
 						case "-header":
 							++currentIndex;
 							additionalIncludeFiles.Add(args[currentIndex]);
+							break;
+						case "-clang":
+							++currentIndex;
+							result.ClangParseParameters = args[currentIndex]; 
 							break;
 						case "-mini":
 							result.IsMiniMode = true;
@@ -96,7 +102,7 @@ Internal options:
 								inputFiles.AddRange(Directory.GetFiles(args[currentIndex], "*.cs", SearchOption.AllDirectories));
 							}
 							else {
-								WriteError("cannot find include directory: " + args[currentIndex]);
+								WriteParamError("cannot find include directory: " + args[currentIndex]);
 								return null;
 							}
 							break;
@@ -112,7 +118,7 @@ Internal options:
 				}
 			}
 			catch (IndexOutOfRangeException) {
-				WriteError("invalid arguments, type -h to see usage information");
+				WriteParamError("invalid arguments, type -h to see usage information");
 				return null;
 			}
 
@@ -132,13 +138,13 @@ Internal options:
 				var openedFiles = new List<OpenedFile>();
 				foreach (var file in files) {
 					if (!File.Exists(file)) {
-						WriteError("cannot find input file: " + file);
+						WriteParamError("cannot find input file: " + file);
 						return null;
 					}
 
 					string content = ReadFileContent(file);
 					if (content == null) {
-						WriteError("cannot read input file: " + file);
+						WriteParamError("cannot read input file: " + file);
 						return null;
 					}
 					openedFiles.Add(new OpenedFile {

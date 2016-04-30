@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope
 {
@@ -11,6 +12,7 @@ namespace Kaleidoscope
 		public ImmutableSortedSet<string> DefinedSymbols;
 		public ImmutableArray<string> IncludeSearchPaths;
 		public ImmutableArray<IncludeHeaderFile> AdditionalIncludeFiles;
+		public string ClangParseParameters = null;
 
 		public ImmutableArray<SourceTextFile> InputFiles;
 	}
