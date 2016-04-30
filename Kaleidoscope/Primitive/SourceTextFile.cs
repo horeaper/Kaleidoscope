@@ -10,6 +10,9 @@ namespace Kaleidoscope.Primitive
 		public readonly string FilePath;
 		public readonly string FileContent;
 
+		public char this[int index] => FileContent[index];
+		public int Length => FileContent.Length;
+
 		public SourceTextFile(string filePath, string fileContent)
 		{
 			FilePath = filePath;
@@ -27,11 +30,12 @@ namespace Kaleidoscope.Primitive
 					lineStartIndex.Add(cnt + 1);
 				}
 			}
-			m_lineNumbers = lineNumbers.MoveToImmutable();
-			m_lineStartIndex = lineStartIndex.MoveToImmutable();
-		}
+			lineNumbers.Add(currentLine);
+			lineStartIndex.Add(FileContent.Length);
 
-		public char this[int index] => FileContent[index];
+			m_lineNumbers = lineNumbers.ToImmutable();
+			m_lineStartIndex = lineStartIndex.ToImmutable();
+		}
 
 		public override string ToString()
 		{
@@ -47,6 +51,11 @@ namespace Kaleidoscope.Primitive
 		{
 			line = m_lineNumbers[index];
 			column = index - m_lineStartIndex[line];
+		}
+
+		public string Substring(int startIndex, int endIndex)
+		{
+			return FileContent.Substring(startIndex, endIndex - startIndex);
 		}
 	}
 }

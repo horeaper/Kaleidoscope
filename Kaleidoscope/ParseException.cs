@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope
@@ -14,13 +10,34 @@ namespace Kaleidoscope
 		public readonly int ErrorColumnStart;
 		public readonly int ErrorColumnEnd;
 
-		internal ParseException(SourceTextFile sourceFile, int errorLine, int columnStart, int columnEnd, string errorMessage)
+		ParseException(SourceTextFile sourceFile, int errorLine, int columnStart, int columnEnd, string errorMessage)
 			: base(errorMessage)
 		{
 			SourceFile = sourceFile;
 			ErrorLine = errorLine;
 			ErrorColumnStart = columnStart;
 			ErrorColumnEnd = columnEnd;
+		}
+
+		internal static ParseException AsEOF(SourceTextFile sourceFile, string errorMessage)
+		{
+			return AsIndex(sourceFile, sourceFile.Length, errorMessage);
+		}
+
+		internal static ParseException AsIndex(SourceTextFile sourceFile, int index, string errorMessage)
+		{
+			int line, column;
+			sourceFile.GetLineColumn(index, out line, out column);
+			return new ParseException(sourceFile, line, column, column, errorMessage);
+		}
+
+		internal static ParseException AsString(SourceTextFile sourceFile, int startIndex, int endIndex, string errorMessage)
+		{
+			int line, startColumn;
+			sourceFile.GetLineColumn(startIndex, out line, out startColumn);
+			int endLine, endColumn;
+			sourceFile.GetLineColumn(endIndex, out endLine, out endColumn);
+			return new ParseException(sourceFile, line, startColumn, endColumn, errorMessage);
 		}
 
 		internal static ParseException AsToken(Tokenizer.Token token, string errorMessage)

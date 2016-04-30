@@ -12,6 +12,7 @@ namespace Kaleidoscope.Tokenizer
 		public readonly int Line;
 		public readonly int Column;
 		public readonly string Text;
+		public int Length => Text.Length;
 
 		protected Token(SourceTextFile sourceFile, int begin, int end)
 		{

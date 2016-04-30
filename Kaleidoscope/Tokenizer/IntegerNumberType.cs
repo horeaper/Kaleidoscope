@@ -2,8 +2,6 @@
 {
 	public enum IntegerNumberType
 	{
-		Byte,
-		Short,
 		Int,
 		Long,
 	}

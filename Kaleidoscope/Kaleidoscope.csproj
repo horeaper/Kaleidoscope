@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Error.cs" />
     <Compile Include="IncludeHeaderFile.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="Tokenizer\TokenDocumentComment.cs" />
     <Compile Include="Tokenizer\TokenFloatNumber.cs" />
     <Compile Include="Tokenizer\TokenIdentifier.cs" />
+    <Compile Include="Tokenizer\Tokenizer.cs" />
     <Compile Include="Tokenizer\TokenPreprocessor.cs" />
     <Compile Include="Tokenizer\TokenSignedNumber.cs" />
     <Compile Include="Tokenizer\TokenKeyword.cs" />

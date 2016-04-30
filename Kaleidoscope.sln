@@ -11,6 +11,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kalc", "kalc\kalc.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaleidoscope", "Kaleidoscope\Kaleidoscope.csproj", "{6252BEF1-AC40-4743-88C8-014313BED809}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CE24C308-3DEA-429D-80D3-98050799DB92}"
+	ProjectSection(SolutionItems) = preProject
+		ChangesList.md = ChangesList.md
+		NewFeatures.md = NewFeatures.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{2A898250-A7AB-41CF-B930-BE5551E56368}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTokenizer", "Test\TestTokenizer\TestTokenizer.csproj", "{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RuntimeCore\RuntimeCore.projitems*{669423e3-a296-4266-aa66-7a3a9d7d4fdb}*SharedItemsImports = 13
@@ -28,11 +39,16 @@ Global
 		{6252BEF1-AC40-4743-88C8-014313BED809}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6252BEF1-AC40-4743-88C8-014313BED809}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6252BEF1-AC40-4743-88C8-014313BED809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{669423E3-A296-4266-AA66-7A3A9D7D4FDB} = {54985728-DED9-47DB-8825-05B5CCA0B788}
+		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977} = {2A898250-A7AB-41CF-B930-BE5551E56368}
 	EndGlobalSection
 EndGlobal
