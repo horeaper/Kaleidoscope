@@ -1,15 +1,14 @@
-﻿using System;
-using Kaleidoscope.Primitive;
+﻿using Kaleidoscope.Primitive;
 using Kaleidoscope.Tokenizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestTokenizer
 {
 	[TestClass]
-	public class UnitTestHexNumber
+	public class TestHexNumber
 	{
 		[TestMethod]
-		public void TestDefaultHex()
+		public void TestHexDefault()
 		{
 			const string Content = "0xFF_FF_FF_FF";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -21,9 +20,9 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestDefaultHex2()
+		public void TestHexDefault2()
 		{
-			const string Content = "0x0F'FF'FF'FF";
+			const string Content = "0x0F'FF_FF'FF";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
 			Assert.IsTrue(tokens.Length == 1);
 			var token = tokens[0] as TokenSignedNumber;
@@ -33,7 +32,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestULHex()
+		public void TestHexUL()
 		{
 			const string Content = "0xFFFFFFFFUL";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -45,7 +44,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestULHex2()
+		public void TestHexUL2()
 		{
 			const string Content = "0xFFFF'FFFF'FFFF'FFFFL";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -57,7 +56,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestLHex()
+		public void TestHexL()
 		{
 			const string Content = "0xFFFF_FFFFL";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -69,7 +68,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestLHex2()
+		public void TestHexL2()
 		{
 			const string Content = "0xFFF'FFFF'FFFF'FFFF";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -81,7 +80,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestUHex()
+		public void TestHexU()
 		{
 			const string Content = "0xFFF_FFFU";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
@@ -93,7 +92,7 @@ namespace TestTokenizer
 		}
 
 		[TestMethod]
-		public void TestUHex2()
+		public void TestHexU2()
 		{
 			const string Content = "0xFFF'FFFF'FFFF'FFFFU";
 			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);

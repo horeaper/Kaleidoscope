@@ -3,8 +3,8 @@
 ### Language change
 * Removed `operator true` and `operator false`
 * Don't support '\U########' (UTF-32) character literal in `char` and `string`
-* No support for '\u####' character literal in identifier names (variables, function names, etc.), it can only be used in `char` and `string` constants
-
+* '\u####' character literal are still supported, but can only be used in `char` and `string` constants (not available in variable and function names, etc.)
+* Failed to assign an `out` parameter will only issue a warning
 
 ### Library change
-* (TODO)
+* BinaryNumber in NumberStyles

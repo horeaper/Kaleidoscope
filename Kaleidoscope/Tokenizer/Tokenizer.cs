@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
@@ -24,7 +25,8 @@ namespace Kaleidoscope.Tokenizer
 				index += token.Length;
 			}
 
-			return builder.ToImmutable();
+			builder.Capacity = builder.Count;
+			return builder.MoveToImmutable();
 		}
 
 		static Token GetTokenWorker(SourceTextFile source, int index)
@@ -52,111 +54,142 @@ namespace Kaleidoscope.Tokenizer
 				return new TokenTrivia(source, startIndex, index, TriviaType.Space);
 			}
 
-			//Hex/Binary Number
+			//Hex/Binary/Octal Number
 			if (source[index] == '0') {
 				if (index + 1 >= source.Length) {
-					return new TokenSignedNumber(source, index, index + 1, source[index] - '0', IntegerNumberType.Int);
+					return new TokenSignedNumber(source, index, index + 1, 0, IntegerNumberType.Int);
 				}
-				int startIndex = index;
 
 				//Test for hex number
 				if (source[index + 1] == 'x' || source[index + 1] == 'X') {
-					index += 2;
-					if (index >= source.Length) {
-						throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
-					}
-					if (!IsHexNumber(source[index])) {
-						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
-					}
-
-					var numberText = new StringBuilder();
-					while (IsHexNumber(source[index])) {
-						numberText.Append(source[index]);
-						++index;
-						if (index >= source.Length) {
-							break;
-						}
-
-						//Skip digit separator
-						if (source[index] == '\'' || source[index] == '_') {
-							++index;
-							if (index >= source.Length) {
-								throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
-							}
-							else if (!IsHexNumber(source[index])) {
-								throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
-							}
-						}
-					}
-
-					int trailing = ReadNumberLiteralTrailing(source, ref index);
-					switch (trailing) {
-						case 3: 
-							{
-								ulong value;
-								if (!ulong.TryParse(numberText.ToString(), NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out value)) {
-									throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-								}
-								return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-							}
-						case 2: 
-							{
-								ulong value;
-								if (!ulong.TryParse(numberText.ToString(), NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out value)) {
-									throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-								}
-
-								if (value > uint.MaxValue) {
-									return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-								}
-								else {
-									return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
-								}
-							}
-						case 1: 
-							{
-								ulong value;
-								if (!ulong.TryParse(numberText.ToString(), NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out value)) {
-									throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-								}
-
-								if (value > long.MaxValue) {
-									return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-								}
-								else {
-									return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
-								}
-							}
-						default:
-							{
-								ulong value;
-								if (!ulong.TryParse(numberText.ToString(), NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out value)) {
-									throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-								}
-
-								if (value > long.MaxValue) {
-									return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-								}
-								else if (value > uint.MaxValue) {
-									return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
-								}
-								else if (value > int.MaxValue) {
-									return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
-								}
-								else {
-									return new TokenSignedNumber(source, startIndex, index, (int)value, IntegerNumberType.Int);
-								}
-							}
-					}
+					return ParseSpecialNumber(source, index, IsHexNumber, ConvertHexNumberString);
 				}
 
 				//Test for binary number
 				if (source[index + 1] == 'b' || source[index + 1] == 'b') {
+					return ParseSpecialNumber(source, index, IsBinaryNumber, ConvertBinaryNumberString);
+				}
 
+				//Test for octal number
+				if (source[index + 1] == 'o' || source[index + 1] == 'O') {
+					return ParseSpecialNumber(source, index, IsOctalNumber, ConvertOctalNumberString);
 				}
 			}
 
+			//Normal number
+			if (source[index] == '-' || IsNumber(source[index])) {
+// 				bool isNegative = false;
+// 				if (source[index] == '-') {
+// 					isNegative = true;
+// 					++index;
+// 					TestEOF(source, index);
+// 				}
+			}
+
 			throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+		}
+
+#region Common functor
+
+		delegate bool ConvertDelegate(string text, out ulong value);
+
+		static Token ParseSpecialNumber(SourceTextFile source, int index, Func<char, bool> fnNumberTest, ConvertDelegate fnConvertText)
+		{
+			int startIndex = index;
+			index += 2;
+			TestEOF(source, index);
+			if (!fnNumberTest(source[index])) {
+				throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+			}
+
+			var numberText = new StringBuilder();
+			while (fnNumberTest(source[index])) {
+				numberText.Append(source[index]);
+				++index;
+				if (index >= source.Length) {
+					break;
+				}
+
+				//Skip digit separator
+				if (source[index] == '\'' || source[index] == '_') {
+					++index;
+					TestEOF(source, index);
+					if (!fnNumberTest(source[index])) {
+						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+					}
+				}
+			}
+
+			int trailing = ReadNumberLiteralTrailing(source, ref index);
+			switch (trailing) {
+				case 3:
+					{
+						ulong value;
+						if (!fnConvertText(numberText.ToString(), out value)) {
+							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+						}
+						return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
+					}
+				case 2:
+					{
+						ulong value;
+						if (!fnConvertText(numberText.ToString(), out value)) {
+							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+						}
+
+						if (value > uint.MaxValue) {
+							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
+						}
+						else {
+							return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+						}
+					}
+				case 1:
+					{
+						ulong value;
+						if (!fnConvertText(numberText.ToString(), out value)) {
+							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+						}
+
+						if (value > long.MaxValue) {
+							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
+						}
+						else {
+							return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
+						}
+					}
+				default:
+					{
+						ulong value;
+						if (!fnConvertText(numberText.ToString(), out value)) {
+							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+						}
+
+						if (value > long.MaxValue) {
+							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
+						}
+						else if (value > uint.MaxValue) {
+							return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
+						}
+						else if (value > int.MaxValue) {
+							return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+						}
+						else {
+							return new TokenSignedNumber(source, startIndex, index, (int)value, IntegerNumberType.Int);
+						}
+					}
+			}
+		}
+
+#endregion
+
+#region Utils
+
+		static void TestEOF(SourceTextFile source, int index)
+		{
+			if (index >= source.Length) {
+				throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
+			}
 		}
 
 		static char GetNextChar(SourceTextFile source, int index)
@@ -169,6 +202,10 @@ namespace Kaleidoscope.Tokenizer
 			}
 		}
 
+#endregion
+
+#region Utils - Number
+
 		static bool IsNumber(char value)
 		{
 			return value >= '0' && value <= '9';
@@ -179,6 +216,45 @@ namespace Kaleidoscope.Tokenizer
 			return (value >= '0' && value <= '9') ||
 				   (value >= 'A' && value <= 'F') ||
 				   (value >= 'a' && value <= 'f');
+		}
+
+		static bool IsBinaryNumber(char value)
+		{
+			return value == '0' || value == '1';
+		}
+
+		static bool IsOctalNumber(char value)
+		{
+			return value >= '0' && value <= '7';
+		}
+
+		static bool ConvertHexNumberString(string text, out ulong value)
+		{
+			return ulong.TryParse(text, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out value);
+		}
+
+		static bool ConvertBinaryNumberString(string text, out ulong value)
+		{
+			try {
+				value = Convert.ToUInt64(text, 2);
+				return true;
+			}
+			catch (FormatException) {
+				value = 0;
+				return false;
+			}
+		}
+
+		static bool ConvertOctalNumberString(string text, out ulong value)
+		{
+			try {
+				value = Convert.ToUInt64(text, 8);
+				return true;
+			}
+			catch (FormatException) {
+				value = 0;
+				return false;
+			}
 		}
 
 		//0 - none, 1 = L, 2 = U, 3 = UL/LU
@@ -212,5 +288,7 @@ namespace Kaleidoscope.Tokenizer
 
 			return 0;
 		}
+
+#endregion
 	}
 }

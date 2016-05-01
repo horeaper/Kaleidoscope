@@ -19,7 +19,7 @@ namespace Kaleidoscope.Primitive
 			FileContent = fileContent;
 
 			//Calculate line number for each character, and each line's start index
-			var lineNumbers = ImmutableArray.CreateBuilder<ushort>(FileContent.Length);
+			var lineNumbers = ImmutableArray.CreateBuilder<ushort>(FileContent.Length + 1);
 			var lineStartIndex = ImmutableArray.CreateBuilder<int>();
 			lineStartIndex.Add(0);
 			ushort currentLine = 1;
@@ -32,9 +32,10 @@ namespace Kaleidoscope.Primitive
 			}
 			lineNumbers.Add(currentLine);
 			lineStartIndex.Add(FileContent.Length);
+			lineStartIndex.Capacity = lineStartIndex.Count;
 
-			m_lineNumbers = lineNumbers.ToImmutable();
-			m_lineStartIndex = lineStartIndex.ToImmutable();
+			m_lineNumbers = lineNumbers.MoveToImmutable();
+			m_lineStartIndex = lineStartIndex.MoveToImmutable();
 		}
 
 		public override string ToString()
