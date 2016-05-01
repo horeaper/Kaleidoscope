@@ -420,6 +420,95 @@ namespace Kaleidoscope.Tokenizer
 				}
 
 				#endregion
+
+				#region Character
+
+				if (source[index] == '\'') {
+					int startIndex = index;
+					++index;
+
+					char result;
+					switch (source[index]) {
+						case '\\':
+							++index;
+							result = ReadCharacterLiterialEscapeSequence(source, startIndex, ref index);
+							break;
+						case '\r':
+						case '\n':
+							throw ParseException.AsIndex(source, index, Error.Tokenizer.NewLineNotAllowedOnChar);
+						case '\'':
+							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.EmptyCharLiteral);
+						default:
+							result = source[index];
+							++index;
+							break;
+					}
+					if (source[index] != '\'') {
+						throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.BadCharConstant);
+					}
+
+					return new TokenCharacter(source, startIndex, index + 1, result);
+				}
+
+				#endregion
+
+				#region String
+
+				if (source[index] == '\"') {
+					int startIndex = index;
+					++index;
+
+					var convertedContent = new StringBuilder();
+					while (true) {
+						switch (source[index]) {
+							case '\\':
+								++index;
+								convertedContent.Append(ReadCharacterLiterialEscapeSequence(source, startIndex, ref index));
+								break;
+							case '\r':
+							case '\n':
+								throw ParseException.AsIndex(source, index, Error.Tokenizer.NewLineNotAllowedOnString);
+							case '\"':
+								return new TokenString(source, startIndex, index + 1, convertedContent.ToString());
+							default:
+								convertedContent.Append(source[index]);
+								++index;
+								break;
+						}
+					}
+				}
+
+				#endregion
+
+				#region Verbatim string
+
+				if (source[index] == '@') {
+					int startIndex = index;
+					++index;
+					if (source[index] != '\"') {
+						throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.UnknownToken);
+					}
+
+					var convertedContent = new StringBuilder();
+					while (true) {
+						++index;
+
+						if (source[index] == '\"') {
+							++index;
+							if (index >= source.Length || source[index] != '\"') {
+								return new TokenString(source, startIndex, index, convertedContent.ToString());
+							}
+							else {
+								convertedContent.Append(source[index]);
+							}
+						}
+						else {
+							convertedContent.Append(source[index]);
+						}
+					}
+				}
+
+				#endregion
 			}
 			catch (IndexOutOfRangeException) {
 				throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
@@ -543,6 +632,85 @@ namespace Kaleidoscope.Tokenizer
 			}
 
 			return IntegerTrailingType.None;
+		}
+
+#endregion
+
+#region Utils - Character
+
+		static char ReadCharacterLiterialEscapeSequence(SourceTextFile source, int firstIndex, ref int index)
+		{
+			switch (source[index]) {
+				case 'u':
+					{
+						++index;
+						int numberStart = index;
+						for (int cnt = 0; cnt < 4; ++cnt) {
+							if (!IsHexNumber(source[index])) {
+								throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+							}
+							++index;
+						}
+
+						string hexDigitText = source.Substring(numberStart, index);
+						int number;
+						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
+							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+						}
+						return (char)number;
+					}
+				case 'x':
+					{
+						++index;
+						int numberStart = index;
+						int numberCount = 0;
+						while (IsHexNumber(source[index]) && numberCount < 4) {
+							++index;
+						}
+
+						string hexDigitText = source.Substring(numberStart, index);
+						int number;
+						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
+							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+						}
+						return (char)number;
+					}
+				case '\'':
+					++index;
+					return '\'';
+				case '\"':
+					++index;
+					return '\"';
+				case '\\':
+					++index;
+					return '\\';
+				case '0':
+					++index;
+					return '\0';
+				case 'a':
+					++index;
+					return '\a';
+				case 'b':
+					++index;
+					return '\b';
+				case 'f':
+					++index;
+					return '\f';
+				case 'n':
+					++index;
+					return '\n';
+				case 'r':
+					++index;
+					return '\r';
+				case 't':
+					++index;
+					return '\t';
+				case 'v':
+					++index;
+					return '\v';
+				default:
+					throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence);
+			}
 		}
 
 #endregion

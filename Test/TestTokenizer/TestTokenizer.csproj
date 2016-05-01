@@ -63,6 +63,8 @@
     <Compile Include="TestIntegerNumber.cs" />
     <Compile Include="TestOctalNumber.cs" />
     <Compile Include="TestRealNumber.cs" />
+    <Compile Include="TestCharString.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Kaleidoscope\Kaleidoscope.csproj">
