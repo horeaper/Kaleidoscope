@@ -13,6 +13,8 @@ namespace Kaleidoscope
 			public const string UnexpectedEOF = "unexpected end of file";
 			public const string UnknownToken = "unrecognized token";
 			public const string InvalidIntegralConstant = "invalid integral constant";
+			public const string InvalidRealConstant = "invalid real constant";
+			public const string InvalidDecimalConstant = "invalid decimal constant";
 		}
 	}
 }

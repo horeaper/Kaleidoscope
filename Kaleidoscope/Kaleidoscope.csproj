@@ -55,12 +55,12 @@
     <Compile Include="Tokenizer\TokenIdentifier.cs" />
     <Compile Include="Tokenizer\Tokenizer.cs" />
     <Compile Include="Tokenizer\TokenPreprocessor.cs" />
-    <Compile Include="Tokenizer\TokenSignedNumber.cs" />
+    <Compile Include="Tokenizer\TokenSignedInteger.cs" />
     <Compile Include="Tokenizer\TokenKeyword.cs" />
     <Compile Include="Tokenizer\TokenString.cs" />
     <Compile Include="Tokenizer\TokenSymbol.cs" />
     <Compile Include="Tokenizer\TokenTrivia.cs" />
-    <Compile Include="Tokenizer\TokenUnsignedNumber.cs" />
+    <Compile Include="Tokenizer\TokenUnsignedInteger.cs" />
     <Compile Include="Tokenizer\TriviaType.cs" />
   </ItemGroup>
   <ItemGroup>

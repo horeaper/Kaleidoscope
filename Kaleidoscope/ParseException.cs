@@ -31,7 +31,7 @@ namespace Kaleidoscope
 			return new ParseException(sourceFile, line, column, column, errorMessage);
 		}
 
-		internal static ParseException AsString(SourceTextFile sourceFile, int startIndex, int endIndex, string errorMessage)
+		internal static ParseException AsRange(SourceTextFile sourceFile, int startIndex, int endIndex, string errorMessage)
 		{
 			int line, startColumn;
 			sourceFile.GetLineColumn(startIndex, out line, out startColumn);

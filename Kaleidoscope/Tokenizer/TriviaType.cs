@@ -8,7 +8,8 @@ namespace Kaleidoscope.Tokenizer
 {
 	public enum TriviaType
 	{
-		Space,
 		NewLine,
+		Space,
+		Tab,
 	}
 }

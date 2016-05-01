@@ -19,6 +19,7 @@ namespace Kaleidoscope.Tokenizer
 		LeftArrow,		// <
 		RightArrow,		// >
 		Lambda,			// =>
+		Asterisk,		// *
 
 		NullConalescing,	// ??
 		NullConditional,	// ?.
@@ -33,7 +34,6 @@ namespace Kaleidoscope.Tokenizer
 		OperatorAssign,		// =
 		OperatorAdd,		// +
 		OperatorMin,		// -
-		OperatorMul,		// *
 		OperatorDiv,		// /
 		OperatorMod,		// %
 		OperatorSelfAdd,	// ++
@@ -58,5 +58,8 @@ namespace Kaleidoscope.Tokenizer
 		OperatorBitwiseNot,	// ~
 		OperatorShiftLeft,	// <<
 		OperatorShiftRight,	// >>
+
+		OperatorPipeLeft,	// <|
+		OperatorPipeRight,	// |>
 	}
 }

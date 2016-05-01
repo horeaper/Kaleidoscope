@@ -60,7 +60,9 @@
     <Compile Include="TestBinaryNumber.cs" />
     <Compile Include="TestHexNumber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestIntegerNumber.cs" />
     <Compile Include="TestOctalNumber.cs" />
+    <Compile Include="TestRealNumber.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Kaleidoscope\Kaleidoscope.csproj">

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope.Tokenizer
@@ -53,158 +55,382 @@ namespace Kaleidoscope.Tokenizer
 				}
 				return new TokenTrivia(source, startIndex, index, TriviaType.Space);
 			}
-
-			//Hex/Binary/Octal Number
-			if (source[index] == '0') {
-				if (index + 1 >= source.Length) {
-					return new TokenSignedNumber(source, index, index + 1, 0, IntegerNumberType.Int);
+			if (source[index] == '\t') {
+				int startIndex = index;
+				while (index < source.Length && source[index] == '\t') {
+					++index;
 				}
-
-				//Test for hex number
-				if (source[index + 1] == 'x' || source[index + 1] == 'X') {
-					return ParseSpecialNumber(source, index, IsHexNumber, ConvertHexNumberString);
-				}
-
-				//Test for binary number
-				if (source[index + 1] == 'b' || source[index + 1] == 'b') {
-					return ParseSpecialNumber(source, index, IsBinaryNumber, ConvertBinaryNumberString);
-				}
-
-				//Test for octal number
-				if (source[index + 1] == 'o' || source[index + 1] == 'O') {
-					return ParseSpecialNumber(source, index, IsOctalNumber, ConvertOctalNumberString);
-				}
+				return new TokenTrivia(source, startIndex, index, TriviaType.Tab);
 			}
 
-			//Normal number
-			if (source[index] == '-' || IsNumber(source[index])) {
-// 				bool isNegative = false;
-// 				if (source[index] == '-') {
-// 					isNegative = true;
-// 					++index;
-// 					TestEOF(source, index);
-// 				}
+			try {
+				#region Hex/Binary/Octal Number
+
+				if (source[index] == '0') {
+					if (index + 1 >= source.Length) {
+						return new TokenSignedInteger(source, index, index + 1, 0, IntegerNumberType.Int);
+					}
+
+					Func<NumberTestDelegate, NumberConvertDelegate, Token> fnParseSpecialNumber = (fnNumberTest, fnConvertText) => {
+						int startIndex = index;
+						index += 2;
+						if (!fnNumberTest(source[index])) {
+							throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+						}
+
+						var numberText = ReadNumberText(source, ref index, fnNumberTest);
+						var trailing = ReadIntegerLiteralTrailing(source, ref index);
+						switch (trailing) {
+							case IntegerTrailingType.UL:
+								{
+									ulong value;
+									if (!fnConvertText(numberText, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+									return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+								}
+							case IntegerTrailingType.U:
+								{
+									ulong value;
+									if (!fnConvertText(numberText, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+
+									if (value > uint.MaxValue) {
+										return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+									}
+									else {
+										return new TokenUnsignedInteger(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+									}
+								}
+							case IntegerTrailingType.L:
+								{
+									ulong value;
+									if (!fnConvertText(numberText, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+
+									if (value > long.MaxValue) {
+										return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+									}
+									else {
+										return new TokenSignedInteger(source, startIndex, index, (long)value, IntegerNumberType.Long);
+									}
+								}
+							default:
+								{
+									ulong value;
+									if (!fnConvertText(numberText, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+
+									if (value > long.MaxValue) {
+										return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+									}
+									else if (value > uint.MaxValue) {
+										return new TokenSignedInteger(source, startIndex, index, (long)value, IntegerNumberType.Long);
+									}
+									else if (value > int.MaxValue) {
+										return new TokenUnsignedInteger(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+									}
+									else {
+										return new TokenSignedInteger(source, startIndex, index, (int)value, IntegerNumberType.Int);
+									}
+								}
+						}
+					};
+
+					//Test for hex number
+					if (source[index + 1] == 'x' || source[index + 1] == 'X') {
+						return fnParseSpecialNumber(IsHexNumber, ConvertHexNumberString);
+					}
+
+					//Test for binary number
+					if (source[index + 1] == 'b' || source[index + 1] == 'b') {
+						return fnParseSpecialNumber(IsBinaryNumber, ConvertBinaryNumberString);
+					}
+
+					//Test for octal number
+					if (source[index + 1] == 'o' || source[index + 1] == 'O') {
+						return fnParseSpecialNumber(IsOctalNumber, ConvertOctalNumberString);
+					}
+				}
+
+				#endregion
+
+				#region Standard number
+
+				if (source[index] == '-' || source[index] == '.' || IsNumber(source[index])) {
+					int startIndex = index;
+
+					//Create leading text (minus sign and/or decimal point)
+					bool isMinusFirst = false;
+					if (source[index] == '-') {
+						isMinusFirst = true;
+						++index;
+						if (!IsNumber(source[index])) {
+							throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+						}
+					}
+					bool isDotFirst = false;
+					if (source[index] == '.') {
+						isDotFirst = true;
+						++index;
+						if (!IsNumber(source[index])) {
+							throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+						}
+					}
+					var leadingText = "";
+					if (isMinusFirst) {
+						leadingText += "-";
+					}
+					if (isDotFirst) {
+						leadingText += "0.";
+					}
+
+					Func<string, Token> fnParseIntegerNumber = text => {
+						if (!isMinusFirst) {
+							ulong value;
+							if (!ulong.TryParse(text, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
+								throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+							}
+
+							if (value > long.MaxValue) {
+								return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+							}
+							else if (value > uint.MaxValue) {
+								return new TokenSignedInteger(source, startIndex, index, (long)value, IntegerNumberType.Long);
+							}
+							else if (value > int.MaxValue) {
+								return new TokenUnsignedInteger(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+							}
+							else {
+								return new TokenSignedInteger(source, startIndex, index, (int)value, IntegerNumberType.Int);
+							}
+						}
+						else {
+							long value;
+							if (!long.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.CurrentCulture, out value)) {
+								throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+							}
+
+							if (value < int.MinValue) {
+								return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+
+							}
+							else {
+								return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Int);
+							}
+						}
+					};
+
+					Func<string, Token> fnParseRealNumber = text => {
+						double value;
+						if (!double.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+						}
+						return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
+					};
+
+					Func<string, Token> fnParseNumber = text =>
+						!isDotFirst ? fnParseIntegerNumber(text) : fnParseRealNumber(text);
+
+					var partNumber = ReadNumberText(source, ref index, IsNumber);
+					string numberText = leadingText + partNumber;
+					if (index >= source.Length) {
+						return fnParseNumber(numberText);
+					}
+
+					var integerTrailing = ReadIntegerLiteralTrailing(source, ref index);
+					if (integerTrailing != IntegerTrailingType.None) {
+						if (isDotFirst) {
+							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+						}
+						if (isMinusFirst && (integerTrailing == IntegerTrailingType.UL || integerTrailing == IntegerTrailingType.U)) {
+							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+						}
+
+						switch (integerTrailing) {
+							case IntegerTrailingType.UL:
+								{
+									ulong value;
+									if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+									return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+								}
+							case IntegerTrailingType.U:
+								{
+									ulong value;
+									if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+									}
+
+									if (value > uint.MaxValue) {
+										return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+									}
+									else {
+										return new TokenUnsignedInteger(source, startIndex, index, (uint)value, IntegerNumberType.Int);
+									}
+								}
+							case IntegerTrailingType.L:
+								{
+									if (!isMinusFirst) {
+										ulong value;
+										if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
+											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										}
+
+										if (value > long.MaxValue) {
+											return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+										}
+										else {
+											return new TokenSignedInteger(source, startIndex, index, (long)value, IntegerNumberType.Long);
+										}
+									}
+									else {
+										long value;
+										if (!long.TryParse(numberText, NumberStyles.AllowLeadingSign, CultureInfo.CurrentCulture, out value)) {
+											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										}
+										return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
+									}
+								}
+						}
+					}
+
+					Func<Func<string, Token>, Token> fnCreateNumberToken = fnDefaultNumberParser => {
+						switch (source[index]) {
+							case 'F':
+							case 'f':
+								{
+									++index;
+									float value;
+									if (!float.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+									}
+									return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Float);
+								}
+							case 'D':
+							case 'd':
+								{
+									++index;
+									double value;
+									if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+									}
+									return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
+								}
+							case 'M':
+							case 'm':
+								{
+									++index;
+									decimal value;
+									if (!decimal.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant);
+									}
+									return new TokenDecimalNumber(source, startIndex, index, value);
+								}
+							case 'E':
+							case 'e':
+								{
+									++index;
+									bool isExpNegative = false;
+									if (source[index] == '-') {
+										isExpNegative = true;
+										++index;
+									}
+									var partExponent = ReadNumberText(source, ref index, IsNumber);
+									if (isExpNegative) {
+										partExponent = '-' + partExponent;
+									}
+									numberText += "e" + partExponent;
+
+									if (index >= source.Length) {
+										double value;
+										if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+										}
+										return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
+									}
+
+									switch (source[index]) {
+										case 'F':
+										case 'f':
+											{
+												++index;
+												float value;
+												if (!float.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+												}
+												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Float);
+											}
+										case 'D':
+										case 'd':
+											{
+												++index;
+												double value;
+												if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+												}
+												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
+											}
+										case 'M':
+										case 'm':
+											{
+												++index;
+												decimal value;
+												if (!decimal.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant);
+												}
+												return new TokenDecimalNumber(source, startIndex, index, value);
+											}
+										default:
+											{
+												double value;
+												if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
+													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+												}
+												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
+											}
+									}
+								}
+							default:
+								return fnDefaultNumberParser(numberText);
+						}
+					};
+
+					if (source[index] == '.') {
+						if (isDotFirst || !IsNumber(source[index + 1])) {
+							return fnParseNumber(numberText);
+						}
+						++index;
+
+						var partDecimal = ReadNumberText(source, ref index, IsNumber);
+						numberText += '.' + partDecimal;
+						if (index >= source.Length) {
+							return fnParseRealNumber(numberText);
+						}
+
+						return fnCreateNumberToken(fnParseRealNumber);
+					}
+					else {
+						return fnCreateNumberToken(fnParseNumber);
+					}
+				}
+
+				#endregion
+			}
+			catch (IndexOutOfRangeException) {
+				throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
 			}
 
 			throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
 		}
 
-#region Common functor
-
-		delegate bool ConvertDelegate(string text, out ulong value);
-
-		static Token ParseSpecialNumber(SourceTextFile source, int index, Func<char, bool> fnNumberTest, ConvertDelegate fnConvertText)
-		{
-			int startIndex = index;
-			index += 2;
-			TestEOF(source, index);
-			if (!fnNumberTest(source[index])) {
-				throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
-			}
-
-			var numberText = new StringBuilder();
-			while (fnNumberTest(source[index])) {
-				numberText.Append(source[index]);
-				++index;
-				if (index >= source.Length) {
-					break;
-				}
-
-				//Skip digit separator
-				if (source[index] == '\'' || source[index] == '_') {
-					++index;
-					TestEOF(source, index);
-					if (!fnNumberTest(source[index])) {
-						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
-					}
-				}
-			}
-
-			int trailing = ReadNumberLiteralTrailing(source, ref index);
-			switch (trailing) {
-				case 3:
-					{
-						ulong value;
-						if (!fnConvertText(numberText.ToString(), out value)) {
-							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-						}
-						return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-					}
-				case 2:
-					{
-						ulong value;
-						if (!fnConvertText(numberText.ToString(), out value)) {
-							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-						}
-
-						if (value > uint.MaxValue) {
-							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-						}
-						else {
-							return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
-						}
-					}
-				case 1:
-					{
-						ulong value;
-						if (!fnConvertText(numberText.ToString(), out value)) {
-							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-						}
-
-						if (value > long.MaxValue) {
-							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-						}
-						else {
-							return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
-						}
-					}
-				default:
-					{
-						ulong value;
-						if (!fnConvertText(numberText.ToString(), out value)) {
-							throw ParseException.AsString(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
-						}
-
-						if (value > long.MaxValue) {
-							return new TokenUnsignedNumber(source, startIndex, index, value, IntegerNumberType.Long);
-						}
-						else if (value > uint.MaxValue) {
-							return new TokenSignedNumber(source, startIndex, index, (long)value, IntegerNumberType.Long);
-						}
-						else if (value > int.MaxValue) {
-							return new TokenUnsignedNumber(source, startIndex, index, (uint)value, IntegerNumberType.Int);
-						}
-						else {
-							return new TokenSignedNumber(source, startIndex, index, (int)value, IntegerNumberType.Int);
-						}
-					}
-			}
-		}
-
-#endregion
-
-#region Utils
-
-		static void TestEOF(SourceTextFile source, int index)
-		{
-			if (index >= source.Length) {
-				throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
-			}
-		}
-
-		static char GetNextChar(SourceTextFile source, int index)
-		{
-			if (index + 1 < source.Length) {
-				return source[index];
-			}
-			else {
-				throw ParseException.AsIndex(source, index, Error.Tokenizer.UnexpectedEOF);
-			}
-		}
-
-#endregion
-
 #region Utils - Number
+
+		delegate bool NumberTestDelegate(char value);
 
 		static bool IsNumber(char value)
 		{
@@ -227,6 +453,29 @@ namespace Kaleidoscope.Tokenizer
 		{
 			return value >= '0' && value <= '7';
 		}
+
+		static string ReadNumberText(SourceTextFile source, ref int index, NumberTestDelegate fnNumberTest)
+		{
+			var numberText = new StringBuilder();
+			while (fnNumberTest(source[index])) {
+				numberText.Append(source[index]);
+				++index;
+				if (index >= source.Length) {
+					break;
+				}
+
+				//Skip digit separator
+				if (source[index] == '\'' || source[index] == '_') {
+					++index;
+					if (!fnNumberTest(source[index])) {
+						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+					}
+				}
+			}
+			return numberText.ToString();
+		}
+
+		delegate bool NumberConvertDelegate(string text, out ulong value);
 
 		static bool ConvertHexNumberString(string text, out ulong value)
 		{
@@ -257,8 +506,15 @@ namespace Kaleidoscope.Tokenizer
 			}
 		}
 
-		//0 - none, 1 = L, 2 = U, 3 = UL/LU
-		static int ReadNumberLiteralTrailing(SourceTextFile source, ref int index)
+		enum IntegerTrailingType
+		{
+			None,
+			L,
+			U,
+			UL,
+		}
+
+		static IntegerTrailingType ReadIntegerLiteralTrailing(SourceTextFile source, ref int index)
 		{
 			int testCount = 0;
 			if (index + 1 < source.Length) {
@@ -272,21 +528,21 @@ namespace Kaleidoscope.Tokenizer
 				if ((char.ToUpper(source[index]) == 'U' && char.ToUpper(source[index + 1]) == 'L') ||
 					(char.ToUpper(source[index]) == 'L' && char.ToUpper(source[index + 1]) == 'U')) {
 					index += 2;
-					return 3;
+					return IntegerTrailingType.UL;
 				}
 			}
 			if (testCount >= 1) {
 				switch (char.ToUpper(source[index])) {
 					case 'U':
 						++index;
-						return 2;
+						return IntegerTrailingType.U;
 					case 'L':
 						++index;
-						return 1;
+						return IntegerTrailingType.L;
 				}
 			}
 
-			return 0;
+			return IntegerTrailingType.None;
 		}
 
 #endregion
