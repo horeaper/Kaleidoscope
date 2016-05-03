@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using Kaleidoscope;
-using Kaleidoscope.Primitive;
 using Kaleidoscope.Tokenizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

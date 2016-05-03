@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.IO;
 
-namespace Kaleidoscope.Primitive
+namespace Kaleidoscope
 {
 	public class SourceTextFile
 	{

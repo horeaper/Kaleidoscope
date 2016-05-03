@@ -1,6 +1,4 @@
-﻿using Kaleidoscope.Primitive;
-
-namespace Kaleidoscope.Tokenizer
+﻿namespace Kaleidoscope.Tokenizer
 {
 	public abstract class Token
 	{

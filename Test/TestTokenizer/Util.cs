@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kaleidoscope.Primitive;
+﻿using Kaleidoscope;
 using Kaleidoscope.Tokenizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,7 +1,4 @@
-﻿using System;
-using Kaleidoscope.Primitive;
-
-namespace Kaleidoscope.Tokenizer
+﻿namespace Kaleidoscope.Tokenizer
 {
 	public class TokenCharacter : Token
 	{

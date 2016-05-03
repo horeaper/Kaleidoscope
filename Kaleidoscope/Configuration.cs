@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope
 {

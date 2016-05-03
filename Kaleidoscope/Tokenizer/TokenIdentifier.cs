@@ -1,5 +1,4 @@
 ﻿using System;
-using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope.Tokenizer
 {

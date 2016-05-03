@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.Net;
 using System.Text;
 using Kaleidoscope.Preprocessor;
-using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope.Tokenizer
 {

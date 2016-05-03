@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope
 {
@@ -74,6 +73,7 @@ Internal options:
 							break;
 						case "-debug":
 							result.IsDebugMode = true;
+							definedSymbols.Add("DEBUG");
 							break;
 						case "-inc":
 							++currentIndex;
@@ -183,6 +183,12 @@ Internal options:
 			}
 
 			var output = new OutputByConsole();
+			try {
+				var codeHub = new CodeHub(config, output);
+			}
+			catch (KaleidoscopeSystemException) {
+				return -1;
+			}
 
 			return 0;
 		}

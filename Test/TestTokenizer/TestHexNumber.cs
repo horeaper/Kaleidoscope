@@ -1,5 +1,4 @@
-﻿using Kaleidoscope.Primitive;
-using Kaleidoscope.Tokenizer;
+﻿using Kaleidoscope.Tokenizer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestTokenizer
