@@ -7,7 +7,7 @@ namespace Kaleidoscope.Tokenizer
 		public readonly bool Value;
 
 		public TokenBooleanLiteral(SourceTextFile sourceFile, int begin, int end, KeywordType keyword)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.BooleanLiteral)
 		{
 			if (keyword == KeywordType.@true) {
 				Value = true;

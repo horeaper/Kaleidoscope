@@ -8,7 +8,7 @@ namespace Kaleidoscope.Tokenizer
 		public readonly Token[] ContentTokens;
 
 		public TokenPreprocessor(SourceTextFile sourceFile, int begin, int end, PreprocessorType type, Token[] contentTokens)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.Preprocessor)
 		{
 			Type = type;
 			ContentTokens = contentTokens;

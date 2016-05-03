@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Analysis\TokenBlob.cs" />
+    <Compile Include="Analysis\TokenBlock.cs" />
     <Compile Include="CodeHub.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Error.cs" />
@@ -47,10 +47,16 @@
     <Compile Include="Preprocessor\NegateStatement.cs" />
     <Compile Include="Preprocessor\SymbolStatement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Primitive\SourceTextFile.cs" />
+    <Compile Include="SourceTextFile.cs" />
     <Compile Include="ConstantsData.cs" />
-    <Compile Include="Structure\CodeFile.cs" />
+    <Compile Include="Analysis\CodeFile.cs" />
     <Compile Include="KaleidoscopeSystemException.cs" />
+    <Compile Include="SyntaxObject\LambdaStyle.cs" />
+    <Compile Include="SyntaxObject\Primitive\FieldAttributes.cs" />
+    <Compile Include="SyntaxObject\Primitive\MethodAttributes.cs" />
+    <Compile Include="SyntaxObject\Primitive\ParameterAttributes.cs" />
+    <Compile Include="SyntaxObject\Primitive\TypeAttributes.cs" />
+    <Compile Include="SyntaxObject\UsingCSNamespaceDirective.cs" />
     <Compile Include="Tokenizer\ContextualKeywordType.cs" />
     <Compile Include="Preprocessor\EqualityExpression.cs" />
     <Compile Include="Tokenizer\FloatNumberType.cs" />
@@ -73,6 +79,7 @@
     <Compile Include="Tokenizer\TokenString.cs" />
     <Compile Include="Tokenizer\TokenSymbol.cs" />
     <Compile Include="Tokenizer\TokenTrivia.cs" />
+    <Compile Include="Tokenizer\TokenType.cs" />
     <Compile Include="Tokenizer\TokenUnsignedInteger.cs" />
     <Compile Include="Tokenizer\TriviaType.cs" />
   </ItemGroup>

@@ -5,13 +5,14 @@
 		public readonly SourceTextFile SourceFile;
 		public readonly int Begin;
 		public readonly int End;
+		public readonly TokenType TokenType;
 
 		public readonly int Line;
 		public readonly int Column;
 		public readonly string Text;
 		public int Length => Text.Length;
 
-		protected Token(SourceTextFile sourceFile, int begin, int end)
+		protected Token(SourceTextFile sourceFile, int begin, int end, TokenType type)
 		{
 			SourceFile = sourceFile;
 			Begin = begin;

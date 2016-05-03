@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Kaleidoscope.Analysis;
-using Kaleidoscope.Structure;
 
 namespace Kaleidoscope
 {
@@ -22,20 +21,22 @@ namespace Kaleidoscope
 			Configuration = config;
 			InfoOutput = infoOutput;
 
+			//Analysis
 			var errorList = new ConcurrentBag<ParseException>();
 			var codeFiles = new ConcurrentBag<CodeFile>();
 			Parallel.ForEach(Configuration.InputFiles, file => {
 				try {
 					var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols);
-					codeFiles.Add(new CodeFile(new TokenBlob(tokens)));
+					codeFiles.Add(new CodeFile(this, new TokenBlock(tokens)));
 				}
 				catch (ParseException e) {
 					errorList.Add(e);
 				}
 			});
 			CheckErrorList(errorList);
-
 			CodeFiles = ImmutableArray.CreateRange(codeFiles);
+
+			//Binding
 		}
 
 #region Utility

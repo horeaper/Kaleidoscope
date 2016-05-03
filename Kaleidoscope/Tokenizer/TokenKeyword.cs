@@ -7,7 +7,7 @@ namespace Kaleidoscope.Tokenizer
 		public readonly KeywordType Type;
 
 		public TokenKeyword(SourceTextFile sourceFile, int begin, int end, KeywordType type)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.Keyword)
 		{
 			Type = type;
 		}

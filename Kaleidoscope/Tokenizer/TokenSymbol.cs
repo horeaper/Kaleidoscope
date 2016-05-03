@@ -5,7 +5,7 @@
 		public readonly SymbolType Type;
 
 		public TokenSymbol(SourceTextFile sourceFile, int begin, int end, SymbolType type)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, (TokenType)type)
 		{
 			Type = type;
 		}

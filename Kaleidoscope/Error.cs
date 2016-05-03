@@ -18,5 +18,17 @@
 			public const string MultiLineCommentNotClosed = "'*/' expected";
 			public const string InvalidPreprocessor = "Invalid preprocessor directive";
 		}
+
+		public static class Analysis
+		{
+			//TokenBlock
+			public const string LeftBraceExpected = "{ expected";
+			public const string RightBraceExpected = "} expected";
+			public const string LeftParenthesisExpected = "( expected";
+			public const string RightParenthesisExpected = ") expected";
+			public const string LeftBracketExpected = "] expected";
+			public const string RightBracketExpected = "] expected";
+
+		}
 	}
 }

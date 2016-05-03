@@ -5,7 +5,7 @@
 		public readonly string ConvertedText;
 
 		public TokenString(SourceTextFile sourceFile, int begin, int end, string convertedText)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.String)
 		{
 			ConvertedText = convertedText;
 		}

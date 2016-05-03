@@ -5,7 +5,7 @@
 		public readonly decimal Value;
 
 		public TokenDecimalNumber(SourceTextFile sourceFile, int begin, int end, decimal value)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.NumberLiteral)
 		{
 			Value = value;
 		}

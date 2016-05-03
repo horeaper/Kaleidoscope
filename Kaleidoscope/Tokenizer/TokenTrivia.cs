@@ -5,7 +5,7 @@
 		public readonly TriviaType Type;
 
 		public TokenTrivia(SourceTextFile sourceFile, int begin, int end, TriviaType type)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.Trivia)
 		{
 			Type = type;
 		}

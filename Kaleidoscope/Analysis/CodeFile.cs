@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Kaleidoscope.Analysis;
+using Kaleidoscope.Tokenizer;
 
-namespace Kaleidoscope.Structure
+namespace Kaleidoscope.Analysis
 {
 	public class CodeFile
 	{
-		public readonly TokenBlob Tokens;
+		public readonly TokenBlock Tokens;
 
-		public CodeFile(TokenBlob tokens)
+		public CodeFile(CodeHub codeHub, TokenBlock tokenBlock)
 		{
-			Tokens = tokens;
+			Tokens = tokenBlock;
+
+
 		}
 
 		public override string ToString()

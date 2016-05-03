@@ -8,7 +8,7 @@ namespace Kaleidoscope.Tokenizer
 		public bool IsContextualKeyword => ContextualKeyword.HasValue;
 
 		public TokenIdentifier(SourceTextFile sourceFile, int begin, int end)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.Identifier)
 		{
 			ContextualKeywordType type;
 			if (Enum.TryParse(Text, out type)) {

@@ -6,7 +6,7 @@
 		public readonly IntegerNumberType Type;
 
 		public TokenUnsignedInteger(SourceTextFile sourceFile, int begin, int end, ulong value, IntegerNumberType type)
-			: base(sourceFile, begin, end)
+			: base(sourceFile, begin, end, TokenType.NumberLiteral)
 		{
 			Value = value;
 			Type = type;
