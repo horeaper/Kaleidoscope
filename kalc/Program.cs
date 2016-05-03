@@ -182,7 +182,7 @@ Internal options:
 				return -1;
 			}
 
-
+			var output = new OutputByConsole();
 
 			return 0;
 		}

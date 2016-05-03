@@ -49,3 +49,12 @@ if (obj is MyClass cls) {
 }
 // 'cls' will be out-of-scope
 ```
+
+### `ref` literals
+```C#
+void SomeMethod(ref int index) { /*...*/ }
+void AnotherMethod(ref bool value) { /*...*/ }
+//...
+SomeMethod(ref 0);
+AnotherMethod(ref false);
+```

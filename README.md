@@ -11,7 +11,7 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
 * Compile to IL
 
 ## What Kaleidoscope is going to do?
-* Create a new syntax for C# code which looks like F# (They keep asking: "When are you going to remove the curly braces and make C# 100% F#?" How about now? ^_^)
+* Create a new syntax for C# code which looks like F# (They keep asking: "When are you going to remove the curly braces and make C# 100-percent F#?" How about now? ^_^)
 * Write F# codes (real F# codes!)
 * Android and iOS support
 * Works with Emscripten
@@ -23,7 +23,8 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
 ## What are the current status of Kaleidoscope?
 Still working on the basics =_=
 
-- [ ] Parser
+- [x] Tokenizer
+- [ ] Analyzer
 - [ ] Binder
 - [ ] Structure Generator
 - [ ] Statement Generator

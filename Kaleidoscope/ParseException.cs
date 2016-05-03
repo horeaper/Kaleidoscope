@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text;
 using Kaleidoscope.Primitive;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
 {
@@ -40,7 +42,7 @@ namespace Kaleidoscope
 			return new ParseException(sourceFile, line, startColumn, endColumn, errorMessage);
 		}
 
-		internal static ParseException AsToken(Tokenizer.Token token, string errorMessage)
+		internal static ParseException AsToken(Token token, string errorMessage)
 		{
 			return new ParseException(token.SourceFile, token.Line, token.Column, token.Column + token.Text.Length, errorMessage);
 		}

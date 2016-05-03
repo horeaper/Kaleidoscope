@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Net;
 using System.Text;
+using Kaleidoscope.Preprocessor;
 using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope.Tokenizer
 {
 	public static class Tokenizer
 	{
-		public static ImmutableArray<Token> Process(SourceTextFile source, IEnumerable<string> definedSymbols)
+		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols)
 		{
 			var builder = ImmutableArray.CreateBuilder<Token>();
 
@@ -21,8 +23,15 @@ namespace Kaleidoscope.Tokenizer
 					break;
 				}
 
-				builder.Add(token);
-				index = token.End;
+				var preprocessorToken = token as TokenPreprocessor;
+				if (preprocessorToken != null) {
+					index = token.End;
+					ProcessPreprocessor(output, source, currentSymbols, preprocessorToken, ref index);
+				}
+				else {
+					builder.Add(token);
+					index = token.End;
+				}
 			}
 
 			builder.Capacity = builder.Count;
@@ -562,6 +571,7 @@ namespace Kaleidoscope.Tokenizer
 						var triviaToken = token as TokenTrivia;
 						if (triviaToken != null) {
 							if (triviaToken.Type == TriviaType.NewLine) {
+								index = token.End;
 								break;
 							}
 						}
@@ -606,7 +616,12 @@ namespace Kaleidoscope.Tokenizer
 
 					KeywordType keyword;
 					if (Enum.TryParse(text, out keyword)) {
-						return new TokenKeyword(source, startIndex, index, keyword);
+						if (keyword == KeywordType.@true || keyword == KeywordType.@false) {
+							return new TokenBooleanLiteral(source, startIndex, index, keyword);
+						}
+						else {
+							return new TokenKeyword(source, startIndex, index, keyword);
+						}
 					}
 					else {
 						return new TokenIdentifier(source, startIndex, index);
@@ -621,6 +636,194 @@ namespace Kaleidoscope.Tokenizer
 
 			throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
 		}
+
+#region Preprocessor
+
+		static void ProcessPreprocessor(IInfoOutput output, SourceTextFile source, SortedSet<string> currentSymbols, TokenPreprocessor preprocessorToken, ref int index)
+		{
+			switch (preprocessorToken.Type) {
+				case PreprocessorType.@define:
+					{
+						if (preprocessorToken.ContentTokens.Length != 1) {
+							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+						}
+						var token = preprocessorToken.ContentTokens[0] as TokenIdentifier;
+						if (token == null) {
+							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+						}
+						currentSymbols.Add(token.Text);
+					}
+					break;
+				case PreprocessorType.@undef:
+					{
+						if (preprocessorToken.ContentTokens.Length != 1) {
+							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+						}
+						var token = preprocessorToken.ContentTokens[0] as TokenIdentifier;
+						if (token == null) {
+							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+						}
+						currentSymbols.Remove(token.Text);
+					}
+					break;
+				case PreprocessorType.@if:
+					{
+						int tokenIndex = 0;
+						var exp = ReadPreprocessorExpression(preprocessorToken, currentSymbols, ref tokenIndex);
+						if (!exp.Evaluate) {
+							//Find else/elif/endif
+							while (true) {
+								var token = GetTokenWorker(source, index);
+								if (token == null) {
+									return;
+								}
+								index = token.End;
+
+								preprocessorToken = token as TokenPreprocessor;
+								if (preprocessorToken != null) {
+									switch (preprocessorToken.Type) {
+										case PreprocessorType.@else:
+										case PreprocessorType.@endif:
+											return;
+										case PreprocessorType.@elif:
+											tokenIndex = 0;
+											exp = ReadPreprocessorExpression(preprocessorToken, currentSymbols, ref tokenIndex);
+											if (exp.Evaluate) {
+												return;
+											}
+											break;
+									}
+								}
+							}
+						}
+					}
+					break;
+				case PreprocessorType.@else:
+				case PreprocessorType.@elif:
+					{
+						//Find endif
+						while (true) {
+							var token = GetTokenWorker(source, index);
+							if (token == null) {
+								return;
+							}
+							index = token.End;
+							if ((token as TokenPreprocessor)?.Type == PreprocessorType.@endif) {
+								return;
+							}
+						}
+					}
+				case PreprocessorType.@error:
+					{
+						ParseException exp;
+						if (preprocessorToken.ContentTokens.Length > 0) {
+							var firstToken = preprocessorToken.ContentTokens[0];
+							var lastToken = preprocessorToken.ContentTokens[preprocessorToken.ContentTokens.Length - 1];
+							var errorText = preprocessorToken.SourceFile.Substring(firstToken.Begin, lastToken.End);
+							exp = ParseException.AsToken(preprocessorToken, "#error: " + errorText);
+						}
+						else {
+							exp = ParseException.AsToken(preprocessorToken, "#error");
+						}
+						throw exp;
+					}
+				case PreprocessorType.@warning: 
+					{
+						if (output != null) {
+							if (preprocessorToken.ContentTokens.Length > 0) {
+								var firstToken = preprocessorToken.ContentTokens[0];
+								var lastToken = preprocessorToken.ContentTokens[preprocessorToken.ContentTokens.Length - 1];
+								var errorText = preprocessorToken.SourceFile.Substring(firstToken.Begin, lastToken.End);
+								output.OutputWarning(ParseException.AsToken(preprocessorToken, "#error: " + errorText));
+							}
+							else {
+								output.OutputWarning(ParseException.AsToken(preprocessorToken, "#error"));
+							}
+						}
+					}
+					break;
+				case PreprocessorType.@endif:
+				case PreprocessorType.@region:
+				case PreprocessorType.@endregion:
+				case PreprocessorType.@line:
+				case PreprocessorType.@pragma:
+					//Ignore these
+					break;
+				default:
+					throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+			}
+		}
+
+		static IBooleanExpression ReadPreprocessorExpression(TokenPreprocessor source, SortedSet<string> currentSymbols, ref int tokenIndex)
+		{
+			var token = GetNextPreprocessorToken(source, ref tokenIndex);
+			if (token == null) {
+				throw ParseException.AsToken(source, Error.Tokenizer.InvalidPreprocessor);
+			}
+
+			//Expression
+			IBooleanExpression expLeft;
+			var symbolToken = token as TokenSymbol;
+			if (symbolToken != null && symbolToken.Type == SymbolType.LeftParenthesis)
+			{
+				expLeft = ReadPreprocessorExpression(source, currentSymbols, ref tokenIndex);
+				token = GetNextPreprocessorToken(source, ref tokenIndex);
+				if (token == null || (token as TokenSymbol)?.Type != SymbolType.RightParenthesis) {
+					throw ParseException.AsToken(source, Error.Tokenizer.InvalidPreprocessor);
+				}
+				return expLeft;
+			}
+			else if (symbolToken != null && symbolToken.Type == SymbolType.LogicalNot) {
+				expLeft = ReadPreprocessorExpression(source, currentSymbols, ref tokenIndex);
+				return new NegateStatement(expLeft);
+			}
+			else if (token is TokenBooleanLiteral) {
+				expLeft = new BoolKeywordStatement((TokenBooleanLiteral)token);
+			}
+			else if (token is TokenIdentifier) {
+				expLeft = new SymbolStatement((TokenIdentifier)token, currentSymbols);
+			}
+			else {
+				throw ParseException.AsToken(source, Error.Tokenizer.InvalidPreprocessor);
+			}
+
+			//Operator
+			token = GetNextPreprocessorToken(source, ref tokenIndex);
+			symbolToken = token as TokenSymbol;
+			if (token == null) {
+				return expLeft;
+			}
+			else if (symbolToken == null) {
+				throw ParseException.AsToken(source, Error.Tokenizer.InvalidPreprocessor);
+			}
+			else {
+				switch (symbolToken.Type) {
+					case SymbolType.RightParenthesis:
+						return expLeft;
+					case SymbolType.LogicalAnd:
+					case SymbolType.LogicalOr:
+						{
+							var expRight = ReadPreprocessorExpression(source, currentSymbols, ref tokenIndex);
+							return new ConditionalExpression(expLeft, symbolToken.Type == SymbolType.LogicalAnd, expRight);
+						}
+					case SymbolType.Equal:
+					case SymbolType.NotEqual:
+						{
+							var expRight = ReadPreprocessorExpression(source, currentSymbols, ref tokenIndex);
+							return new EqualityExpression(expLeft, symbolToken.Type == SymbolType.Equal, expRight);
+						}
+					default:
+						throw ParseException.AsToken(source, Error.Tokenizer.InvalidPreprocessor);
+				}
+			}
+		}
+
+		static Token GetNextPreprocessorToken(TokenPreprocessor token, ref int index)
+		{
+			return index < token.ContentTokens.Length ? token.ContentTokens[index++] : null;
+		}
+
+#endregion
 
 #region Utility - Number
 
@@ -660,7 +863,14 @@ namespace Kaleidoscope.Tokenizer
 
 				//Skip digit separator
 				if (source[index] == '\'' || source[index] == '_') {
-					++index;
+					if (source[index] == '_') {
+						while (source[index] == '_') {
+							++index;
+						}
+					}
+					else {
+						++index;
+					}
 					if (!fnNumberTest(source[index])) {
 						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
 					}
@@ -739,7 +949,7 @@ namespace Kaleidoscope.Tokenizer
 			return IntegerTrailingType.None;
 		}
 
-		#endregion
+#endregion
 
 #region Utility - Character
 
