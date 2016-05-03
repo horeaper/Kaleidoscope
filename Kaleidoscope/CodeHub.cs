@@ -2,10 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
-using Kaleidoscope.Analysis;
+using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.SyntaxObject.Primitive;
 
 namespace Kaleidoscope
 {
@@ -27,7 +27,11 @@ namespace Kaleidoscope
 			Parallel.ForEach(Configuration.InputFiles, file => {
 				try {
 					var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols);
-					codeFiles.Add(new CodeFile(this, new TokenBlock(tokens)));
+					var tokenBlock = new TokenBlock(tokens);
+
+					if (string.Compare(Path.GetExtension(file.FileName), ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
+						codeFiles.Add(new CodeFile(this, tokenBlock, LanguageType.CS));
+					}
 				}
 				catch (ParseException e) {
 					errorList.Add(e);
@@ -35,6 +39,8 @@ namespace Kaleidoscope
 			});
 			CheckErrorList(errorList);
 			CodeFiles = ImmutableArray.CreateRange(codeFiles);
+
+			//Merging
 
 			//Binding
 		}

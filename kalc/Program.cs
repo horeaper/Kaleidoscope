@@ -182,9 +182,8 @@ Internal options:
 				return -1;
 			}
 
-			var output = new OutputByConsole();
 			try {
-				var codeHub = new CodeHub(config, output);
+				var codeHub = new CodeHub(config, new OutputByConsole());
 			}
 			catch (KaleidoscopeSystemException) {
 				return -1;

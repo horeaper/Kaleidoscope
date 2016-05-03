@@ -5,3 +5,4 @@
 * Don't support '\U########' (UTF-32) character literal in `char` and `string`
 * '\u####' character literal are still supported, but can only be used in `char` and `string` constants (not available in variable and function names, etc.)
 * Failed to assign an `out` parameter will only issue a warning
+* `dynamic` is now a keyword

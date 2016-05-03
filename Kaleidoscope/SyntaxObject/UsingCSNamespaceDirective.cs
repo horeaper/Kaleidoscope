@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kaleidoscope.Analysis;
+﻿using System.Collections.Immutable;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.SyntaxObject
@@ -11,16 +6,16 @@ namespace Kaleidoscope.SyntaxObject
 	/// <summary>
 	/// using System.Collections.Generic;
 	/// </summary>
-	class UsingCSNamespaceDirective
+	public sealed class UsingCSNamespaceDirective
 	{
-		public readonly CodeFile SourceFile;
-		public readonly Token[] Namespace;
+		public readonly CodeFile Source;
+		public readonly ImmutableArray<Token> Namespace;
 		public readonly string DisplayName;
 
-		UsingCSNamespaceDirective(CodeFile sourceFile, Token[] nsTokens, string displayName)
+		internal UsingCSNamespaceDirective(CodeFile source, Token[] nsTokens, string displayName)
 		{
-			SourceFile = sourceFile;
-			Namespace = nsTokens;
+			Source = source;
+			Namespace = ImmutableArray.Create(nsTokens);
 			DisplayName = displayName;
 		}
 

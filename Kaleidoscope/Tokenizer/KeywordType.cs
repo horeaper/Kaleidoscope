@@ -20,7 +20,7 @@
 		@delegate,
 		@do,
 		@double,
-		@dynamic,	//Kaleidoscope treat dynamic as keyword
+		@dynamic,
 		@else,
 		@enum,
 		@event,

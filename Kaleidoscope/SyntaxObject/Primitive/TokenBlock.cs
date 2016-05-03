@@ -1,26 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using Kaleidoscope.Tokenizer;
 
-namespace Kaleidoscope.Analysis
+namespace Kaleidoscope.SyntaxObject.Primitive
 {
 	/// <summary>
 	/// A collection of consecutive tokens
 	/// </summary>
 	public class TokenBlock
 	{
-		public readonly ImmutableArray<Token> Content;
+		public readonly ImmutableArray<Token> Items;
 
-		public Token First => Content[0];
-		public Token Last => Content[Content.Length - 1];
-		public int Count => Content.Length;
+		public Token First => Items[0];
+		public Token Last => Items[Items.Length - 1];
+		public int Count => Items.Length;
 		public SourceTextFile SourceFile => First.SourceFile;
 		public string Text => SourceFile.Substring(First.Begin, Last.End);
 
+		public Token this[int index] => Items[index];
+
 		public override string ToString()
 		{
-			return "[TokenBlob] Count=" + Count;
+			return "[TokenBlock] Count=" + Count;
 		}
 
 #region Create/Recreate
@@ -33,24 +34,22 @@ namespace Kaleidoscope.Analysis
 			if (tokens.Length == 0) {
 				throw new ArgumentOutOfRangeException(nameof(tokens));
 			}
-			Content = tokens;
+			Items = tokens;
 		}
 
-		public TokenBlock(IEnumerable<Token> tokens)
+		public TokenBlock(Token[] tokens)
 		{
-			Content = ImmutableArray.CreateRange(tokens);
+			Items = ImmutableArray.Create(tokens);
 		}
 
 		public TokenBlock(Token token)
 		{
-			Content = ImmutableArray.Create(token);
+			Items = ImmutableArray.Create(token);
 		}
 
 		public TokenBlock AsStartLength(int startIndex, int length)
 		{
-			var tokens = new Token[length];
-			Content.CopyTo(startIndex, tokens, 0, length);
-			return new TokenBlock(tokens);
+			return new TokenBlock(ImmutableArray.Create(Items, 0, length));
 		}
 
 		public TokenBlock AsBeginEnd(int begin, int end)
@@ -72,8 +71,8 @@ namespace Kaleidoscope.Analysis
 		/// </summary>
 		public Token GetToken(int index, string errorMessage = null)
 		{
-			if (index < Content.Length) {
-				return Content[index];
+			if (index < Items.Length) {
+				return Items[index];
 			}
 
 			if (errorMessage != null) {
@@ -87,8 +86,8 @@ namespace Kaleidoscope.Analysis
 		/// </summary>
 		public int FindToken(int index, SymbolType symbol, string errorMessage = null)
 		{
-			while (index < Content.Length) {
-				var token = Content[index] as TokenSymbol;
+			while (index < Items.Length) {
+				var token = Items[index] as TokenSymbol;
 				if (token?.Type == symbol) {
 					return index;
 				}
@@ -156,7 +155,7 @@ namespace Kaleidoscope.Analysis
 		}
 
 		/// <summary>
-		/// Find the end of next {...} block
+		/// Find the end of next [...] block
 		/// </summary>
 		public int FindNextBracketBlockEnd(int index, SymbolType left, SymbolType right)
 		{
@@ -180,6 +179,10 @@ namespace Kaleidoscope.Analysis
 				++index;
 			}
 		}
+
+#endregion
+
+#region Block read
 
 #endregion
 	}

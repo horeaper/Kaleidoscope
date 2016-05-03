@@ -5,9 +5,10 @@ namespace Kaleidoscope.Tokenizer
 	public class TokenKeyword : Token
 	{
 		public readonly KeywordType Type;
+		const int KeywordTypeFirst = (int)TokenType.@abstract;
 
 		public TokenKeyword(SourceTextFile sourceFile, int begin, int end, KeywordType type)
-			: base(sourceFile, begin, end, TokenType.Keyword)
+			: base(sourceFile, begin, end, (TokenType)(KeywordTypeFirst + type))
 		{
 			Type = type;
 		}
