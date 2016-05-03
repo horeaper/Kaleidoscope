@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
-using System.Text.RegularExpressions;
 using Kaleidoscope.Primitive;
 
 namespace Kaleidoscope.Tokenizer
@@ -24,7 +22,7 @@ namespace Kaleidoscope.Tokenizer
 				}
 
 				builder.Add(token);
-				index += token.Length;
+				index = token.End;
 			}
 
 			builder.Capacity = builder.Count;
@@ -169,7 +167,7 @@ namespace Kaleidoscope.Tokenizer
 						isMinusFirst = true;
 						++index;
 						if (!IsNumber(source[index])) {
-							throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+							return new TokenSymbol(source, startIndex, startIndex + 1, SymbolType.Minus);
 						}
 					}
 					bool isDotFirst = false;
@@ -177,7 +175,7 @@ namespace Kaleidoscope.Tokenizer
 						isDotFirst = true;
 						++index;
 						if (!IsNumber(source[index])) {
-							throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+							return new TokenSymbol(source, startIndex, startIndex + 1, SymbolType.Dot);
 						}
 					}
 					var leadingText = "";
@@ -520,7 +518,7 @@ namespace Kaleidoscope.Tokenizer
 							++index;
 						}
 
-						return new TokenComment(source, startIndex, index + 2, false);
+						return new TokenComment(source, startIndex, index, false);
 					}
 					else if (source[index + 1] == '*') {
 						int startIndex = index;
@@ -529,7 +527,7 @@ namespace Kaleidoscope.Tokenizer
 							throw ParseException.AsEOF(source, Error.Tokenizer.MultiLineCommentNotClosed);
 						}
 
-						return new TokenComment(source, startIndex, index + 2, true);
+						return new TokenComment(source, startIndex, endIndex + 2, true);
 					}
 				}
 
@@ -541,6 +539,9 @@ namespace Kaleidoscope.Tokenizer
 					int startIndex = index;
 					++index;
 
+					while (source[index] == ' ' || source[index] == '\t') {
+						++index;
+					}
 					int identifierStart = index;
 					while (source[index] >= 'a' && source[index] <= 'z') {
 						++index;
@@ -578,12 +579,16 @@ namespace Kaleidoscope.Tokenizer
 
 				#region Symbol
 
+				SymbolType symbol;
 				var symbolContent = new StringBuilder();
 				symbolContent.Append(source[index]);
 				if (index + 1 < source.Length) {
 					symbolContent.Append(source[index + 1]);
+					if (ConstantsData.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
+						return new TokenSymbol(source, index, index + symbolContent.Length, symbol);
+					}
+					symbolContent.Remove(symbolContent.Length - 1, 1);
 				}
-				SymbolType symbol;
 				if (ConstantsData.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
 					return new TokenSymbol(source, index, index + symbolContent.Length, symbol);
 				}

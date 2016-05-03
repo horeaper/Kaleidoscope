@@ -164,7 +164,7 @@ Internal options:
 			result.DefinedSymbols = definedSymbols.ToImmutableSortedSet();
 			result.IncludeSearchPaths = includeSearchPaths.ToImmutableArray();
 			result.AdditionalIncludeFiles = openedIncludeFiles.Select(item => new IncludeHeaderFile(item.FilePath, item.FileContent)).ToImmutableArray();
-			result.InputFiles = openedInputFiles.Select(item => new SourceTextFile(item.FilePath, item.FileContent)).ToImmutableArray();
+			result.InputFiles = openedInputFiles.Select(item => new SourceTextFile(Path.GetFullPath(item.FilePath), item.FileContent)).ToImmutableArray();
 			return result;
 		}
 
@@ -175,12 +175,14 @@ Internal options:
 				return -1;
 			}
 
-			var config = args.Length == 1 && args[0][0] == '@' ?
-				ReadArgumentsFromRspFile(args[0]) :
-				ProcessCommandArguments(args);
+			var config = args.Length == 1 && args[0][0] == '@'
+				? ReadArgumentsFromRspFile(args[0])
+				: ProcessCommandArguments(args);
 			if (config == null) {
 				return -1;
 			}
+
+
 
 			return 0;
 		}

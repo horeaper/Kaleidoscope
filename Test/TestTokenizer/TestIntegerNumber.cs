@@ -12,10 +12,7 @@ namespace TestTokenizer
 		public void TestIntegerDefault1()
 		{
 			const string Content = "1234567";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 1234567);
 		}
@@ -24,10 +21,7 @@ namespace TestTokenizer
 		public void TestIntegerDefault2()
 		{
 			const string Content = "-1234567";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == -1234567);
 		}
@@ -36,10 +30,7 @@ namespace TestTokenizer
 		public void TestIntegerDefault3()
 		{
 			const string Content = "4294967295";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 4294967295);
 		}
@@ -48,10 +39,7 @@ namespace TestTokenizer
 		public void TestIntegerDefault4()
 		{
 			const string Content = "-4294967295";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == -4294967295);
 		}
@@ -60,10 +48,7 @@ namespace TestTokenizer
 		public void TestIntegerDefault5()
 		{
 			const string Content = "1099511627775";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 1099511627775);
 		}
@@ -72,10 +57,7 @@ namespace TestTokenizer
 		public void TestIntegerUL()
 		{
 			const string Content = "1'0000'0000UL";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 100000000UL);
 		}
@@ -84,10 +66,7 @@ namespace TestTokenizer
 		public void TestIntegerU()
 		{
 			const string Content = "854U";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 854U);
 		}
@@ -96,10 +75,7 @@ namespace TestTokenizer
 		public void TestIntegerL1()
 		{
 			const string Content = "-1_0000_0000L";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == -100000000L);
 		}
@@ -108,10 +84,7 @@ namespace TestTokenizer
 		public void TestIntegerL2()
 		{
 			const string Content = "1L";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 1L);
 		}
@@ -120,10 +93,7 @@ namespace TestTokenizer
 		public void TestIntegerM1()
 		{
 			const string Content = "-1_0000_0000M";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenDecimalNumber;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenDecimalNumber>(Content);
 			Assert.IsTrue(token.Value == -100000000M);
 		}
 
@@ -131,10 +101,7 @@ namespace TestTokenizer
 		public void TestIntegerM2()
 		{
 			const string Content = "123456789m";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenDecimalNumber;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenDecimalNumber>(Content);
 			Assert.IsTrue(token.Value == 123456789m);
 		}
 	}

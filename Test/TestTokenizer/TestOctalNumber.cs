@@ -11,10 +11,7 @@ namespace TestTokenizer
 		public void TestOctalDefault1()
 		{
 			const string Content = "0o777'777'777";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 134217727);
 		}
@@ -23,10 +20,7 @@ namespace TestTokenizer
 		public void TestOctalDefault2()
 		{
 			const string Content = "0o777777777777";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 68719476735);
 		}
@@ -35,10 +29,7 @@ namespace TestTokenizer
 		public void TestOctalLU()
 		{
 			const string Content = "0o777_777'777'777LU";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 68719476735);
 		}
@@ -47,10 +38,7 @@ namespace TestTokenizer
 		public void TestOctalU()
 		{
 			const string Content = "0o7777777777U";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 1073741823);
 		}
@@ -59,10 +47,7 @@ namespace TestTokenizer
 		public void TestOctalL()
 		{
 			const string Content = "0o7777777777L";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 1073741823);
 		}

@@ -11,6 +11,7 @@ namespace Kaleidoscope.Tokenizer
 		@if,
 		@else,
 		@elif,
+		@endif,
 		@define,
 		@undef,
 		@warning,
@@ -18,5 +19,6 @@ namespace Kaleidoscope.Tokenizer
 		@line,
 		@region,
 		@endregion,
+		@pragma,
 	}
 }

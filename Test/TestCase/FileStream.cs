@@ -1,3 +1,5 @@
+/* Can't set append mode */
+
 //
 // System.IO.FileStream.cs
 //

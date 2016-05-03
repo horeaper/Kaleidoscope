@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.IO;
 
 namespace Kaleidoscope.Primitive
 {
@@ -9,6 +10,7 @@ namespace Kaleidoscope.Primitive
 		ImmutableArray<int> m_lineStartIndex; 
 
 		public readonly string FilePath;
+		public readonly string FileName;
 		public readonly string FileContent;
 
 		public char this[int index] => FileContent[index];
@@ -17,11 +19,12 @@ namespace Kaleidoscope.Primitive
 		public SourceTextFile(string filePath, string fileContent)
 		{
 			FilePath = filePath;
+			FileName = Path.GetFileName(filePath);
 			FileContent = fileContent;
 
 			//Calculate line number for each character, and each line's start index
 			var lineNumbers = ImmutableArray.CreateBuilder<ushort>(FileContent.Length + 1);
-			var lineStartIndex = ImmutableArray.CreateBuilder<int>();
+			var lineStartIndex = ImmutableArray.CreateBuilder<int>(64);
 			lineStartIndex.Add(0);
 			ushort currentLine = 1;
 			for (int cnt = 0; cnt < FileContent.Length; ++cnt) {
@@ -52,7 +55,7 @@ namespace Kaleidoscope.Primitive
 		public void GetLineColumn(int index, out int line, out int column)
 		{
 			line = m_lineNumbers[index];
-			column = index - m_lineStartIndex[line];
+			column = index - m_lineStartIndex[line - 1];
 		}
 
 		public string Substring(int startIndex, int endIndex)

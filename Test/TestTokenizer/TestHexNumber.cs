@@ -11,10 +11,7 @@ namespace TestTokenizer
 		public void TestHexDefault1()
 		{
 			const string Content = "0xFF_FF_FF_FF";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 0xFFFFFFFF);
 		}
@@ -23,10 +20,7 @@ namespace TestTokenizer
 		public void TestHexDefault2()
 		{
 			const string Content = "0x0F'FF_FF'FF";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 0x0FFFFFFF);
 		}
@@ -35,10 +29,7 @@ namespace TestTokenizer
 		public void TestHexUL1()
 		{
 			const string Content = "0xFFFFFFFFUL";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 0xFFFFFFFFUL);
 		}
@@ -47,10 +38,7 @@ namespace TestTokenizer
 		public void TestHexUL2()
 		{
 			const string Content = "0xFFFF'FFFF'FFFF'FFFFL";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 0xFFFFFFFFFFFFFFFF);
 		}
@@ -59,10 +47,7 @@ namespace TestTokenizer
 		public void TestHexL1()
 		{
 			const string Content = "0xFFFF_FFFFL";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 0xFFFFFFFFL);
 		}
@@ -71,10 +56,7 @@ namespace TestTokenizer
 		public void TestHexL2()
 		{
 			const string Content = "0xFFF'FFFF'FFFF'FFFF";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenSignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenSignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 0xFFFFFFFFFFFFFFF);
 		}
@@ -83,10 +65,7 @@ namespace TestTokenizer
 		public void TestHexU1()
 		{
 			const string Content = "0xFFF_FFFU";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Int);
 			Assert.IsTrue(token.Value == 0xFFFFFF);
 		}
@@ -95,10 +74,7 @@ namespace TestTokenizer
 		public void TestHexU2()
 		{
 			const string Content = "0xFFF'FFFF'FFFF'FFFFU";
-			var tokens = Tokenizer.Process(new SourceTextFile("", Content), null);
-			Assert.IsTrue(tokens.Length == 1);
-			var token = tokens[0] as TokenUnsignedInteger;
-			Assert.IsNotNull(token);
+			var token = Util.Process<TokenUnsignedInteger>(Content);
 			Assert.IsTrue(token.Type == IntegerNumberType.Long);
 			Assert.IsTrue(token.Value == 0xFFFFFFFFFFFFFFF);
 		}

@@ -20,7 +20,7 @@ namespace Kaleidoscope.Tokenizer
 			Begin = begin;
 			End = end;
 
-			Text = SourceFile.FileContent.Substring(Begin, End);
+			Text = SourceFile.Substring(Begin, End);
 			SourceFile.GetLineColumn(begin, out Line, out Column);
 		}
 
