@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Kaleidoscope.Tokenizer
+﻿namespace Kaleidoscope.Tokenizer
 {
 	public enum SymbolType
 	{
@@ -31,35 +25,35 @@ namespace Kaleidoscope.Tokenizer
 		LeftBracket,		// [
 		RightBracket,		// ]
 
-		OperatorAssign,		// =
-		OperatorAdd,		// +
-		OperatorMin,		// -
-		OperatorDiv,		// /
-		OperatorMod,		// %
-		OperatorSelfAdd,	// ++
-		OperatorSelfMin,	// --
-		OperatorAddAssign,	// +=
-		OperatorMinAssign,	// -=
-		OperatorMulAssign,	// *=
-		OperatorDivAssign,	// /=
-		OperatorModAssign,	// %=
+		Assign,		// =
+		Add,		// +
+		Minus,		// -
+		Divide,		// /
+		Mod,		// %
+		Increment,	// ++
+		Decrement,	// --
+		AddAssign,	// +=
+		MinAssign,	// -=
+		MulAssign,	// *=
+		DivAssign,	// /=
+		ModAssign,	// %=
 
-		OperatorGreatEqual,	// >=
-		OperatorLessEqual,	// <=
-		OperatorEqual,		// ==
-		OperatorNotEqual,	// !=
+		GreatEqual,	// >=
+		LessEqual,	// <=
+		Equal,		// ==
+		NotEqual,	// !=
 
-		OperatorLogicAnd,	// &&
-		OperatorLogicOr,	// ||
-		OperatorLogicNot,	// !
+		LogicalAnd,	// &&
+		LogicalOr,	// ||
+		LogicalNot,	// !
 
-		OperatorBitwiseOr,	// |
-		OperatorBitwiseXor,	// ^
-		OperatorBitwiseNot,	// ~
-		OperatorShiftLeft,	// <<
-		OperatorShiftRight,	// >>
+		BitwiseOr,  // |
+		BitwiseNot, // ~
+		BitwiseXor,	// ^
+		ShiftLeft,	// <<
+		ShiftRight,	// >>
 
-		OperatorPipeLeft,	// <|
-		OperatorPipeRight,	// |>
+		PipeLeft,	// <|
+		PipeRight,	// |>
 	}
 }

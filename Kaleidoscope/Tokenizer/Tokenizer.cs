@@ -509,6 +509,106 @@ namespace Kaleidoscope.Tokenizer
 				}
 
 				#endregion
+
+				#region Comment
+
+				if (source[index] == '/' && index + 1 < source.Length) {
+					if (source[index + 1] == '/') {
+						int startIndex = index;
+						index += 2;
+						while (index < source.Length && source[index] != '\r' && source[index] != '\n') {
+							++index;
+						}
+
+						return new TokenComment(source, startIndex, index + 2, false);
+					}
+					else if (source[index + 1] == '*') {
+						int startIndex = index;
+						int endIndex = source.FileContent.IndexOf("*/", index + 2, StringComparison.CurrentCulture);
+						if (endIndex == -1) {
+							throw ParseException.AsEOF(source, Error.Tokenizer.MultiLineCommentNotClosed);
+						}
+
+						return new TokenComment(source, startIndex, index + 2, true);
+					}
+				}
+
+				#endregion
+
+				#region Preprocessor
+
+				if (source[index] == '#') {
+					int startIndex = index;
+					++index;
+
+					int identifierStart = index;
+					while (source[index] >= 'a' && source[index] <= 'z') {
+						++index;
+						if (index >= source.Length) {
+							break;
+						}
+					}
+					string preprocessorTypeText = source.Substring(identifierStart, index);
+
+					PreprocessorType type;
+					if (!Enum.TryParse(preprocessorTypeText, false, out type)) {
+						throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidPreprocessor);
+					}
+
+					var contentTokens = new List<Token>();
+					var token = GetTokenWorker(source, index);
+					while (token != null) {
+						var triviaToken = token as TokenTrivia;
+						if (triviaToken != null) {
+							if (triviaToken.Type == TriviaType.NewLine) {
+								break;
+							}
+						}
+						else {
+							contentTokens.Add(token);
+						}
+
+						index = token.End;
+						token = GetTokenWorker(source, index);
+					}
+					return new TokenPreprocessor(source, startIndex, index, type, contentTokens.ToArray());
+				}
+
+				#endregion
+
+				#region Symbol
+
+				var symbolContent = new StringBuilder();
+				symbolContent.Append(source[index]);
+				if (index + 1 < source.Length) {
+					symbolContent.Append(source[index + 1]);
+				}
+				SymbolType symbol;
+				if (ConstantsData.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
+					return new TokenSymbol(source, index, index + symbolContent.Length, symbol);
+				}
+
+				#endregion
+
+				#region Identifier
+
+				if (IsValidIdentifierCharacter(source[index])) {
+					int startIndex = index;
+					while (index < source.Length && IsValidIdentifierCharacter(source[index])) {
+						++index;
+					}
+					string text = source.Substring(startIndex, index);
+
+					KeywordType keyword;
+					if (Enum.TryParse(text, out keyword)) {
+						return new TokenKeyword(source, startIndex, index, keyword);
+					}
+					else {
+						return new TokenIdentifier(source, startIndex, index);
+					}
+				}
+
+				#endregion
 			}
 			catch (IndexOutOfRangeException) {
 				throw ParseException.AsEOF(source, Error.Tokenizer.UnexpectedEOF);
@@ -517,7 +617,7 @@ namespace Kaleidoscope.Tokenizer
 			throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
 		}
 
-#region Utils - Number
+#region Utility - Number
 
 		delegate bool NumberTestDelegate(char value);
 
@@ -634,9 +734,9 @@ namespace Kaleidoscope.Tokenizer
 			return IntegerTrailingType.None;
 		}
 
-#endregion
+		#endregion
 
-#region Utils - Character
+#region Utility - Character
 
 		static char ReadCharacterLiterialEscapeSequence(SourceTextFile source, int firstIndex, ref int index)
 		{
@@ -651,8 +751,8 @@ namespace Kaleidoscope.Tokenizer
 							}
 							++index;
 						}
-
 						string hexDigitText = source.Substring(numberStart, index);
+
 						int number;
 						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
 							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
@@ -667,8 +767,8 @@ namespace Kaleidoscope.Tokenizer
 						while (IsHexNumber(source[index]) && numberCount < 4) {
 							++index;
 						}
-
 						string hexDigitText = source.Substring(numberStart, index);
+
 						int number;
 						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
 							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
@@ -711,6 +811,18 @@ namespace Kaleidoscope.Tokenizer
 				default:
 					throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence);
 			}
+		}
+
+#endregion
+
+#region Utility - Identifier
+
+		static bool IsValidIdentifierCharacter(char value)
+		{
+			return (value >= 'A' && value <= 'Z') ||
+				   (value >= 'a' && value <= 'z') ||
+				   (value >= '0' && value <= '9') ||
+				   (value >= '_');
 		}
 
 #endregion

@@ -35,5 +35,8 @@ namespace Kaleidoscope.Tokenizer
 		inline,
 		template,
 		union,
+
+		match,
+		with,
 	}
 }

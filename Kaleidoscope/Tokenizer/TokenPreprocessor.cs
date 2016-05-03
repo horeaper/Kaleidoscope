@@ -10,13 +10,13 @@ namespace Kaleidoscope.Tokenizer
 	public class TokenPreprocessor : Token
 	{
 		public readonly PreprocessorType Type;
-		public readonly string Content;
+		public readonly Token[] ContentTokens;
 
-		public TokenPreprocessor(SourceTextFile sourceFile, int begin, int end, PreprocessorType type, string content)
+		public TokenPreprocessor(SourceTextFile sourceFile, int begin, int end, PreprocessorType type, Token[] contentTokens)
 			: base(sourceFile, begin, end)
 		{
 			Type = type;
-			Content = content;
+			ContentTokens = contentTokens;
 		}
 
 		public static bool IsPreprocessor(string text)

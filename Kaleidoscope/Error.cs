@@ -21,6 +21,8 @@ namespace Kaleidoscope
 			public const string EmptyCharLiteral = "empty character literal";
 			public const string BadCharConstant = "bad char constant";
 			public const string NewLineNotAllowedOnString = "new line is not allowed when declaring non-verbatim string constants";
+			public const string MultiLineCommentNotClosed = "'*/' expected";
+			public const string InvalidPreprocessor = "Invalid preprocessor directive";
 		}
 	}
 }

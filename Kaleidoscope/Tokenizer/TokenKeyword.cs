@@ -7,12 +7,10 @@ namespace Kaleidoscope.Tokenizer
 	{
 		public readonly KeywordType Type;
 
-		public TokenKeyword(SourceTextFile sourceFile, int begin, int end)
+		public TokenKeyword(SourceTextFile sourceFile, int begin, int end, KeywordType type)
 			: base(sourceFile, begin, end)
 		{
-			if (!Enum.TryParse(Text, out Type)) {
-				throw new InvalidOperationException("Token is not a keyword type");
-			}
+			Type = type;
 		}
 
 		public static bool IsKeyword(string text)
