@@ -9,14 +9,14 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingCppNamespaceDirective
 	{
-		public readonly AnalyzedFile Source;
+		public readonly ImmutableArray<Token> OwnerNamespace;
 		public readonly ImmutableArray<Token> Namespace;
 		readonly string m_displayName;
 
-		internal UsingCppNamespaceDirective(AnalyzedFile source, Token[] nsTokens)
+		internal UsingCppNamespaceDirective(Token[] ownerNamespace, Token[] @namespace)
 		{
-			Source = source;
-			Namespace = ImmutableArray.Create(nsTokens);
+			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
+			Namespace = ImmutableArray.Create(@namespace);
 
 			var builder = new StringBuilder();
 			for (int cnt = 0; cnt < Namespace.Length; ++cnt) {

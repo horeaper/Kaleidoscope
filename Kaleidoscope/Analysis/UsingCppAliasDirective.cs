@@ -1,4 +1,5 @@
-﻿using Kaleidoscope.SyntaxObject;
+﻿using System.Collections.Immutable;
+using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
@@ -9,20 +10,20 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingCppAliasDirective
 	{
-		public readonly AnalyzedFile Source;
+		public readonly ImmutableArray<Token> OwnerNamespace;
 		public readonly Token Name;
-		public readonly TokenBlock TypeContent;
+		public readonly ReferenceToCppType Type;
 
-		public UsingCppAliasDirective(AnalyzedFile source, Token name, TokenBlock typeContent)
+		public UsingCppAliasDirective(Token[] ownerNamespace, Token name, ReferenceToCppType type)
 		{
-			Source = source;
+			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			Name = name;
-			TypeContent = typeContent;
+			Type = type;
 		}
 
 		public override string ToString()
 		{
-			return $"[UsingCppAliasDirective] using cpp::{Name.Text} = cpp::{TypeContent.Text};";
+			return $"[UsingCppAliasDirective] using cpp::{Name.Text} = cpp::{Type.Content.Text};";
 		}
 	}
 }

@@ -37,6 +37,7 @@
 			public const string VoidNotAllowed = "'void' is not allowed here";
 			public const string VarNotAllowed = "'var' is not allowed here";
 			public const string CppTypeNotAllowed = "C++ type is not allowed here";
+			public const string MissingCppKeyword = "missing 'cpp::' keyword";
 		}
 	}
 }

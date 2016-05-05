@@ -16,10 +16,5 @@ namespace Kaleidoscope.Tokenizer
 			}
 			IsFromKeyword = isFromKeyword;
 		}
-
-		public bool IsContextualKeyword(ContextualKeywordType keyword)
-		{
-			return ContextualKeyword.HasValue && ContextualKeyword.Value == keyword;
-		}
 	}
 }

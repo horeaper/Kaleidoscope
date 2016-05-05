@@ -17,14 +17,14 @@ namespace Kaleidoscope.Analysis.CS
 				++index;
 				return new ReferenceVoid(token);
 			}
-			else if (identifierToken?.IsContextualKeyword(ContextualKeywordType.var) == true) {
+			else if (identifierToken?.ContextualKeyword == ContextualKeywordType.var) {
 				if (!parsingRule.HasFlag(TypeParsingRule.AllowVar)) {
 					throw ParseException.AsToken(token, Error.Analysis.VarNotAllowed);
 				}
 				++index;
 				return new ReferenceVar(identifierToken);
 			}
-			else if (identifierToken?.IsContextualKeyword(ContextualKeywordType.cpp) == true) {
+			else if (identifierToken?.ContextualKeyword == ContextualKeywordType.cpp) {
 				var colonToken = block.GetToken(index + 1);
 				if (colonToken?.Type == TokenType.DoubleColon) {    //If `cpp` doesn't followed by a `::`, then thread it as normal identifier
 					if (!parsingRule.HasFlag(TypeParsingRule.AllowCppType)) {

@@ -16,6 +16,7 @@ namespace Kaleidoscope.Analysis
 			: base(builder.Content)
 		{
 			IsGlobalNamespace = builder.IsGlobalNamespace;
+			PointerRank = builder.PointerRank;
 			ArrayItemNumber = ImmutableArray.Create(builder.ArrayItemNumber.ToArray());
 		}
 

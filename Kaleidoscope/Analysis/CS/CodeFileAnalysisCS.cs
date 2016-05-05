@@ -17,7 +17,8 @@ namespace Kaleidoscope.Analysis.CS
 			this.block = block;
 
 			int index = 0;
-			var usings = new UsingBlob.Builder();
+			var currentUsings = new UsingBlob.Builder();
+			var currentNamespace = new List<Token>();
 			while (true) {
 				var token = block.GetToken(index);
 				if (token == null) {
@@ -30,8 +31,8 @@ namespace Kaleidoscope.Analysis.CS
 
 					if (token.Type == TokenType.@static) {
 						++index;
-						var content = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
-						
+						var typeContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
+						currentUsings.UsingStaticDirectives.Add(new UsingStaticDirective(currentNamespace.ToArray(), typeContent));
 						continue;
 					}
 
@@ -47,7 +48,18 @@ namespace Kaleidoscope.Analysis.CS
 					var content = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
 					if (content.FindToken(0, TokenType.Assign) == -1) {
 						if (!isCppType) {
-
+							currentUsings.UsingCSNamespaceDirectives.Add(UsingReader.ReadCSNamespace(currentNamespace.ToArray(), content));
+						}
+						else {
+							currentUsings.UsingCppNamespaceDirectives.Add(UsingReader.ReadCppNamespace(currentNamespace.ToArray(), content));
+						}
+					}
+					else {
+						if (!isCppType) {
+							currentUsings.UsingCSAliasDirectives.Add(UsingReader.ReadCSAlias(currentNamespace.ToArray(), content));
+						}
+						else {
+							currentUsings.UsingCppAliasDirectives.Add(UsingReader.ReadCppAlias(currentNamespace.ToArray(), content));
 						}
 					}
 				}

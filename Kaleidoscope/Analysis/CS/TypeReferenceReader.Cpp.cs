@@ -16,7 +16,7 @@ namespace Kaleidoscope.Analysis.CS
 			var token = block.GetToken(index);
 
 			//global::
-			if ((token as TokenIdentifier)?.IsContextualKeyword(ContextualKeywordType.global) == true) {
+			if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.global) {
 				var colonToken = block.GetToken(index + 1);
 				if (colonToken?.Type == TokenType.DoubleColon) {
 					builder.IsGlobalNamespace = true;

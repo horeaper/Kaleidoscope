@@ -1,4 +1,6 @@
-﻿using Kaleidoscope.SyntaxObject;
+﻿using System.Collections.Immutable;
+using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -7,12 +9,12 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingStaticDirective
 	{
-		public readonly AnalyzedFile Source;
+		public readonly ImmutableArray<Token> OwnerNamespace; 
 		public readonly TokenBlock TypeContent;
 
-		public UsingStaticDirective(AnalyzedFile source, TokenBlock typeContent)
+		public UsingStaticDirective(Token[] ownerNamespace, TokenBlock typeContent)
 		{
-			Source = source;
+			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			TypeContent = typeContent;
 		}
 

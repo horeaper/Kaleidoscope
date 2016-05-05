@@ -40,6 +40,7 @@
     <Compile Include="Analysis\CS\TypeReferenceReader.Cpp.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Managed.cs" />
+    <Compile Include="Analysis\CS\UsingReader.cs" />
     <Compile Include="Analysis\ReferenceToCppType.cs" />
     <Compile Include="Analysis\ReferenceToInstance.cs" />
     <Compile Include="Analysis\ReferenceToManagedType.cs" />
