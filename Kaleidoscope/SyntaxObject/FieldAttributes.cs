@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kaleidoscope.SyntaxObject.Primitive
+namespace Kaleidoscope.SyntaxObject
 {
 	[Flags]
 	public enum FieldAttributes

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
+using Kaleidoscope.Analysis;
 using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.SyntaxObject.Primitive;
 
 namespace Kaleidoscope
 {
@@ -14,7 +14,7 @@ namespace Kaleidoscope
 		public Configuration Configuration { get; }
 		public IInfoOutput InfoOutput { get; }
 
-		public readonly ImmutableArray<CodeFile> CodeFiles;
+		public readonly ImmutableArray<AnalyzedFile> AnalyzedFiles;
 
 		public CodeHub(Configuration config, IInfoOutput infoOutput)
 		{
@@ -23,14 +23,12 @@ namespace Kaleidoscope
 
 			//Analysis
 			var errorList = new ConcurrentBag<ParseException>();
-			var codeFiles = new ConcurrentBag<CodeFile>();
+			var codeFiles = new ConcurrentBag<AnalyzedFile>();
 			Parallel.ForEach(Configuration.InputFiles, file => {
 				try {
-					var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols);
-					var tokenBlock = new TokenBlock(tokens);
-
 					if (string.Compare(Path.GetExtension(file.FileName), ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
-						codeFiles.Add(new CodeFile(this, tokenBlock, LanguageType.CS));
+						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, true);
+						codeFiles.Add(new AnalyzedFile(this, new TokenBlock(tokens), LanguageType.CS));
 					}
 				}
 				catch (ParseException e) {
@@ -38,7 +36,7 @@ namespace Kaleidoscope
 				}
 			});
 			CheckErrorList(errorList);
-			CodeFiles = ImmutableArray.CreateRange(codeFiles);
+			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
 
 			//Merging
 

@@ -8,9 +8,9 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
 {
-	public static class ConstantsData
+	public static class ConstantTable
 	{
-		static ConstantsData()
+		static ConstantTable()
 		{
 			var symbolMap = ImmutableDictionary.CreateBuilder<string, SymbolType>();
 			symbolMap.Add(".", SymbolType.Dot);
@@ -60,8 +60,27 @@ namespace Kaleidoscope
 			symbolMap.Add("<|", SymbolType.PipeLeft);
 			symbolMap.Add("|>", SymbolType.PipeRight);
 			SymbolMap = symbolMap.ToImmutable();
+
+			var alias = ImmutableSortedSet.CreateBuilder<TokenType>();
+			alias.Add(TokenType.@bool);
+			alias.Add(TokenType.@sbyte);
+			alias.Add(TokenType.@byte);
+			alias.Add(TokenType.@short);
+			alias.Add(TokenType.@ushort);
+			alias.Add(TokenType.@int);
+			alias.Add(TokenType.@uint);
+			alias.Add(TokenType.@long);
+			alias.Add(TokenType.@ulong);
+			alias.Add(TokenType.@float);
+			alias.Add(TokenType.@double);
+			alias.Add(TokenType.@char);
+			alias.Add(TokenType.@decimal);
+			alias.Add(TokenType.@object);
+			alias.Add(TokenType.@string);
+			Alias = alias.ToImmutable();
 		}
 
-		public static ImmutableDictionary<string, SymbolType> SymbolMap { get; }
+		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
+		public static readonly ImmutableSortedSet<TokenType> Alias;
 	}
 }

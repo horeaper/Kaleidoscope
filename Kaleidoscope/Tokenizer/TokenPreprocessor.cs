@@ -4,7 +4,7 @@ namespace Kaleidoscope.Tokenizer
 {
 	public class TokenPreprocessor : Token
 	{
-		public readonly PreprocessorType Type;
+		public new readonly PreprocessorType Type;
 		public readonly Token[] ContentTokens;
 
 		public TokenPreprocessor(SourceTextFile sourceFile, int begin, int end, PreprocessorType type, Token[] contentTokens)

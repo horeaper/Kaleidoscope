@@ -1,0 +1,185 @@
+﻿using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
+
+namespace Kaleidoscope.Analysis.CS
+{
+	public static partial class TypeReferenceReader
+	{
+		public static ReferenceToType Read(TokenBlock block, ref int index, TypeParsingRule parsingRule)
+		{
+			var token = block.GetToken(index, Error.Analysis.IdentifierExpected);
+			var identifierToken = token as TokenIdentifier;
+
+			if (token.Type == TokenType.@void) {
+				if (!parsingRule.HasFlag(TypeParsingRule.AllowVoid)) {
+					throw ParseException.AsToken(token, Error.Analysis.VoidNotAllowed);
+				}
+				++index;
+				return new ReferenceVoid(token);
+			}
+			else if (identifierToken?.IsContextualKeyword(ContextualKeywordType.var) == true) {
+				if (!parsingRule.HasFlag(TypeParsingRule.AllowVar)) {
+					throw ParseException.AsToken(token, Error.Analysis.VarNotAllowed);
+				}
+				++index;
+				return new ReferenceVar(identifierToken);
+			}
+			else if (identifierToken?.IsContextualKeyword(ContextualKeywordType.cpp) == true) {
+				var colonToken = block.GetToken(index + 1);
+				if (colonToken?.Type == TokenType.DoubleColon) {    //If `cpp` doesn't followed by a `::`, then thread it as normal identifier
+					if (!parsingRule.HasFlag(TypeParsingRule.AllowCppType)) {
+						throw ParseException.AsRange(block.SourceFile, token.Begin, colonToken.End, Error.Analysis.CppTypeNotAllowed);
+					}
+					index += 2;
+					return ReadCppType(block, ref index, parsingRule.HasFlag(TypeParsingRule.AllowArray));
+				}
+			}
+
+			if (identifierToken != null || ConstantTable.Alias.Contains(token.Type)) {
+				return ReadManagedType(block, ref index, parsingRule.HasFlag(TypeParsingRule.AllowArray));
+			}
+			else {
+				throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+			}
+		}
+
+		enum ContentStyle
+		{
+			None,
+			AllowQuestion,
+			AllowAsterisk,
+		}
+
+		static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
+		{
+			var startIndex = index;
+
+			int arrowCount = 0;
+			while (true) {
+				var token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
+
+				if (ConstantTable.Alias.Contains(token.Type) || token is TokenIdentifier) {
+					if (!AdvanceIndex(block, ref index, ref arrowCount, style)) {
+						break;
+					}
+				}
+				else {
+					throw ParseException.AsToken(token, Error.Analysis.IdentifierExpected);
+				}
+			}
+
+			return block.AsBeginEnd(startIndex, index);
+		}
+
+		static bool AdvanceIndex(TokenBlock block, ref int index, ref int arrowCount, ContentStyle style)
+		{
+			while (true) {
+				var token = block.GetToken(index);
+				if (token == null) {
+					if (arrowCount == 0) {
+						return false;
+					}
+					else {
+						throw ParseException.AsToken(block.Last, Error.Analysis.RightArrowExpected);
+					}
+				}
+
+				if (token.Type == TokenType.Question && style == ContentStyle.AllowQuestion) {
+					++index;
+					style = ContentStyle.None;
+					continue;
+				}
+				if (token.Type == TokenType.Asterisk && style == ContentStyle.AllowAsterisk) {
+					++index;
+					continue;
+				}
+
+				switch (token.Type) {
+					case TokenType.Dot:
+						++index;
+						break;
+					case TokenType.LeftArrow:
+						++index;
+						++arrowCount;
+						break;
+					case TokenType.RightArrow:
+						if (arrowCount == 0) {
+							return false;
+						}
+
+						++index;
+						--arrowCount;
+						if (arrowCount == 0) {
+							token = block.GetToken(index);
+							if (token != null) {
+								return false;
+							}
+							else if (token.Type == TokenType.Question && style == ContentStyle.AllowQuestion) {
+								++index;
+								return false;
+							}
+							else if (token.Type == TokenType.Dot) {
+								++index;
+							}
+							else {
+								return false;
+							}
+						}
+						else {
+							continue;
+						}
+						break;
+					case TokenType.ShiftRight:
+						if (arrowCount == 0) {
+							return false;
+						}
+
+						if (arrowCount >= 2) {
+							++index;
+							arrowCount -= 2;
+							if (arrowCount == 0) {
+								token = block.GetToken(index);
+								if (token != null) {
+									return false;
+								}
+								else if (token.Type == TokenType.Question && style == ContentStyle.AllowQuestion) {
+									++index;
+									return false;
+								}
+								else if (token.Type == TokenType.Dot) {
+									++index;
+								}
+								else {
+									return false;
+								}
+							}
+							else {
+								continue;
+							}
+						}
+						else {
+							throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+						}
+						break;
+					case TokenType.Comma:
+						if (arrowCount == 0) {
+							return false;
+						}
+						else {
+							++index;
+						}
+						break;
+					default:
+						if (arrowCount == 0) {
+							return false;
+						}
+						else {
+							throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+						}
+				}
+
+				return true;
+			}
+		}
+	}
+}

@@ -21,14 +21,22 @@
 
 		public static class Analysis
 		{
-			//TokenBlock
+			public const string IdentifierExpected = "identifier expected";
+			public const string UnexpectedToken = "unexpected token";
+
+			public const string SemicolonExpected = "; expected";
 			public const string LeftBraceExpected = "{ expected";
 			public const string RightBraceExpected = "} expected";
 			public const string LeftParenthesisExpected = "( expected";
 			public const string RightParenthesisExpected = ") expected";
 			public const string LeftBracketExpected = "] expected";
 			public const string RightBracketExpected = "] expected";
+			public const string LeftArrowExpected = "< expected";
+			public const string RightArrowExpected = "> expected";
 
+			public const string VoidNotAllowed = "'void' is not allowed here";
+			public const string VarNotAllowed = "'var' is not allowed here";
+			public const string CppTypeNotAllowed = "C++ type is not allowed here";
 		}
 	}
 }

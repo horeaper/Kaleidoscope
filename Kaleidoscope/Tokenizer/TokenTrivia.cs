@@ -2,10 +2,11 @@
 {
 	public class TokenTrivia : Token
 	{
-		public readonly TriviaType Type;
+		public new readonly TriviaType Type;
+		const int TriviaFirst = (int)TokenType.NewLine;
 
 		public TokenTrivia(SourceTextFile sourceFile, int begin, int end, TriviaType type)
-			: base(sourceFile, begin, end, TokenType.Trivia)
+			: base(sourceFile, begin, end, (TokenType)(TriviaFirst + type))
 		{
 			Type = type;
 		}

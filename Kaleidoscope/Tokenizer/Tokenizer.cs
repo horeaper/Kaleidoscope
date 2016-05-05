@@ -9,7 +9,7 @@ namespace Kaleidoscope.Tokenizer
 {
 	public static class Tokenizer
 	{
-		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols)
+		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols, bool isIncludeTrivia)
 		{
 			var builder = ImmutableArray.CreateBuilder<Token>();
 
@@ -27,8 +27,13 @@ namespace Kaleidoscope.Tokenizer
 					ProcessPreprocessor(output, source, currentSymbols, preprocessorToken, ref index);
 				}
 				else {
-					builder.Add(token);
-					index = token.End;
+					if (token is TokenTrivia && !isIncludeTrivia) {
+						index = token.End;
+					}
+					else {
+						builder.Add(token);
+						index = token.End;
+					}
 				}
 			}
 
@@ -489,26 +494,25 @@ namespace Kaleidoscope.Tokenizer
 
 				if (source[index] == '@') {
 					int startIndex = index;
-					++index;
-					if (source[index] != '\"') {
-						throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.UnknownToken);
-					}
-
-					var convertedContent = new StringBuilder();
-					while (true) {
+					if (source[index + 1] == '\"') {
 						++index;
 
-						if (source[index] == '\"') {
+						var convertedContent = new StringBuilder();
+						while (true) {
 							++index;
-							if (index >= source.Length || source[index] != '\"') {
-								return new TokenString(source, startIndex, index, convertedContent.ToString());
+
+							if (source[index] == '\"') {
+								++index;
+								if (index >= source.Length || source[index] != '\"') {
+									return new TokenString(source, startIndex, index, convertedContent.ToString());
+								}
+								else {
+									convertedContent.Append(source[index]);
+								}
 							}
 							else {
 								convertedContent.Append(source[index]);
 							}
-						}
-						else {
-							convertedContent.Append(source[index]);
 						}
 					}
 				}
@@ -592,13 +596,34 @@ namespace Kaleidoscope.Tokenizer
 				symbolContent.Append(source[index]);
 				if (index + 1 < source.Length) {
 					symbolContent.Append(source[index + 1]);
-					if (ConstantsData.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
+					if (ConstantTable.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
 						return new TokenSymbol(source, index, index + symbolContent.Length, symbol);
 					}
 					symbolContent.Remove(symbolContent.Length - 1, 1);
 				}
-				if (ConstantsData.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
+				if (ConstantTable.SymbolMap.TryGetValue(symbolContent.ToString(), out symbol)) {
 					return new TokenSymbol(source, index, index + symbolContent.Length, symbol);
+				}
+
+				#endregion
+
+				#region Keyword as Identifier
+
+				if (source[index] == '@') {
+					if (IsValidIdentifierCharacter(source[index + 1])) {
+						++index;
+						int startIndex = index;
+						while (index < source.Length && IsValidIdentifierCharacter(source[index])) {
+							++index;
+						}
+						string text = source.Substring(startIndex, index);
+						KeywordType keyword;
+						bool isKeyword = Enum.TryParse(text, out keyword);
+						return new TokenIdentifier(source, startIndex, index, isKeyword);
+					}
+					else {
+						throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownToken);
+					}
 				}
 
 				#endregion
@@ -622,7 +647,7 @@ namespace Kaleidoscope.Tokenizer
 						}
 					}
 					else {
-						return new TokenIdentifier(source, startIndex, index);
+						return new TokenIdentifier(source, startIndex, index, false);
 					}
 				}
 

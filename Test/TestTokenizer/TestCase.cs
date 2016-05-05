@@ -85,7 +85,7 @@ namespace TestTokenizer
 			filePath = Path.GetFullPath(filePath);
 			string content = File.ReadAllText(filePath);
 			var source = new SourceTextFile(filePath, content);
-			Tokenizer.Process(null, source, null);
+			Tokenizer.Process(null, source, null, true);
 		}
 	}
 }

@@ -5,7 +5,7 @@
 		public readonly SourceTextFile SourceFile;
 		public readonly int Begin;
 		public readonly int End;
-		public readonly TokenType TokenType;
+		public readonly TokenType Type;
 
 		public readonly int Line;
 		public readonly int Column;
@@ -17,6 +17,7 @@
 			SourceFile = sourceFile;
 			Begin = begin;
 			End = end;
+			Type = type;
 
 			Text = SourceFile.Substring(Begin, End);
 			SourceFile.GetLineColumn(begin, out Line, out Column);

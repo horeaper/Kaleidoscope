@@ -8,7 +8,7 @@ namespace TestTokenizer
 	{
 		public static T Process<T>(string content) where T : class
 		{
-			var tokens = Tokenizer.Process(null, new SourceTextFile("", content), null);
+			var tokens = Tokenizer.Process(null, new SourceTextFile("", content), null, true);
 			Assert.IsTrue(tokens.Length == 1);
 			var token = tokens[0] as T;
 			Assert.IsNotNull(token);
