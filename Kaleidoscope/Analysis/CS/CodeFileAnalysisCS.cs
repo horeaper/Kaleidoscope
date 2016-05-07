@@ -6,13 +6,13 @@ namespace Kaleidoscope.Analysis.CS
 {
 	class CodeFileAnalysisCS : CodeFileAnalysis
 	{
-		CodeHub hub;
+		IInfoOutput infoOutput;
 		AnalyzedFile codeFile;
 		TokenBlock block;
 
-		public CodeFileAnalysisCS(CodeHub hub, AnalyzedFile codeFile, TokenBlock block)
+		public CodeFileAnalysisCS(IInfoOutput infoOutput, AnalyzedFile codeFile, TokenBlock block)
 		{
-			this.hub = hub;
+			this.infoOutput = infoOutput;
 			this.codeFile = codeFile;
 			this.block = block;
 
@@ -32,7 +32,7 @@ namespace Kaleidoscope.Analysis.CS
 					if (token.Type == TokenType.@static) {
 						++index;
 						var typeContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
-						currentUsings.UsingStaticDirectives.Add(new UsingStaticDirective(currentNamespace.ToArray(), typeContent));
+						currentUsings.UsingStaticDirectives.Add(UsingReader.ReadStatic(currentNamespace.ToArray(), typeContent));
 						continue;
 					}
 

@@ -22,13 +22,21 @@ namespace Kaleidoscope
 			InfoOutput = infoOutput;
 
 			//Analysis
+			if (config.IsVerboseMode) {
+				infoOutput?.OutputVerbose("Stage - Analysis");
+			}
 			var errorList = new ConcurrentBag<ParseException>();
 			var codeFiles = new ConcurrentBag<AnalyzedFile>();
 			Parallel.ForEach(Configuration.InputFiles, file => {
 				try {
-					if (string.Compare(Path.GetExtension(file.FileName), ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
+					string extension = Path.GetExtension(file.FileName);
+					if (string.Compare(extension, ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
+						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, false);
+						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CS));
+					}
+					else if (string.Compare(extension, ".cfs", StringComparison.CurrentCultureIgnoreCase) == 0) {
 						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, true);
-						codeFiles.Add(new AnalyzedFile(this, new TokenBlock(tokens), LanguageType.CS));
+						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CFS));
 					}
 				}
 				catch (ParseException e) {

@@ -49,12 +49,12 @@ namespace Kaleidoscope.SyntaxObject
 
 		public TokenBlock AsStartLength(int startIndex, int length)
 		{
-			return new TokenBlock(ImmutableArray.Create(Items, 0, length));
+			return new TokenBlock(ImmutableArray.Create(Items, startIndex, length));
 		}
 
 		public TokenBlock AsBeginEnd(int begin, int end)
 		{
-			return AsStartLength(begin, end - begin - 1);
+			return AsStartLength(begin, end - begin);
 		}
 
 		public TokenBlock RemoveHeadAndTail()
@@ -97,8 +97,8 @@ namespace Kaleidoscope.SyntaxObject
 		public int FindToken(int index, TokenType target, string errorMessage = null)
 		{
 			while (index < Items.Length) {
-				var token = Items[index] as TokenSymbol;
-				if (((Token)token).Type == target) {
+				var token = Items[index];
+				if (token.Type == target) {
 					return index;
 				}
 				else {

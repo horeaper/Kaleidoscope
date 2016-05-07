@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{2A898250-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTokenizer", "Test\TestTokenizer\TestTokenizer.csproj", "{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "Test\TestConsole\TestConsole.csproj", "{FBCAE497-249B-4029-AAE9-ADD78AC0A119}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RuntimeCore\RuntimeCore.projitems*{669423e3-a296-4266-aa66-7a3a9d7d4fdb}*SharedItemsImports = 13
@@ -43,6 +45,10 @@ Global
 		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBCAE497-249B-4029-AAE9-ADD78AC0A119}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCAE497-249B-4029-AAE9-ADD78AC0A119}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCAE497-249B-4029-AAE9-ADD78AC0A119}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCAE497-249B-4029-AAE9-ADD78AC0A119}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +56,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{669423E3-A296-4266-AA66-7A3A9D7D4FDB} = {54985728-DED9-47DB-8825-05B5CCA0B788}
 		{A7F53571-3A53-4EA9-BFEF-3ECB855ED977} = {2A898250-A7AB-41CF-B930-BE5551E56368}
+		{FBCAE497-249B-4029-AAE9-ADD78AC0A119} = {2A898250-A7AB-41CF-B930-BE5551E56368}
 	EndGlobalSection
 EndGlobal

@@ -3,7 +3,7 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
  
 ## What can Kaleidoscope do?
 * Write C# code as you normally do (with only a few differences, very few, I sware!)
-* Use C++ classes directly (through a new contextual keyword "cpp::", write something like `cpp::std.vector<int>` and use C++ vector with C# System.Int32!
+* Use C++ classes directly (through a new contextual keyword "cpp::", write something like `cpp::std.vector<long>` and use C++ vector with C# `System.Int64`!
 * Inline C/C++ code
 * Generated code compiles on any modern C++ compilers (GCC 4.9+, clang 3.4+, VC2015+)
 

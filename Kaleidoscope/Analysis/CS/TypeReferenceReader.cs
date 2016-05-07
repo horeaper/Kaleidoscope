@@ -111,7 +111,7 @@ namespace Kaleidoscope.Analysis.CS
 						--arrowCount;
 						if (arrowCount == 0) {
 							token = block.GetToken(index);
-							if (token != null) {
+							if (token == null) {
 								return false;
 							}
 							else if (token.Type == TokenType.Question && style == ContentStyle.AllowQuestion) {

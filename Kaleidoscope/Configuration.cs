@@ -6,6 +6,7 @@ namespace Kaleidoscope
 	{
 		public bool IsMiniMode = false;
 		public bool IsDebugMode = false;
+		public bool IsVerboseMode = false;
 		public string OutputFolder = null;
 
 		public ImmutableSortedSet<string> DefinedSymbols;

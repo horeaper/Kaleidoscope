@@ -20,27 +20,6 @@ namespace Kaleidoscope.Analysis
 			ArrayDimensions = ImmutableArray.Create(builder.ArrayDimensions.ToArray());
 		}
 
-		public string Text
-		{
-			get
-			{
-				var builder = new StringBuilder();
-				builder.Append(Content.Text);
-				if (IsNullable) {
-					builder.Append('?');
-				}
-				else if (ArrayDimensions != null) {
-					foreach (int dimension in ArrayDimensions) {
-						builder.Append('[');
-						for (int iCnt = 1; iCnt < dimension; ++iCnt) {
-							builder.Append(',');
-						}
-						builder.Append(']');
-					}
-				}
-				return builder.ToString();
-			}
-		}
 
 		public override string ToString()
 		{

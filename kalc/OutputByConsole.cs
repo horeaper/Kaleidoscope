@@ -34,5 +34,12 @@ namespace Kaleidoscope
 				Console.ForegroundColor = colorBefore;
 			}
 		}
+
+		public override void OnOutputVerbose(string text)
+		{
+			lock (this) {
+				Console.WriteLine(text);
+			}
+		}
 	}
 }

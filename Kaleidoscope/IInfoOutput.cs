@@ -11,6 +11,7 @@ namespace Kaleidoscope
 		void OutputError(ParseException param);
 		void OutputWarning(ParseException param);
 		void OutputMessage(ParseException param);
+		void OutputVerbose(string content);
 	}
 
 	public abstract class DefaultInfoOutput : IInfoOutput
@@ -45,8 +46,14 @@ namespace Kaleidoscope
 			}
 		}
 
+		public void OutputVerbose(string content)
+		{
+			OnOutputVerbose(content);
+		}
+
 		public abstract void OnOutputError(string text);
 		public abstract void OnOutputWarning(string text);
 		public abstract void OnOutputMessage(string text);
+		public abstract void OnOutputVerbose(string text);
 	}
 }

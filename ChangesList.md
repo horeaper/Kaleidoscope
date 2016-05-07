@@ -13,6 +13,9 @@ var target = SomeMethod();  // 'target' is a reference type
 if (target) {
     // will execute if target != null
 }
+if (!target) {
+    // will execute if target == null
+}
 if ((target as MyClass)?.IsAlive) {     // 'IsAlive' is boolean
     // will execute if target is MyClass type and IsAlive is true
 }

@@ -36,6 +36,11 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
+		public static UsingStaticDirective ReadStatic(Token[] ownerNamespace, TokenBlock block)
+		{
+			return new UsingStaticDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier));
+		}
+
 		public static UsingCSNamespaceDirective ReadCSNamespace(Token[] ownerNamespace, TokenBlock block)
 		{
 			return new UsingCSNamespaceDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier));

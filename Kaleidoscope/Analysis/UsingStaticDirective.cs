@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using Kaleidoscope.SyntaxObject;
+using System.Text;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
@@ -10,17 +10,27 @@ namespace Kaleidoscope.Analysis
 	public sealed class UsingStaticDirective
 	{
 		public readonly ImmutableArray<Token> OwnerNamespace; 
-		public readonly TokenBlock TypeContent;
+		public readonly ImmutableArray<Token> TypeContent;
+		readonly string m_displayName;
 
-		public UsingStaticDirective(Token[] ownerNamespace, TokenBlock typeContent)
+		public UsingStaticDirective(Token[] ownerNamespace, Token[] typeContent)
 		{
 			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
-			TypeContent = typeContent;
+			TypeContent = ImmutableArray.Create(typeContent);
+
+			var builder = new StringBuilder();
+			for (int cnt = 0; cnt < TypeContent.Length; ++cnt) {
+				builder.Append(TypeContent[cnt].Text);
+				if (cnt < TypeContent.Length - 1) {
+					builder.Append('.');
+				}
+			}
+			m_displayName = builder.ToString();
 		}
 
 		public override string ToString()
 		{
-			return $"[UsingStaticDirective] using static {TypeContent.Text};";
+			return $"[UsingStaticDirective] using static {m_displayName};";
 		}
 	}
 }

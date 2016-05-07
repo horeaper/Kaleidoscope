@@ -23,6 +23,7 @@ Options:
 Internal options:
   -mini             Enable mini mode (don't include standard libraries)
   -i <folder>       Include all *.cs files in this folder to process
+  -verbose          Enable verbose output mode
 ";
 
 		class OpenedFile
@@ -49,7 +50,7 @@ Internal options:
 
 		static Configuration ProcessCommandArguments(string[] args)
 		{
-			var result = new Configuration();
+			var config = new Configuration();
 			var inputFiles = new List<string>();
 			var definedSymbols = new SortedSet<string>();
 			var includeSearchPaths = new List<string>();
@@ -69,10 +70,10 @@ Internal options:
 							break;
 						case "-o":
 							++currentIndex;
-							result.OutputFolder = args[currentIndex];
+							config.OutputFolder = args[currentIndex];
 							break;
 						case "-debug":
-							result.IsDebugMode = true;
+							config.IsDebugMode = true;
 							definedSymbols.Add("DEBUG");
 							break;
 						case "-inc":
@@ -91,10 +92,10 @@ Internal options:
 							break;
 						case "-clang":
 							++currentIndex;
-							result.ClangParseParameters = args[currentIndex]; 
+							config.ClangParseParameters = args[currentIndex]; 
 							break;
 						case "-mini":
-							result.IsMiniMode = true;
+							config.IsMiniMode = true;
 							break;
 						case "-i":
 							++currentIndex;
@@ -105,6 +106,9 @@ Internal options:
 								WriteParamError("cannot find include directory: " + args[currentIndex]);
 								return null;
 							}
+							break;
+						case "-verbose":
+							config.IsVerboseMode = true;
 							break;
 						default:
 							inputFiles.Add(args[currentIndex]);
@@ -161,11 +165,11 @@ Internal options:
 			}
 
 			//Set Configuration info
-			result.DefinedSymbols = definedSymbols.ToImmutableSortedSet();
-			result.IncludeSearchPaths = includeSearchPaths.ToImmutableArray();
-			result.AdditionalIncludeFiles = openedIncludeFiles.Select(item => new IncludeHeaderFile(item.FilePath, item.FileContent)).ToImmutableArray();
-			result.InputFiles = openedInputFiles.Select(item => new SourceTextFile(Path.GetFullPath(item.FilePath), item.FileContent)).ToImmutableArray();
-			return result;
+			config.DefinedSymbols = definedSymbols.ToImmutableSortedSet();
+			config.IncludeSearchPaths = includeSearchPaths.ToImmutableArray();
+			config.AdditionalIncludeFiles = openedIncludeFiles.Select(item => new IncludeHeaderFile(item.FilePath, item.FileContent)).ToImmutableArray();
+			config.InputFiles = openedInputFiles.Select(item => new SourceTextFile(Path.GetFullPath(item.FilePath), item.FileContent)).ToImmutableArray();
+			return config;
 		}
 
 		static int Main(string[] args)
