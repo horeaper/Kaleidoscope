@@ -38,6 +38,13 @@
 			public const string VarNotAllowed = "'var' is not allowed here";
 			public const string CppTypeNotAllowed = "C++ type is not allowed here";
 			public const string MissingCppKeyword = "missing 'cpp::' keyword";
+
+			public const string InvalidAttributeUsage = "invalid attribute usage";
+			public const string InlineNotAllowed = "inline not allowed here";
+			public const string DuplicatedModifier = "duplicated modifier";
+			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
+			public const string ConflictModifier = "conflicted modifier";
+			public const string InvalidModifier = "invalid modifier";
 		}
 	}
 }

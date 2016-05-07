@@ -26,7 +26,7 @@ namespace Kaleidoscope.Analysis.CS
 			}
 			else if (identifierToken?.ContextualKeyword == ContextualKeywordType.cpp) {
 				var colonToken = block.GetToken(index + 1);
-				if (colonToken?.Type == TokenType.DoubleColon) {    //If `cpp` doesn't followed by a `::`, then thread it as normal identifier
+				if (colonToken?.Type == TokenType.DoubleColon) {    //If `cpp` doesn't followed by a `::`, then treat it as normal identifier
 					if (!parsingRule.HasFlag(TypeParsingRule.AllowCppType)) {
 						throw ParseException.AsRange(block.SourceFile, token.Begin, colonToken.End, Error.Analysis.CppTypeNotAllowed);
 					}
@@ -43,14 +43,14 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
-		enum ContentStyle
+		public enum ContentStyle
 		{
 			None,
 			AllowQuestion,
 			AllowAsterisk,
 		}
 
-		static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
+		public static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
 		{
 			var startIndex = index;
 

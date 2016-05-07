@@ -1,4 +1,5 @@
 ﻿using System;
+using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
@@ -43,6 +44,11 @@ namespace Kaleidoscope
 		internal static ParseException AsToken(Token token, string errorMessage)
 		{
 			return new ParseException(token.SourceFile, token.Line, token.Column, token.Column + token.Text.Length, errorMessage);
+		}
+
+		internal static ParseException AsTokenBlock(TokenBlock block, string errorMessage)
+		{
+			return AsRange(block.SourceFile, block.First.Begin, block.Last.End, errorMessage);
 		}
 	}
 }

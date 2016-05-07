@@ -9,7 +9,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope
 {
-	public partial class CodeHub
+	public class CodeHub
 	{
 		public Configuration Configuration { get; }
 		public IInfoOutput InfoOutput { get; }

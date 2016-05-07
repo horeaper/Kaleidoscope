@@ -10,9 +10,19 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class UsingReader
 	{
-		public static Token[] ReadNamespace(TokenBlock block, Func<Token, bool> fnCheckTokenType)
+		public static Token[] ReadNamespace(TokenBlock block, ref int index)
+		{
+			return ReadNamespaceWorker(block, ref index, token => token.Type == TokenType.Identifier);
+		}
+
+		static Token[] ReadNamespace(TokenBlock block, Func<Token, bool> fnCheckTokenType)
 		{
 			int index = 0;
+			return ReadNamespaceWorker(block, ref index, fnCheckTokenType);
+		}
+
+		static Token[] ReadNamespaceWorker(TokenBlock block, ref int index, Func<Token, bool> fnCheckTokenType)
+		{
 			var ns = new List<Token>();
 			while (true) {
 				var token = block.GetToken(index++, Error.Analysis.UnexpectedToken);

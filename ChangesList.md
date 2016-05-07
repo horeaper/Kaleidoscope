@@ -6,6 +6,7 @@
 * '\u####' character literal are still supported, but can only be used in `char` and `string` constants (not available in variable and function names, etc.)
 * Failed to assign an `out` parameter will only issue a warning
 * `dynamic` is now a keyword
+* `partial` no longer allowed on methods
 
 ### Allow `null` and `bool?` on if
 ```C#

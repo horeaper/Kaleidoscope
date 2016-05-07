@@ -14,8 +14,10 @@ namespace TestConsole
 	{
 		static void Main(string[] args)
 		{
-			const string Content = @"
-using cpp::IntVec = cpp::std.vector<System.Int64>;
+			const string Content = 
+@"
+[Attribute(""SomeData"", First = ""First"", Second = 17, Third = new int[0])]
+[Another]
 ";
 			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false);
 			var file = new AnalyzedFile(null, new TokenBlock(tokens), LanguageType.CS);

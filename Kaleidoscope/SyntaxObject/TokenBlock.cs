@@ -115,7 +115,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Find the end of next {...} block
 		/// </summary>
-		public int FindNextBraceBlockEnd(int index, SymbolType left, SymbolType right)
+		public int FindNextBraceBlockEnd(int index)
 		{
 			index = FindToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
 
@@ -141,7 +141,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Find the end of next (...) block
 		/// </summary>
-		public int FindNextParenthesisBlockEnd(int index, SymbolType left, SymbolType right)
+		public int FindNextParenthesisBlockEnd(int index)
 		{
 			index = FindToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
 
@@ -167,7 +167,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Find the end of next [...] block
 		/// </summary>
-		public int FindNextBracketBlockEnd(int index, SymbolType left, SymbolType right)
+		public int FindNextBracketBlockEnd(int index)
 		{
 			index = FindToken(index, TokenType.LeftBracket, Error.Analysis.LeftBracketExpected);
 

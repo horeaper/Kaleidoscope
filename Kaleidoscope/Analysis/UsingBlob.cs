@@ -16,7 +16,11 @@ namespace Kaleidoscope.Analysis
 
 		public UsingBlob(Builder builder)
 		{
+			UsingStaticDirectives = ImmutableArray.Create(builder.UsingStaticDirectives.ToArray());
 			UsingCSNamespaceDirectives = ImmutableArray.Create(builder.UsingCSNamespaceDirectives.ToArray());
+			UsingCSAliasDirectives = ImmutableArray.Create(builder.UsingCSAliasDirectives.ToArray());
+			UsingCppNamespaceDirectives = ImmutableArray.Create(builder.UsingCppNamespaceDirectives.ToArray());
+			UsingCppAliasDirectives = ImmutableArray.Create(builder.UsingCppAliasDirectives.ToArray());
 		}
 
 		public sealed class Builder

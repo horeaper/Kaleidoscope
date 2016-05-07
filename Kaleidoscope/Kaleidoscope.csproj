@@ -34,13 +34,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Analysis\AttributeObject.cs" />
     <Compile Include="Analysis\CodeFileAnalysis.cs" />
+    <Compile Include="Analysis\CS\CodeFileAnalysisCS.Type.cs" />
     <Compile Include="Analysis\CS\CodeFileAnalysisCS.cs" />
     <Compile Include="Analysis\CS\InstanceReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Cpp.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Managed.cs" />
     <Compile Include="Analysis\CS\UsingReader.cs" />
+    <Compile Include="Analysis\Internal\NamespaceStack.cs" />
     <Compile Include="Analysis\ReferenceToCppType.cs" />
     <Compile Include="Analysis\ReferenceToInstance.cs" />
     <Compile Include="Analysis\ReferenceToManagedType.cs" />
