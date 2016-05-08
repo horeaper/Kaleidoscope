@@ -82,16 +82,6 @@ namespace Kaleidoscope.SyntaxObject
 		}
 
 		/// <summary>
-		/// Skip all consecutive trivias
-		/// </summary>
-		public void SkipTrivia(ref int index)
-		{
-			while (index < Items.Length && Items[index] is TokenTrivia) {
-				++index;
-			}
-		}
-
-		/// <summary>
 		/// Find a symbol token, starting from index
 		/// </summary>
 		public int FindToken(int index, TokenType target, string errorMessage = null)

@@ -1,7 +1,7 @@
 ﻿## New language features in Kaleidoscope
 
-### Digit separator (extended C#7 feature)
-Use `'` (single quote) and `_` (underscore) as digit separator
+### Digit separator (extended C# 7 feature)
+Use `'` (single quote) or `_` (underscore) as digit separator
 
 ```
 0x80'00'00'00
@@ -19,7 +19,7 @@ Some WRONG (won't compile) examples:
 123456'.245     // separator must be followed by a digit number
 ```
 
-### Binary number literal (C#7 feature)
+### Binary number literal (C# 7 feature)
 ```
 0b10010011
 0b10'11'01'00
@@ -41,7 +41,7 @@ if (int.TryParse(text, out int value)) {
 // 'value' will be out of scope
 ```
 
-### `is` local variable (C#7 feature)
+### `is` local variable (C# 7 feature)
 ```C#
 object obj = SomeMethod();
 if (obj is MyClass cls) {
@@ -50,11 +50,42 @@ if (obj is MyClass cls) {
 // 'cls' will be out-of-scope
 ```
 
-### `ref` literals
+### `ref` to literals
 ```C#
 void SomeMethod(ref int index) { /*...*/ }
 void AnotherMethod(ref bool value) { /*...*/ }
-//...
+
 SomeMethod(ref 0);
 AnotherMethod(ref false);
+```
+
+### New "Keyword" generic constraint type
+- class
+- struct
+- interface
+- enum(Type)
+- delegate
+- new
+- cpp
+
+The "Type" in `enum` constraint can be any primitive integer type (`byte`, `ushort`, `int`, `long`, etc)
+
+### Allow `object`, `null` and `bool?` on if
+```C#
+var target = SomeMethod();  // 'target' is a reference type
+if (target) {
+    // will execute if target != null
+}
+if (!target) {
+    // will execute if target == null
+}
+if ((target as MyClass)?.IsAlive) {     // 'IsAlive' is boolean
+    // will execute if target is MyClass and IsAlive == true
+    // in the old days one have to write "if ((target as MyClass)?.IsAlive == true)"
+}
+
+var another = AnotherMethod();  // 'another' is a value type
+if (another) {
+    // will always execute, equivalent as "if (true)"
+}
 ```

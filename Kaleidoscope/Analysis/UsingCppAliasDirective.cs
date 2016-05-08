@@ -10,13 +10,11 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingCppAliasDirective
 	{
-		public readonly ImmutableArray<Token> OwnerNamespace;
 		public readonly Token Name;
 		public readonly ReferenceToCppType Type;
 
-		public UsingCppAliasDirective(Token[] ownerNamespace, Token name, ReferenceToCppType type)
+		public UsingCppAliasDirective(Token name, ReferenceToCppType type)
 		{
-			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			Name = name;
 			Type = type;
 		}

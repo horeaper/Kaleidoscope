@@ -78,9 +78,21 @@ namespace Kaleidoscope
 			alias.Add(TokenType.@object);
 			alias.Add(TokenType.@string);
 			Alias = alias.ToImmutable();
+
+			var integerTypeAlias = ImmutableSortedSet.CreateBuilder<TokenType>();
+			integerTypeAlias.Add(TokenType.@byte);
+			integerTypeAlias.Add(TokenType.@sbyte);
+			integerTypeAlias.Add(TokenType.@short);
+			integerTypeAlias.Add(TokenType.@ushort);
+			integerTypeAlias.Add(TokenType.@int);
+			integerTypeAlias.Add(TokenType.@uint);
+			integerTypeAlias.Add(TokenType.@long);
+			integerTypeAlias.Add(TokenType.@ulong);
+			IntegerTypeAlias = integerTypeAlias.ToImmutable();
 		}
 
 		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
 		public static readonly ImmutableSortedSet<TokenType> Alias;
+		public static readonly ImmutableSortedSet<TokenType> IntegerTypeAlias;
 	}
 }

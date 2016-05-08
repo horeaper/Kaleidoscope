@@ -9,11 +9,11 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingCSNamespaceDirective
 	{
-		public readonly ImmutableArray<Token> OwnerNamespace;
-		public readonly ImmutableArray<Token> Namespace;
+		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace;
+		public readonly ImmutableArray<TokenIdentifier> Namespace;
 		readonly string m_displayName;
 
-		internal UsingCSNamespaceDirective(Token[] ownerNamespace, Token[] @namespace)
+		internal UsingCSNamespaceDirective(TokenIdentifier[] ownerNamespace, TokenIdentifier[] @namespace)
 		{
 			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			Namespace = ImmutableArray.Create(@namespace);

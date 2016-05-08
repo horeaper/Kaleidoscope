@@ -21,7 +21,7 @@ namespace Kaleidoscope
 			Configuration = config;
 			InfoOutput = infoOutput;
 
-			//Analysis
+			//Analysis - Get code file structure
 			if (config.IsVerboseMode) {
 				infoOutput?.OutputVerbose("Stage - Analysis");
 			}
@@ -31,12 +31,12 @@ namespace Kaleidoscope
 				try {
 					string extension = Path.GetExtension(file.FileName);
 					if (string.Compare(extension, ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
-						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, false);
-						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CS));
+						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, false, false);
+						codeFiles.Add(new AnalyzedFile(new TokenBlock(tokens), LanguageType.CS));
 					}
 					else if (string.Compare(extension, ".cfs", StringComparison.CurrentCultureIgnoreCase) == 0) {
-						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, true);
-						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CFS));
+						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, true, false);
+						codeFiles.Add(new AnalyzedFile(new TokenBlock(tokens), LanguageType.CFS));
 					}
 				}
 				catch (ParseException e) {
@@ -46,9 +46,9 @@ namespace Kaleidoscope
 			CheckErrorList(errorList);
 			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
 
-			//Merging
+			//Extract - Get all declared types
 
-			//Binding
+			//Bind - Resolve all ReferenceToType
 		}
 
 #region Utility

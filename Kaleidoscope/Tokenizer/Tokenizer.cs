@@ -9,7 +9,7 @@ namespace Kaleidoscope.Tokenizer
 {
 	public static class Tokenizer
 	{
-		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols, bool isIncludeTrivia)
+		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols, bool isIncludeTrivia, bool isIncludeComment)
 		{
 			var builder = ImmutableArray.CreateBuilder<Token>();
 
@@ -28,6 +28,9 @@ namespace Kaleidoscope.Tokenizer
 				}
 				else {
 					if (token is TokenTrivia && !isIncludeTrivia) {
+						index = token.End;
+					}
+					else if (token is TokenComment && !isIncludeComment) {
 						index = token.End;
 					}
 					else {

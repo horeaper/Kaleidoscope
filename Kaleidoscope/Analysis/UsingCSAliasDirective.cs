@@ -10,11 +10,11 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingCSAliasDirective
 	{
-		public readonly ImmutableArray<Token> OwnerNamespace;
+		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace;
 		public readonly Token Name;
 		public readonly ReferenceToManagedType Type;
 
-		public UsingCSAliasDirective(Token[] ownerNamespace, Token name, ReferenceToManagedType type)
+		public UsingCSAliasDirective(TokenIdentifier[] ownerNamespace, Token name, ReferenceToManagedType type)
 		{
 			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			Name = name;

@@ -8,13 +8,13 @@ namespace Kaleidoscope.Analysis
 	public class AttributeObject
 	{
 		public readonly UsingBlob Usings;
-		public readonly ImmutableArray<Token> OwnerNamespace;
+		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace;
 
 		public readonly ReferenceToManagedType Type;
 		public readonly TokenBlock ConstructContent;
 		readonly string m_displayName;
 
-		public AttributeObject(UsingBlob usings, Token[] ownerNamespace, ReferenceToManagedType type, TokenBlock constructContent)
+		public AttributeObject(UsingBlob usings, TokenIdentifier[] ownerNamespace, ReferenceToManagedType type, TokenBlock constructContent)
 		{
 			Usings = usings;
 			OwnerNamespace = ImmutableArray.Create(ownerNamespace);

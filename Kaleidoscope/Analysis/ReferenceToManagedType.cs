@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
 using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
@@ -19,7 +18,6 @@ namespace Kaleidoscope.Analysis
 			IsNullable = builder.IsNullable;
 			ArrayDimensions = ImmutableArray.Create(builder.ArrayDimensions.ToArray());
 		}
-
 
 		public override string ToString()
 		{

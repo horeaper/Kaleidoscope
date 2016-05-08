@@ -45,6 +45,14 @@
 			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
 			public const string ConflictModifier = "conflicted modifier";
 			public const string InvalidModifier = "invalid modifier";
+			public const string PartialNotAllowedOnType = "partial not allowed on this type";
+
+			public const string DuplicatedGenericName = "duplicated generic type name";
+			public const string UnknownGenericName = "unknown generic type name";
+			public const string ColonExpected = ": expected";
+			public const string DuplicatedGenericConstraint = "duplicated generic constraint";
+			public const string NewConstraintInvalid = "'new' constraint is only allowed with 'class', 'interface' or 'cpp'";
+			public const string EnumConstraintIntOnly = "only integer type (such as int and byte) are allowed as enum type constraints";
 		}
 	}
 }

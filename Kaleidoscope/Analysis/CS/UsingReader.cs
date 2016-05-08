@@ -10,9 +10,9 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class UsingReader
 	{
-		public static Token[] ReadNamespace(TokenBlock block, ref int index)
+		public static IEnumerable<TokenIdentifier> ReadNamespace(TokenBlock block, ref int index)
 		{
-			return ReadNamespaceWorker(block, ref index, token => token.Type == TokenType.Identifier);
+			return ReadNamespaceWorker(block, ref index, token => token.Type == TokenType.Identifier).Cast<TokenIdentifier>();
 		}
 
 		static Token[] ReadNamespace(TokenBlock block, Func<Token, bool> fnCheckTokenType)
@@ -46,22 +46,23 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
-		public static UsingStaticDirective ReadStatic(Token[] ownerNamespace, TokenBlock block)
+		public static UsingStaticDirective ReadStatic(TokenIdentifier[] ownerNamespace, TokenBlock block)
 		{
-			return new UsingStaticDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier));
+			int index = 0;
+			return new UsingStaticDirective(ownerNamespace, (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
 		}
 
-		public static UsingCSNamespaceDirective ReadCSNamespace(Token[] ownerNamespace, TokenBlock block)
+		public static UsingCSNamespaceDirective ReadCSNamespace(TokenIdentifier[] ownerNamespace, TokenBlock block)
 		{
-			return new UsingCSNamespaceDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier));
+			return new UsingCSNamespaceDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier).Cast<TokenIdentifier>().ToArray());
 		}
 
-		public static UsingCppNamespaceDirective ReadCppNamespace(Token[] ownerNamespace, TokenBlock block)
+		public static UsingCppNamespaceDirective ReadCppNamespace(TokenBlock block)
 		{
-			return new UsingCppNamespaceDirective(ownerNamespace, ReadNamespace(block, token => token is TokenKeyword || token.Type == TokenType.Identifier));
+			return new UsingCppNamespaceDirective(ReadNamespace(block, token => token is TokenKeyword || token.Type == TokenType.Identifier));
 		}
 
-		public static UsingCSAliasDirective ReadCSAlias(Token[] ownerNamespace, TokenBlock block)
+		public static UsingCSAliasDirective ReadCSAlias(TokenIdentifier[] ownerNamespace, TokenBlock block)
 		{
 			int index = 0;
 
@@ -80,7 +81,7 @@ namespace Kaleidoscope.Analysis.CS
 			return new UsingCSAliasDirective(ownerNamespace, nameToken, refToType);
 		}
 
-		public static UsingCppAliasDirective ReadCppAlias(Token[] ownerNamespace, TokenBlock block)
+		public static UsingCppAliasDirective ReadCppAlias(TokenBlock block)
 		{
 			int index = 0;
 
@@ -95,18 +96,18 @@ namespace Kaleidoscope.Analysis.CS
 				throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
 			}
 
-			int typeIndex = index;
+			int startIndex = index;
 			token = block.GetToken(index++, Error.Analysis.MissingCppKeyword);
 			if ((token as TokenIdentifier)?.ContextualKeyword != ContextualKeywordType.cpp) {
 				throw ParseException.AsToken(token, Error.Analysis.MissingCppKeyword);
 			}
-			token = block.GetToken(index++, Error.Analysis.MissingCppKeyword);
+			token = block.GetToken(index, Error.Analysis.MissingCppKeyword);
 			if (token.Type != TokenType.DoubleColon) {
 				throw ParseException.AsToken(token, Error.Analysis.MissingCppKeyword);
 			}
 
-			var refToType = (ReferenceToCppType)TypeReferenceReader.Read(block, ref typeIndex, TypeParsingRule.AllowCppType);
-			return new UsingCppAliasDirective(ownerNamespace, nameToken, refToType);
+			var refToType = (ReferenceToCppType)TypeReferenceReader.Read(block, ref startIndex, TypeParsingRule.AllowCppType);
+			return new UsingCppAliasDirective(nameToken, refToType);
 		}
 	}
 }

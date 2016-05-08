@@ -8,12 +8,12 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly TokenBlock Tokens;
 
-		public AnalyzedFile(IInfoOutput infoOutput, TokenBlock tokens, LanguageType languageType)
+		public AnalyzedFile(TokenBlock tokens, LanguageType languageType)
 		{
 			CodeFileAnalysis analysis = null;
 			switch (languageType) {
 				case LanguageType.CS:
-					analysis = new CodeFileAnalysisCS(infoOutput, this, tokens);
+					analysis = new CodeFileAnalysisCS(tokens);
 					break;
 			}
 			if (analysis == null) {

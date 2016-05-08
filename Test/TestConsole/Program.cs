@@ -19,8 +19,8 @@ namespace TestConsole
 [Attribute(""SomeData"", First = ""First"", Second = 17, Third = new int[0])]
 [Another]
 ";
-			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false);
-			var file = new AnalyzedFile(null, new TokenBlock(tokens), LanguageType.CS);
+			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false, false);
+			var file = new AnalyzedFile(new TokenBlock(tokens), LanguageType.CS);
 		}
 	}
 }

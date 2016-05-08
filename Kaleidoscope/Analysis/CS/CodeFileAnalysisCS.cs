@@ -7,18 +7,14 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class CodeFileAnalysisCS : CodeFileAnalysis
 	{
-		IInfoOutput infoOutput;
-		AnalyzedFile codeFile;
 		TokenBlock block;
 
 		int index;
-		UsingBlob.Builder currentUsings = new UsingBlob.Builder();
-		NamespaceStack currentNamespace = new NamespaceStack();
+		readonly UsingStack currentUsings = new UsingStack();
+		readonly NamespaceStack currentNamespace = new NamespaceStack();
 
-		public CodeFileAnalysisCS(IInfoOutput infoOutput, AnalyzedFile codeFile, TokenBlock block)
+		public CodeFileAnalysisCS(TokenBlock block)
 		{
-			this.infoOutput = infoOutput;
-			this.codeFile = codeFile;
 			this.block = block;
 			ReadContent();
 		}
@@ -45,7 +41,7 @@ namespace Kaleidoscope.Analysis.CS
 							if (token.Type == TokenType.@static) {
 								++index;
 								var typeContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
-								currentUsings.UsingStaticDirectives.Add(UsingReader.ReadStatic(currentNamespace.ToArray(), typeContent));
+								currentUsings.Peek().UsingStaticDirectives.Add(UsingReader.ReadStatic(currentNamespace.ToArray(), typeContent));
 								continue;
 							}
 
@@ -61,18 +57,18 @@ namespace Kaleidoscope.Analysis.CS
 							var content = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
 							if (content.FindToken(0, TokenType.Assign) == -1) {
 								if (!isCppType) {
-									currentUsings.UsingCSNamespaceDirectives.Add(UsingReader.ReadCSNamespace(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCSNamespaceDirectives.Add(UsingReader.ReadCSNamespace(currentNamespace.ToArray(), content));
 								}
 								else {
-									currentUsings.UsingCppNamespaceDirectives.Add(UsingReader.ReadCppNamespace(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCppNamespaceDirectives.Add(UsingReader.ReadCppNamespace(content));
 								}
 							}
 							else {
 								if (!isCppType) {
-									currentUsings.UsingCSAliasDirectives.Add(UsingReader.ReadCSAlias(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCSAliasDirectives.Add(UsingReader.ReadCSAlias(currentNamespace.ToArray(), content));
 								}
 								else {
-									currentUsings.UsingCppAliasDirectives.Add(UsingReader.ReadCppAlias(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCppAliasDirectives.Add(UsingReader.ReadCppAlias(content));
 								}
 							}
 						}
@@ -86,8 +82,10 @@ namespace Kaleidoscope.Analysis.CS
 							++index;
 							var ns = UsingReader.ReadNamespace(block, ref index);
 							currentNamespace.Push(ns);
+							currentUsings.Push();
 							ReadContent();
 							currentNamespace.Pop();
+							currentUsings.Pop();
 						}
 						break;
 					case TokenType.Semicolon:
@@ -117,61 +115,27 @@ namespace Kaleidoscope.Analysis.CS
 								throw ParseException.AsToken(token, Error.Analysis.RightBracketExpected);
 							}
 
-							currentAttributes.Add(new AttributeObject(new UsingBlob(currentUsings), currentNamespace.ToArray(), type, content));
+							currentAttributes.Add(new AttributeObject(new UsingBlob(currentUsings.Peek()), currentNamespace.ToArray(), type, content));
 						}
 						break;
 					case TokenType.@public:
 						++index;
-						ReadNextClassModifier(true, currentAttributes.ToArray());
-						currentAttributes.Clear();
-						break;
-					case TokenType.@abstract:
-					case TokenType.@static:
-					case TokenType.@sealed:
-					case TokenType.@unsafe:
-						ReadNextClassModifier(false, currentAttributes.ToArray());
-						currentAttributes.Clear();
-						break;
-					case TokenType.@class:
-						++index;
-						ReadClass(currentAttributes.ToArray(), false, null, false);
-						currentAttributes.Clear();
-						break;
-					case TokenType.@struct:
-						++index;
-						ReadStruct(currentAttributes.ToArray(), false, false);
-						currentAttributes.Clear();
-						break;
-					case TokenType.@interface:
-						++index;
-						ReadInterface(currentAttributes.ToArray(), false);
-						currentAttributes.Clear();
-						break;
-					case TokenType.@enum:
-						++index;
-						ReadEnum(currentAttributes.ToArray(), false);
-						currentAttributes.Clear();
-						break;
-					case TokenType.@delegate:
-						++index;
-						ReadDelegate(currentAttributes.ToArray(), false);
+						ReadNextTypeDeclare(true, currentAttributes.ToArray());
 						currentAttributes.Clear();
 						break;
 					default:
-						if ((token as TokenIdentifier).ContextualKeyword == ContextualKeywordType.inline) {
-							throw ParseException.AsToken(token, Error.Analysis.InlineNotAllowed);
-						}
-						else {
-							throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
-						}
+						ReadNextTypeDeclare(false, currentAttributes.ToArray());
+						currentAttributes.Clear();
+						break;
 				}
 			}
 		}
 
-		void ReadNextClassModifier(bool isPublic, AttributeObject[] customAttributes)
+		void ReadNextTypeDeclare(bool isPublic, AttributeObject[] customAttributes)
 		{
-			TokenKeyword typeModifier = null;
+			TokenKeyword instanceKindModifier = null;
 			TokenKeyword unsafeModifier = null;
+			TokenIdentifier partialModifier = null;
 
 			while (true) {
 				var token = block.GetToken(index, Error.Analysis.UnexpectedToken);
@@ -185,72 +149,92 @@ namespace Kaleidoscope.Analysis.CS
 							throw ParseException.AsToken(token, Error.Analysis.InconsistentModifierOrder);
 						}
 					case TokenType.@abstract:
-					case TokenType.@static:
 					case TokenType.@sealed:
-						if (typeModifier != null) {
+					case TokenType.@static:
+						if (instanceKindModifier != null) {
 							throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
 						}
 						if (unsafeModifier != null) {
 							throw ParseException.AsToken(token, Error.Analysis.InconsistentModifierOrder);
 						}
-						typeModifier = (TokenKeyword)token;
+						if (partialModifier != null) {
+							throw ParseException.AsToken(partialModifier, Error.Analysis.InconsistentModifierOrder);
+						}
+						instanceKindModifier = (TokenKeyword)token;
 						++index;
 						break;
 					case TokenType.@unsafe:
 						if (unsafeModifier != null) {
 							throw ParseException.AsToken(token, Error.Analysis.DuplicatedModifier);
 						}
+						if (partialModifier != null) {
+							throw ParseException.AsToken(partialModifier, Error.Analysis.InconsistentModifierOrder);
+						}
 						unsafeModifier = (TokenKeyword)token;
 						++index;
 						break;
 					case TokenType.@class:
 						++index;
-						ReadClass(customAttributes, isPublic, typeModifier, unsafeModifier != null);
+						ReadClass(customAttributes, isPublic, instanceKindModifier, unsafeModifier != null, partialModifier != null);
 						return;
 					case TokenType.@struct:
-						if (typeModifier != null) {
-							throw ParseException.AsToken(typeModifier, Error.Analysis.InvalidModifier);
+						if (instanceKindModifier != null) {
+							throw ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier);
 						}
 						++index;
-						ReadStruct(customAttributes, isPublic, unsafeModifier != null);
+						ReadStruct(customAttributes, isPublic, unsafeModifier != null, partialModifier != null);
 						return;
 					case TokenType.@interface:
-						if (typeModifier != null) {
-							throw ParseException.AsToken(typeModifier, Error.Analysis.InvalidModifier);
+						if (instanceKindModifier != null) {
+							throw ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier);
 						}
 						if (unsafeModifier != null) {
 							throw ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier);
 						}
 						++index;
-						ReadInterface(customAttributes, isPublic);
+						ReadInterface(customAttributes, isPublic, partialModifier != null);
 						return;
 					case TokenType.@enum:
-						if (typeModifier != null) {
-							throw ParseException.AsToken(typeModifier, Error.Analysis.InvalidModifier);
+						if (instanceKindModifier != null) {
+							throw ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier);
 						}
 						if (unsafeModifier != null) {
 							throw ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier);
+						}
+						if (partialModifier != null) {
+							throw ParseException.AsToken(partialModifier, Error.Analysis.PartialNotAllowedOnType);
 						}
 						++index;
 						ReadEnum(customAttributes, isPublic);
 						return;
 					case TokenType.@delegate:
-						if (typeModifier != null) {
-							throw ParseException.AsToken(typeModifier, Error.Analysis.InvalidModifier);
+						if (instanceKindModifier != null) {
+							throw ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier);
 						}
 						if (unsafeModifier != null) {
 							throw ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier);
+						}
+						if (partialModifier != null) {
+							throw ParseException.AsToken(partialModifier, Error.Analysis.PartialNotAllowedOnType);
 						}
 						++index;
 						ReadDelegate(customAttributes, isPublic);
 						return;
 					default:
-						if ((token as TokenIdentifier).ContextualKeyword == ContextualKeywordType.inline) {
-							throw ParseException.AsToken(token, Error.Analysis.InlineNotAllowed);
+						{
+							var identifierToken = token as TokenIdentifier;
+							if (identifierToken?.ContextualKeyword == ContextualKeywordType.partial) {
+								partialModifier = identifierToken;
+								++index;
+							}
+							else if (identifierToken?.ContextualKeyword == ContextualKeywordType.inline) {
+								throw ParseException.AsToken(token, Error.Analysis.InlineNotAllowed);
+							}
+							else {
+								throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+							}
 						}
-						else {
-							throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
-						}
+						break;
 				}
 			}
 		}

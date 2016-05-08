@@ -9,28 +9,18 @@ namespace Kaleidoscope.Analysis
 	/// </summary>
 	public sealed class UsingStaticDirective
 	{
-		public readonly ImmutableArray<Token> OwnerNamespace; 
-		public readonly ImmutableArray<Token> TypeContent;
-		readonly string m_displayName;
+		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace; 
+		public readonly ReferenceToManagedType Type;
 
-		public UsingStaticDirective(Token[] ownerNamespace, Token[] typeContent)
+		public UsingStaticDirective(TokenIdentifier[] ownerNamespace, ReferenceToManagedType type)
 		{
 			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
-			TypeContent = ImmutableArray.Create(typeContent);
-
-			var builder = new StringBuilder();
-			for (int cnt = 0; cnt < TypeContent.Length; ++cnt) {
-				builder.Append(TypeContent[cnt].Text);
-				if (cnt < TypeContent.Length - 1) {
-					builder.Append('.');
-				}
-			}
-			m_displayName = builder.ToString();
+			Type = type;
 		}
 
 		public override string ToString()
 		{
-			return $"[UsingStaticDirective] using static {m_displayName};";
+			return $"[UsingStaticDirective] using static {Type.Text};";
 		}
 	}
 }

@@ -35,15 +35,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Analysis\AttributeObject.cs" />
+    <Compile Include="Analysis\ClassTypeDeclare.cs" />
     <Compile Include="Analysis\CodeFileAnalysis.cs" />
-    <Compile Include="Analysis\CS\CodeFileAnalysisCS.Type.cs" />
+    <Compile Include="Analysis\CS\CodeFileAnalysisCS.class.cs" />
     <Compile Include="Analysis\CS\CodeFileAnalysisCS.cs" />
+    <Compile Include="Analysis\CS\CodeFileAnalysisCS.others.cs" />
+    <Compile Include="Analysis\CS\GenericReader.cs" />
+    <Compile Include="Analysis\CS\InheritanceReader.cs" />
     <Compile Include="Analysis\CS\InstanceReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Cpp.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Managed.cs" />
     <Compile Include="Analysis\CS\UsingReader.cs" />
+    <Compile Include="Analysis\Internal\UsingStack.cs" />
+    <Compile Include="Analysis\NestedClassTypeDeclare.cs" />
+    <Compile Include="Analysis\RootClassTypeDeclare.cs" />
+    <Compile Include="SyntaxObject\FieldAccessType.cs" />
+    <Compile Include="SyntaxObject\GenericKeywordConstraintType.cs" />
+    <Compile Include="Analysis\GenericDeclare.cs" />
+    <Compile Include="Analysis\InstanceTypeDeclare.cs" />
     <Compile Include="Analysis\Internal\NamespaceStack.cs" />
+    <Compile Include="Analysis\ManagedDeclare.cs" />
     <Compile Include="Analysis\ReferenceToCppType.cs" />
     <Compile Include="Analysis\ReferenceToInstance.cs" />
     <Compile Include="Analysis\ReferenceToManagedType.cs" />
@@ -55,8 +67,8 @@
     <Compile Include="Analysis\UsingCppAliasDirective.cs" />
     <Compile Include="Analysis\UsingCppNamespaceDirective.cs" />
     <Compile Include="LanguageType.cs" />
-    <Compile Include="SyntaxObject\PrimitiveTypeDeclare.cs" />
-    <Compile Include="SyntaxObject\ManagedDeclare.cs" />
+    <Compile Include="SyntaxObject\MethodInstanceKind.cs" />
+    <Compile Include="SyntaxObject\TypeInstanceKind.cs" />
     <Compile Include="SyntaxObject\TokenBlock.cs" />
     <Compile Include="CodeHub.cs" />
     <Compile Include="Configuration.cs" />
@@ -75,13 +87,11 @@
     <Compile Include="Analysis\AnalyzedFile.cs" />
     <Compile Include="KaleidoscopeSystemException.cs" />
     <Compile Include="SyntaxObject\LambdaStyle.cs" />
-    <Compile Include="SyntaxObject\FieldAttributes.cs" />
-    <Compile Include="SyntaxObject\MethodAttributes.cs" />
-    <Compile Include="SyntaxObject\ParameterAttributes.cs" />
-    <Compile Include="SyntaxObject\TypeAttributes.cs" />
+    <Compile Include="SyntaxObject\AccessModifier.cs" />
     <Compile Include="Analysis\UsingCSAliasDirective.cs" />
     <Compile Include="Analysis\UsingCSNamespaceDirective.cs" />
     <Compile Include="Analysis\UsingStaticDirective.cs" />
+    <Compile Include="SyntaxObject\ClassTypeKind.cs" />
     <Compile Include="Tokenizer\ContextualKeywordType.cs" />
     <Compile Include="Preprocessor\EqualityExpression.cs" />
     <Compile Include="Tokenizer\FloatNumberType.cs" />
@@ -94,7 +104,6 @@
     <Compile Include="Tokenizer\TokenCharacter.cs" />
     <Compile Include="Tokenizer\TokenComment.cs" />
     <Compile Include="Tokenizer\TokenDecimalNumber.cs" />
-    <Compile Include="Tokenizer\TokenDocumentComment.cs" />
     <Compile Include="Tokenizer\TokenFloatNumber.cs" />
     <Compile Include="Tokenizer\TokenIdentifier.cs" />
     <Compile Include="Tokenizer\Tokenizer.cs" />
