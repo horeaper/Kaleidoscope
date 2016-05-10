@@ -105,7 +105,7 @@ namespace Kaleidoscope.Analysis.CS
 								++index;
 								token = block.GetToken(index++, Error.Analysis.RightParenthesisExpected);
 								if (!ConstantTable.IntegerTypeAlias.Contains(token.Type)) {
-									throw ParseException.AsToken(token, Error.Analysis.EnumConstraintIntOnly);
+									throw ParseException.AsToken(token, Error.Analysis.EnumValueIntOnly);
 								}
 								targetItem.EnumTypeConstraint = (TokenKeyword)token;
 								token = block.GetToken(index++, Error.Analysis.RightParenthesisExpected);

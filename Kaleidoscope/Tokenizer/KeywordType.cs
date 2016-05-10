@@ -20,7 +20,7 @@
 		@delegate,
 		@do,
 		@double,
-		@dynamic,
+		dynamic,	//Changed to keyword
 		@else,
 		@enum,
 		@event,
@@ -77,6 +77,7 @@
 		@unsafe,
 		@ushort,
 		@using,
+		var,		//Changed to keyword
 		@virtual,
 		@void,
 		@volatile,

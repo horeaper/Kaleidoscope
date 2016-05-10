@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Kaleidoscope.Analysis.Internal;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
@@ -7,7 +9,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class CodeFileAnalysisCS
 	{
-		void ReadClass(AttributeObject[] customAttributes, bool isPublic, TokenKeyword instanceKindModifier, bool isUnsafe, bool isPartial)
+		void ReadRootClassTypeDeclare(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, Func<TokenIdentifier, RootClassTypeDeclare.Builder> fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -18,73 +20,197 @@ namespace Kaleidoscope.Analysis.CS
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = (RootClassTypeDeclare.Builder)ReadClassMembers(false);
-			builder.TypeKind = ClassTypeKind.@class;
-			builder.InstanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
+			var builder = fnReadMembers((TokenIdentifier)nameToken);
 			builder.IsPublic = isPublic;
 			builder.IsUnsafe = isUnsafe;
 			builder.IsPartial = isPartial;
+			builder.InstanceKind = instanceKind;
 			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
 			builder.Inherits = inherits;
-
 			builder.Name = (TokenIdentifier)nameToken;
+			builder.OwnerFile = ownerFile;
 			builder.Usings = new UsingBlob(currentUsings.Peek());
 			builder.Namespace = currentNamespace.ToArray();
 			builder.CustomAttributes = customAttributes;
 		}
 
-		void ReadStruct(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial)
+		T ReadClassMembers<T>(TokenIdentifier nameToken, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
 		{
-			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
-			if (nameToken.Type != TokenType.Identifier) {
-				throw ParseException.AsToken(nameToken, Error.Analysis.UnexpectedToken);
+			var builder = new T();
+			builder.TypeKind = typeKind;
+			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
+			if (token.Type != TokenType.LeftBrace) {
+				throw ParseException.AsToken(token, Error.Analysis.LeftBraceExpected);
 			}
 
-			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
-			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
-			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
+			TokenKeyword accessModifier = null;
+			TokenKeyword newModifier = null;
+			TokenKeyword instanceKindModifier = null;
+			TokenKeyword readonlyModifier = null;
+			TokenKeyword unsafeModifier = null;
+			TokenIdentifier asyncModifier = null;
+			Action fnResetModifiers = () => {
+				accessModifier = null;
+				newModifier = null;
+				instanceKindModifier = null;
+				readonlyModifier = null;
+				unsafeModifier = null;
+				asyncModifier = null;
+			};
 
-			var builder = (RootClassTypeDeclare.Builder)ReadClassMembers(false);
-			builder.TypeKind = ClassTypeKind.@struct;
-			builder.IsPublic = isPublic;
-			builder.IsUnsafe = isUnsafe;
-			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
-			builder.Inherits = inherits;
+			var currentAttributes = new List<AttributeObjectOnMember>();
+			while (true) {
+				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
-			builder.Name = (TokenIdentifier)nameToken;
-			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.ToArray();
-			builder.CustomAttributes = customAttributes;
+				if (token.Type == TokenType.RightBrace) {
+					return builder;
+				}
+				else if (token.Type == TokenType.LeftBracket) {
+					currentAttributes.Add(AttributeObjectReader.ReadOnMember(block, ref index));
+				}
+				//========================================================================
+				// Modifiers
+				//========================================================================
+				else if (ConstantTable.AccessModifier.Contains(token.Type)) {
+					CheckConflict(accessModifier, token);
+					CheckInconsistent(newModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					accessModifier = (TokenKeyword)token;
+				}
+				else if (token.Type == TokenType.@new) {
+					CheckConflict(newModifier, token);
+					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					newModifier = (TokenKeyword)token;
+				}
+				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
+					if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
+						(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
+						throw ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic);
+					}
+					CheckConflict(instanceKindModifier, token);
+					CheckInconsistent(readonlyModifier, unsafeModifier, asyncModifier);
+					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
+						throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
+					}
+					instanceKindModifier = (TokenKeyword)token;
+				}
+				else if (token.Type == TokenType.@readonly) {
+					CheckConflict(readonlyModifier, token);
+					CheckInconsistent(unsafeModifier, asyncModifier);
+					if (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static) {
+						throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
+					}
+					readonlyModifier = (TokenKeyword)token;
+				}
+				else if (token.Type == TokenType.@unsafe) {
+					CheckConflict(unsafeModifier, token);
+					CheckInconsistent(asyncModifier);
+					unsafeModifier = (TokenKeyword)token;
+				}
+				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.async) {
+					CheckConflict(asyncModifier, token);
+					asyncModifier = (TokenIdentifier)token;
+				}
+				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
+					throw ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly);
+				}
+				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.inline) {
+					throw ParseException.AsToken(token, Error.Analysis.InlineNotAllowed);
+				}
+				//========================================================================
+				// Nested type
+				//========================================================================
+				else if (token.Type == TokenType.@class) {
+
+					//Next member
+					fnResetModifiers();
+				}
+				else if (token.Type == TokenType.@struct) {
+
+					//Next member
+					fnResetModifiers();
+				}
+				else if (token.Type == TokenType.@interface) {
+
+					//Next member
+					fnResetModifiers();
+				}
+				else if (token.Type == TokenType.@enum) {
+
+					//Next member
+					fnResetModifiers();
+				}
+				else if (token.Type == TokenType.@delegate) {
+
+					//Next member
+					fnResetModifiers();
+				}
+				//========================================================================
+				// Members
+				//========================================================================
+				else {
+					//Constructor
+					if (token.Text == nameToken.Text) {
+						var nextToken = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
+						if (nextToken.Type == TokenType.LeftParenthesis) {
+							
+						}
+					}
+
+					//Destructor
+					if (token.Type == TokenType.BitwiseNot) {
+						if (typeKind == ClassTypeKind.@struct) {
+							throw ParseException.AsToken(token, Error.Analysis.StructNoDestructor);
+						}
+
+					}
+
+					//Conversion operator
+					if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {
+						
+					}
+
+					//Next member
+					fnResetModifiers();
+				}
+			}
 		}
 
-		void ReadInterface(AttributeObject[] customAttributes, bool isPublic, bool isPartial)
+		T ReadInterfaceMembers<T>(TokenIdentifier nameToken) where T : ClassTypeDeclare.Builder, new()
 		{
-			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
-			if (nameToken.Type != TokenType.Identifier) {
-				throw ParseException.AsToken(nameToken, Error.Analysis.UnexpectedToken);
-			}
-
-			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
-			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
-			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
-
-			var builder = (RootClassTypeDeclare.Builder)ReadInterfaceMembers(false, Error.Analysis.LeftBraceExpected);
+			var builder = new T();
 			builder.TypeKind = ClassTypeKind.@interface;
-			builder.IsPublic = isPublic;
-			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
-			builder.Inherits = inherits;
+			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
+			if (token.Type != TokenType.LeftBrace) {
+				throw ParseException.AsToken(token, Error.Analysis.LeftBraceExpected);
+			}
 
-			builder.Name = (TokenIdentifier)nameToken;
-			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.ToArray();
-			builder.CustomAttributes = customAttributes;
-		}
+			while (true) {
+				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
-		ClassTypeDeclare.Builder ReadClassMembers(bool isNestedClass)
-		{
-			var builder = isNestedClass ? (ClassTypeDeclare.Builder)new NestedClassTypeDeclare.Builder() : new RootClassTypeDeclare.Builder();
+				if (token.Type == TokenType.RightBrace) {
+					return builder;
+				}
+				else if (ConstantTable.AccessModifier.Contains(token.Type) ||
+						 ConstantTable.InstanceKindModifier.Contains(token.Type) ||
+						 token.Type == TokenType.@readonly ||
+						 token.Type == TokenType.@unsafe)
+				{
+					throw ParseException.AsToken(token, Error.Analysis.InvalidModifier);
+				}
+
+			}
 		}
 	}
 }
+
+/*
+ * public/protected/private/internal
+ * new (with virtual/abstract/static/extern)
+ * 
+ * virtual/override/abstract/sealed/static/extern/const
+ * readonly (and static)
+ * 
+ * unsafe
+ * async
+ * 
+ */

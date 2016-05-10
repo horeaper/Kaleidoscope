@@ -17,7 +17,7 @@ namespace Kaleidoscope.Analysis.CS
 				++index;
 				return new ReferenceVoid(token);
 			}
-			else if (identifierToken?.ContextualKeyword == ContextualKeywordType.var) {
+			else if (token.Type == TokenType.var) {
 				if (!parsingRule.HasFlag(TypeParsingRule.AllowVar)) {
 					throw ParseException.AsToken(token, Error.Analysis.VarNotAllowed);
 				}

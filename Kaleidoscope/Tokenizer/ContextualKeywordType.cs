@@ -27,7 +27,6 @@ namespace Kaleidoscope.Tokenizer
 		select,
 		set,
 		value,
-		var,
 		where,
 		yield,
 
@@ -35,8 +34,5 @@ namespace Kaleidoscope.Tokenizer
 		inline,
 		template,
 		union,
-
-		match,
-		with,
 	}
 }

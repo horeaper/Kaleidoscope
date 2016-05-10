@@ -5,6 +5,7 @@ namespace Kaleidoscope.Analysis
 {
 	public abstract class InstanceTypeDeclare : ManagedDeclare
 	{
+		public readonly AnalyzedFile OwnerFile;
 		public readonly UsingBlob Usings;
 		public readonly ImmutableArray<TokenIdentifier> Namespace;
 		public readonly ImmutableArray<AttributeObject> CustomAttributes;
@@ -12,6 +13,7 @@ namespace Kaleidoscope.Analysis
 		protected InstanceTypeDeclare(Builder builder)
 			: base(builder.Name)
 		{
+			OwnerFile = builder.OwnerFile;
 			Usings = builder.Usings;
 			Namespace = ImmutableArray.Create(builder.Namespace);
 			CustomAttributes = ImmutableArray.Create(builder.CustomAttributes);
@@ -20,6 +22,7 @@ namespace Kaleidoscope.Analysis
 		public abstract class Builder
 		{
 			public TokenIdentifier Name;
+			public AnalyzedFile OwnerFile;
 			public UsingBlob Usings;
 			public TokenIdentifier[] Namespace;
 			public AttributeObject[] CustomAttributes;

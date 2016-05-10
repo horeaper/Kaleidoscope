@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Immutable;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
@@ -61,38 +56,61 @@ namespace Kaleidoscope
 			symbolMap.Add("|>", SymbolType.PipeRight);
 			SymbolMap = symbolMap.ToImmutable();
 
-			var alias = ImmutableSortedSet.CreateBuilder<TokenType>();
-			alias.Add(TokenType.@bool);
-			alias.Add(TokenType.@sbyte);
-			alias.Add(TokenType.@byte);
-			alias.Add(TokenType.@short);
-			alias.Add(TokenType.@ushort);
-			alias.Add(TokenType.@int);
-			alias.Add(TokenType.@uint);
-			alias.Add(TokenType.@long);
-			alias.Add(TokenType.@ulong);
-			alias.Add(TokenType.@float);
-			alias.Add(TokenType.@double);
-			alias.Add(TokenType.@char);
-			alias.Add(TokenType.@decimal);
-			alias.Add(TokenType.@object);
-			alias.Add(TokenType.@string);
-			Alias = alias.ToImmutable();
+			Alias = ImmutableSortedSet.Create(
+				TokenType.@bool,
+				TokenType.@sbyte,
+				TokenType.@byte,
+				TokenType.@short,
+				TokenType.@ushort,
+				TokenType.@int,
+				TokenType.@uint,
+				TokenType.@long,
+				TokenType.@ulong,
+				TokenType.@float,
+				TokenType.@double,
+				TokenType.@char,
+				TokenType.@decimal,
+				TokenType.@object,
+				TokenType.@string);
 
-			var integerTypeAlias = ImmutableSortedSet.CreateBuilder<TokenType>();
-			integerTypeAlias.Add(TokenType.@byte);
-			integerTypeAlias.Add(TokenType.@sbyte);
-			integerTypeAlias.Add(TokenType.@short);
-			integerTypeAlias.Add(TokenType.@ushort);
-			integerTypeAlias.Add(TokenType.@int);
-			integerTypeAlias.Add(TokenType.@uint);
-			integerTypeAlias.Add(TokenType.@long);
-			integerTypeAlias.Add(TokenType.@ulong);
-			IntegerTypeAlias = integerTypeAlias.ToImmutable();
+			IntegerTypeAlias = ImmutableSortedSet.Create(
+				TokenType.@byte,
+				TokenType.@sbyte,
+				TokenType.@short,
+				TokenType.@ushort,
+				TokenType.@int,
+				TokenType.@uint,
+				TokenType.@long,
+				TokenType.@ulong);
+
+			AccessModifier = ImmutableSortedSet.Create(
+				TokenType.@public,
+				TokenType.@protected,
+				TokenType.@private,
+				TokenType.@internal);
+
+			InstanceKindModifier = ImmutableSortedSet.Create(
+				TokenType.@virtual,
+				TokenType.@override,
+				TokenType.@abstract,
+				TokenType.@sealed,
+				TokenType.@static,
+				TokenType.@extern,
+				TokenType.@const);
+
+			ValidNewInstanceKindModifier = ImmutableSortedSet.Create(
+				TokenType.@virtual,
+				TokenType.@abstract,
+				TokenType.@static,
+				TokenType.@extern);
 		}
 
 		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
 		public static readonly ImmutableSortedSet<TokenType> Alias;
 		public static readonly ImmutableSortedSet<TokenType> IntegerTypeAlias;
+
+		public static readonly ImmutableSortedSet<TokenType> AccessModifier;
+		public static readonly ImmutableSortedSet<TokenType> InstanceKindModifier;
+		public static readonly ImmutableSortedSet<TokenType> ValidNewInstanceKindModifier;
 	}
 }

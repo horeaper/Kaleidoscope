@@ -1,23 +1,16 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
-	public class AttributeObject
+	public abstract class AttributeObject
 	{
-		public readonly UsingBlob Usings;
-		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace;
-
 		public readonly ReferenceToManagedType Type;
 		public readonly TokenBlock ConstructContent;
 		readonly string m_displayName;
 
-		public AttributeObject(UsingBlob usings, TokenIdentifier[] ownerNamespace, ReferenceToManagedType type, TokenBlock constructContent)
+		protected AttributeObject(ReferenceToManagedType type, TokenBlock constructContent)
 		{
-			Usings = usings;
-			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
 			Type = type;
 			ConstructContent = constructContent;
 

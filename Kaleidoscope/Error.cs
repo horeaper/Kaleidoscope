@@ -40,19 +40,22 @@
 			public const string MissingCppKeyword = "missing 'cpp::' keyword";
 
 			public const string InvalidAttributeUsage = "invalid attribute usage";
-			public const string InlineNotAllowed = "inline not allowed here";
+			public const string InlineNotAllowed = "'inline' not allowed here";
 			public const string DuplicatedModifier = "duplicated modifier";
 			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
 			public const string ConflictModifier = "conflicted modifier";
 			public const string InvalidModifier = "invalid modifier";
-			public const string PartialNotAllowedOnType = "partial not allowed on this type";
+			public const string PartialWithClassOnly = "'partial' can only be applied to 'class', 'struct' and 'interface'";
+			public const string ExternImpliesStatic = "'extern' implies 'static'";
 
 			public const string DuplicatedGenericName = "duplicated generic type name";
 			public const string UnknownGenericName = "unknown generic type name";
 			public const string ColonExpected = ": expected";
 			public const string DuplicatedGenericConstraint = "duplicated generic constraint";
 			public const string NewConstraintInvalid = "'new' constraint is only allowed with 'class', 'interface' or 'cpp'";
-			public const string EnumConstraintIntOnly = "only integer type (such as int and byte) are allowed as enum type constraints";
+			public const string EnumValueIntOnly = "only integer type (such as int or byte) are allowed as enum value type";
+
+			public const string StructNoDestructor = "value type cannot have destructor";
 		}
 	}
 }

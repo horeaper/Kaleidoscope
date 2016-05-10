@@ -5,5 +5,6 @@
 - '\u####' character literal are still supported, but can only be used in `char` and `string` constants (not available in class or type names, for example.)
 - Failed to assign an `out` parameter will only issue a warning
 - `dynamic` is now a keyword
+- `var` is now a keyword
 - `partial` no longer allowed on methods
 - `extern` only allowed on method, and is always (implicated) static

@@ -155,29 +155,14 @@ namespace Kaleidoscope.SyntaxObject
 		}
 
 		/// <summary>
-		/// Find the end of next [...] block
+		/// Read the next {...} block, and move index past the end. return value does not contain '{' and '}'
 		/// </summary>
-		public int FindNextBracketBlockEnd(int index)
+		public TokenBlock ReadNextBraceBlock(ref int index)
 		{
-			index = FindToken(index, TokenType.LeftBracket, Error.Analysis.LeftBracketExpected);
-
-			int braceCount = 0;
-			while (true) {
-				var token = GetToken(index, Error.Analysis.RightBracketExpected);
-				switch (token.Type) {
-					case TokenType.LeftBracket:
-						++braceCount;
-						break;
-					case TokenType.RightBracket:
-						--braceCount;
-						if (braceCount == 0) {
-							return index + 1;
-						}
-						break;
-				}
-
-				++index;
-			}
+			int startIndex = FindToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+			int endIndex = FindNextBraceBlockEnd(startIndex);
+			index = endIndex;
+			return AsBeginEnd(startIndex + 1, endIndex - 1);
 		}
 
 #endregion

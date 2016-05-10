@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -35,11 +36,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Analysis\AttributeObject.cs" />
+    <Compile Include="Analysis\AttributeObjectOnMember.cs" />
     <Compile Include="Analysis\ClassTypeDeclare.cs" />
     <Compile Include="Analysis\CodeFileAnalysis.cs" />
+    <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
     <Compile Include="Analysis\CS\CodeFileAnalysisCS.class.cs" />
     <Compile Include="Analysis\CS\CodeFileAnalysisCS.cs" />
+    <Compile Include="Analysis\CS\CodeFileAnalysisCS.member.cs" />
     <Compile Include="Analysis\CS\CodeFileAnalysisCS.others.cs" />
+    <Compile Include="Analysis\CS\CodeFileAnalysisCS.util.cs" />
     <Compile Include="Analysis\CS\GenericReader.cs" />
     <Compile Include="Analysis\CS\InheritanceReader.cs" />
     <Compile Include="Analysis\CS\InstanceReferenceReader.cs" />
@@ -49,6 +54,7 @@
     <Compile Include="Analysis\CS\UsingReader.cs" />
     <Compile Include="Analysis\Internal\UsingStack.cs" />
     <Compile Include="Analysis\NestedClassTypeDeclare.cs" />
+    <Compile Include="Analysis\AttributeObjectOnType.cs" />
     <Compile Include="Analysis\RootClassTypeDeclare.cs" />
     <Compile Include="SyntaxObject\FieldAccessType.cs" />
     <Compile Include="SyntaxObject\GenericKeywordConstraintType.cs" />

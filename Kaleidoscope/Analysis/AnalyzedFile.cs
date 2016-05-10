@@ -4,7 +4,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public class AnalyzedFile
+	public sealed class AnalyzedFile
 	{
 		public readonly TokenBlock Tokens;
 
@@ -13,7 +13,7 @@ namespace Kaleidoscope.Analysis
 			CodeFileAnalysis analysis = null;
 			switch (languageType) {
 				case LanguageType.CS:
-					analysis = new CodeFileAnalysisCS(tokens);
+					analysis = new CodeFileAnalysisCS(this, tokens);
 					break;
 			}
 			if (analysis == null) {
