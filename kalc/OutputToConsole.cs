@@ -1,10 +1,6 @@
 ﻿using System;
-using Kaleidoscope;
-using Kaleidoscope.Analysis;
-using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
 
-namespace TestConsole
+namespace Kaleidoscope
 {
 	class OutputToConsole : OutputToText
 	{
@@ -31,20 +27,6 @@ namespace TestConsole
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine(text);
 			Console.ForegroundColor = colorBefore;
-		}
-	}
-
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			const string Content = 
-@"
-[Attribute(""SomeData"", First = ""First"", Second = 17, Third = new int[0])]
-[Another]
-";
-			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false, false);
-			var file = new AnalyzedFile(new OutputToConsole(), new TokenBlock(tokens), LanguageType.CS);
 		}
 	}
 }

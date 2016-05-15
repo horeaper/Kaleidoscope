@@ -9,14 +9,14 @@ namespace Kaleidoscope.Tokenizer
 {
 	public static class Tokenizer
 	{
-		public static ImmutableArray<Token> Process(IInfoOutput output, SourceTextFile source, IEnumerable<string> definedSymbols, bool isIncludeTrivia, bool isIncludeComment)
+		public static ImmutableArray<Token> Process(InfoOutput infoOutput, SourceTextFile source, IEnumerable<string> definedSymbols, bool isIncludeTrivia, bool isIncludeComment)
 		{
 			var builder = ImmutableArray.CreateBuilder<Token>();
 
 			var currentSymbols = new SortedSet<string>(definedSymbols ?? new string[] { });
 			int index = 0;
 			while (index < source.Length) {
-				var token = GetTokenWorker(source, index);
+				var token = GetTokenWorker(infoOutput, source, index);
 				if (token == null) {
 					break;
 				}
@@ -24,7 +24,7 @@ namespace Kaleidoscope.Tokenizer
 				var preprocessorToken = token as TokenPreprocessor;
 				if (preprocessorToken != null) {
 					index = token.End;
-					ProcessPreprocessor(output, source, currentSymbols, preprocessorToken, ref index);
+					ProcessPreprocessor(infoOutput, source, currentSymbols, preprocessorToken, ref index);
 				}
 				else {
 					if (token is TokenTrivia && !isIncludeTrivia) {
@@ -44,7 +44,7 @@ namespace Kaleidoscope.Tokenizer
 			return builder.MoveToImmutable();
 		}
 
-		static Token GetTokenWorker(SourceTextFile source, int index)
+		static Token GetTokenWorker(InfoOutput infoOutput, SourceTextFile source, int index)
 		{
 			//Ignores
 			while (index < source.Length && source[index] == '\r') {
@@ -98,7 +98,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!fnConvertText(numberText, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 									return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
 								}
@@ -106,7 +106,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!fnConvertText(numberText, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 
 									if (value > uint.MaxValue) {
@@ -120,7 +120,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!fnConvertText(numberText, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 
 									if (value > long.MaxValue) {
@@ -134,7 +134,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!fnConvertText(numberText, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 
 									if (value > long.MaxValue) {
@@ -205,7 +205,7 @@ namespace Kaleidoscope.Tokenizer
 						if (!isMinusFirst) {
 							ulong value;
 							if (!ulong.TryParse(text, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
-								throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+								infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 							}
 
 							if (value > long.MaxValue) {
@@ -224,12 +224,11 @@ namespace Kaleidoscope.Tokenizer
 						else {
 							long value;
 							if (!long.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.CurrentCulture, out value)) {
-								throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+								infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 							}
 
 							if (value < int.MinValue) {
 								return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
-
 							}
 							else {
 								return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Int);
@@ -240,7 +239,7 @@ namespace Kaleidoscope.Tokenizer
 					Func<string, Token> fnParseRealNumber = text => {
 						double value;
 						if (!double.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+							infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 						}
 						return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
 					};
@@ -257,10 +256,12 @@ namespace Kaleidoscope.Tokenizer
 					var integerTrailing = ReadIntegerLiteralTrailing(source, ref index);
 					if (integerTrailing != IntegerTrailingType.None) {
 						if (isDotFirst) {
-							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+							infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
+							return new TokenFloatNumber(source, startIndex, index, -1, FloatNumberType.Double);
 						}
 						if (isMinusFirst && (integerTrailing == IntegerTrailingType.UL || integerTrailing == IntegerTrailingType.U)) {
-							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+							infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
+							return new TokenSignedInteger(source, startIndex, index, -1, IntegerNumberType.Int);
 						}
 
 						switch (integerTrailing) {
@@ -268,7 +269,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 									return new TokenUnsignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
 								}
@@ -276,7 +277,7 @@ namespace Kaleidoscope.Tokenizer
 								{
 									ulong value;
 									if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 									}
 
 									if (value > uint.MaxValue) {
@@ -291,7 +292,7 @@ namespace Kaleidoscope.Tokenizer
 									if (!isMinusFirst) {
 										ulong value;
 										if (!ulong.TryParse(numberText, NumberStyles.None, CultureInfo.CurrentCulture, out value)) {
-											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+											infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 										}
 
 										if (value > long.MaxValue) {
@@ -304,7 +305,7 @@ namespace Kaleidoscope.Tokenizer
 									else {
 										long value;
 										if (!long.TryParse(numberText, NumberStyles.AllowLeadingSign, CultureInfo.CurrentCulture, out value)) {
-											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant);
+											infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidIntegralConstant));
 										}
 										return new TokenSignedInteger(source, startIndex, index, value, IntegerNumberType.Long);
 									}
@@ -320,7 +321,7 @@ namespace Kaleidoscope.Tokenizer
 									++index;
 									float value;
 									if (!float.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 									}
 									return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Float);
 								}
@@ -330,7 +331,7 @@ namespace Kaleidoscope.Tokenizer
 									++index;
 									double value;
 									if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 									}
 									return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
 								}
@@ -340,7 +341,7 @@ namespace Kaleidoscope.Tokenizer
 									++index;
 									decimal value;
 									if (!decimal.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-										throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant);
+										infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant));
 									}
 									return new TokenDecimalNumber(source, startIndex, index, value);
 								}
@@ -362,7 +363,7 @@ namespace Kaleidoscope.Tokenizer
 									if (index >= source.Length) {
 										double value;
 										if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-											throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+											infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 										}
 										return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
 									}
@@ -374,7 +375,7 @@ namespace Kaleidoscope.Tokenizer
 												++index;
 												float value;
 												if (!float.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+													infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 												}
 												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Float);
 											}
@@ -384,7 +385,7 @@ namespace Kaleidoscope.Tokenizer
 												++index;
 												double value;
 												if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+													infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 												}
 												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
 											}
@@ -394,7 +395,7 @@ namespace Kaleidoscope.Tokenizer
 												++index;
 												decimal value;
 												if (!decimal.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant);
+													infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidDecimalConstant));
 												}
 												return new TokenDecimalNumber(source, startIndex, index, value);
 											}
@@ -402,7 +403,7 @@ namespace Kaleidoscope.Tokenizer
 											{
 												double value;
 												if (!double.TryParse(numberText, NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out value)) {
-													throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant);
+													infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.InvalidRealConstant));
 												}
 												return new TokenFloatNumber(source, startIndex, index, value, FloatNumberType.Double);
 											}
@@ -444,13 +445,15 @@ namespace Kaleidoscope.Tokenizer
 					switch (source[index]) {
 						case '\\':
 							++index;
-							result = ReadCharacterLiterialEscapeSequence(source, startIndex, ref index);
+							result = ReadCharacterLiterialEscapeSequence(infoOutput, source, startIndex, ref index);
 							break;
 						case '\r':
 						case '\n':
 							throw ParseException.AsIndex(source, index, Error.Tokenizer.NewLineNotAllowedOnChar);
 						case '\'':
-							throw ParseException.AsRange(source, startIndex, index, Error.Tokenizer.EmptyCharLiteral);
+							infoOutput?.OutputError(ParseException.AsRange(source, startIndex, index, Error.Tokenizer.EmptyCharLiteral));
+							result = (char)0;
+							break;
 						default:
 							result = source[index];
 							++index;
@@ -476,11 +479,13 @@ namespace Kaleidoscope.Tokenizer
 						switch (source[index]) {
 							case '\\':
 								++index;
-								convertedContent.Append(ReadCharacterLiterialEscapeSequence(source, startIndex, ref index));
+								convertedContent.Append(ReadCharacterLiterialEscapeSequence(infoOutput, source, startIndex, ref index));
 								break;
 							case '\r':
 							case '\n':
-								throw ParseException.AsIndex(source, index, Error.Tokenizer.NewLineNotAllowedOnString);
+								infoOutput?.OutputError(ParseException.AsIndex(source, index, Error.Tokenizer.NewLineNotAllowedOnString));
+								++index;
+								break;
 							case '\"':
 								return new TokenString(source, startIndex, index + 1, convertedContent.ToString());
 							default:
@@ -571,7 +576,7 @@ namespace Kaleidoscope.Tokenizer
 					}
 
 					var contentTokens = new List<Token>();
-					var token = GetTokenWorker(source, index);
+					var token = GetTokenWorker(infoOutput, source, index);
 					while (token != null) {
 						var triviaToken = token as TokenTrivia;
 						if (triviaToken != null) {
@@ -585,7 +590,7 @@ namespace Kaleidoscope.Tokenizer
 						}
 
 						index = token.End;
-						token = GetTokenWorker(source, index);
+						token = GetTokenWorker(infoOutput, source, index);
 					}
 					return new TokenPreprocessor(source, startIndex, index, type, contentTokens.ToArray());
 				}
@@ -665,17 +670,19 @@ namespace Kaleidoscope.Tokenizer
 
 #region Preprocessor
 
-		static void ProcessPreprocessor(IInfoOutput output, SourceTextFile source, SortedSet<string> currentSymbols, TokenPreprocessor preprocessorToken, ref int index)
+		static void ProcessPreprocessor(InfoOutput infoOutput, SourceTextFile source, SortedSet<string> currentSymbols, TokenPreprocessor preprocessorToken, ref int index)
 		{
 			switch (preprocessorToken.Type) {
 				case PreprocessorType.@define:
 					{
 						if (preprocessorToken.ContentTokens.Length != 1) {
-							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+							infoOutput?.OutputError(ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor));
+							break;
 						}
 						var token = preprocessorToken.ContentTokens[0] as TokenIdentifier;
 						if (token == null) {
-							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+							infoOutput?.OutputError(ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor));
+							break;
 						}
 						currentSymbols.Add(token.Text);
 					}
@@ -683,11 +690,13 @@ namespace Kaleidoscope.Tokenizer
 				case PreprocessorType.@undef:
 					{
 						if (preprocessorToken.ContentTokens.Length != 1) {
-							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+							infoOutput?.OutputError(ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor));
+							break;
 						}
 						var token = preprocessorToken.ContentTokens[0] as TokenIdentifier;
 						if (token == null) {
-							throw ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor);
+							infoOutput?.OutputError(ParseException.AsToken(preprocessorToken, Error.Tokenizer.InvalidPreprocessor));
+							break;
 						}
 						currentSymbols.Remove(token.Text);
 					}
@@ -699,7 +708,7 @@ namespace Kaleidoscope.Tokenizer
 						if (!exp.Evaluate) {
 							//Find else/elif/endif
 							while (true) {
-								var token = GetTokenWorker(source, index);
+								var token = GetTokenWorker(infoOutput, source, index);
 								if (token == null) {
 									return;
 								}
@@ -729,7 +738,7 @@ namespace Kaleidoscope.Tokenizer
 					{
 						//Find endif
 						while (true) {
-							var token = GetTokenWorker(source, index);
+							var token = GetTokenWorker(infoOutput, source, index);
 							if (token == null) {
 								return;
 							}
@@ -755,15 +764,15 @@ namespace Kaleidoscope.Tokenizer
 					}
 				case PreprocessorType.@warning: 
 					{
-						if (output != null) {
+						if (infoOutput != null) {
 							if (preprocessorToken.ContentTokens.Length > 0) {
 								var firstToken = preprocessorToken.ContentTokens[0];
 								var lastToken = preprocessorToken.ContentTokens[preprocessorToken.ContentTokens.Length - 1];
 								var errorText = preprocessorToken.SourceFile.Substring(firstToken.Begin, lastToken.End);
-								output.OutputWarning(ParseException.AsToken(preprocessorToken, "#error: " + errorText));
+								infoOutput.OutputWarning(ParseException.AsToken(preprocessorToken, "#error: " + errorText));
 							}
 							else {
-								output.OutputWarning(ParseException.AsToken(preprocessorToken, "#error"));
+								infoOutput.OutputWarning(ParseException.AsToken(preprocessorToken, "#error"));
 							}
 						}
 					}
@@ -979,7 +988,7 @@ namespace Kaleidoscope.Tokenizer
 
 #region Utility - Character
 
-		static char ReadCharacterLiterialEscapeSequence(SourceTextFile source, int firstIndex, ref int index)
+		static char ReadCharacterLiterialEscapeSequence(InfoOutput infoOutput, SourceTextFile source, int firstIndex, ref int index)
 		{
 			switch (source[index]) {
 				case 'u':
@@ -988,7 +997,8 @@ namespace Kaleidoscope.Tokenizer
 						int numberStart = index;
 						for (int cnt = 0; cnt < 4; ++cnt) {
 							if (!IsHexNumber(source[index])) {
-								throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+								infoOutput?.OutputError(ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter));
+								return (char)0;
 							}
 							++index;
 						}
@@ -996,7 +1006,7 @@ namespace Kaleidoscope.Tokenizer
 
 						int number;
 						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
-							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+							infoOutput?.OutputError(ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter));
 						}
 						return (char)number;
 					}
@@ -1012,7 +1022,7 @@ namespace Kaleidoscope.Tokenizer
 
 						int number;
 						if (!int.TryParse(hexDigitText, NumberStyles.AllowHexSpecifier, CultureInfo.CurrentCulture, out number)) {
-							throw ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter);
+							infoOutput?.OutputError(ParseException.AsRange(source, firstIndex, index, Error.Tokenizer.UnknownUnicodeCharacter));
 						}
 						return (char)number;
 					}
@@ -1050,7 +1060,9 @@ namespace Kaleidoscope.Tokenizer
 					++index;
 					return '\v';
 				default:
-					throw ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence);
+					infoOutput?.OutputWarning(ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence));
+					++index;
+					return source[index];
 			}
 		}
 

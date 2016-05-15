@@ -13,7 +13,7 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
-				throw ParseException.AsToken(nameToken, Error.Analysis.UnexpectedToken);
+				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
@@ -77,44 +77,48 @@ namespace Kaleidoscope.Analysis.CS
 					accessModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@new) {
-					CheckConflict(newModifier, token);
+					CheckDuplicate(newModifier, token);
 					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
 					newModifier = (TokenKeyword)token;
 				}
 				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
 					if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
 						(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
-						throw ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic);
+						infoOutput?.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
 					}
 					CheckConflict(instanceKindModifier, token);
 					CheckInconsistent(readonlyModifier, unsafeModifier, asyncModifier);
 					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
-						throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
+						infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
-					instanceKindModifier = (TokenKeyword)token;
+					else {
+						instanceKindModifier = (TokenKeyword)token;
+					}
 				}
 				else if (token.Type == TokenType.@readonly) {
-					CheckConflict(readonlyModifier, token);
+					CheckDuplicate(readonlyModifier, token);
 					CheckInconsistent(unsafeModifier, asyncModifier);
 					if (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static) {
-						throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
+						infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
-					readonlyModifier = (TokenKeyword)token;
+					else {
+						readonlyModifier = (TokenKeyword)token;
+					}
 				}
 				else if (token.Type == TokenType.@unsafe) {
-					CheckConflict(unsafeModifier, token);
+					CheckDuplicate(unsafeModifier, token);
 					CheckInconsistent(asyncModifier);
 					unsafeModifier = (TokenKeyword)token;
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.async) {
-					CheckConflict(asyncModifier, token);
+					CheckDuplicate(asyncModifier, token);
 					asyncModifier = (TokenIdentifier)token;
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
-					throw ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly);
+					infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.inline) {
-					throw ParseException.AsToken(token, Error.Analysis.InlineNotAllowed);
+					infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
 				}
 				//========================================================================
 				// Nested type

@@ -4,10 +4,17 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class CodeFileAnalysisCS
 	{
+		void CheckDuplicate(Token existingToken, Token token)
+		{
+			if (existingToken != null) {
+				infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedModifier));
+			}
+		}
+
 		void CheckConflict(Token lastToken, Token token)
 		{
 			if (lastToken != null) {
-				throw ParseException.AsToken(token, Error.Analysis.ConflictModifier);
+				infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 			}
 		}
 
@@ -15,10 +22,9 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			foreach (var item in tokens) {
 				if (item != null) {
-					throw ParseException.AsToken(item, Error.Analysis.InconsistentModifierOrder);
+					infoOutput?.OutputError(ParseException.AsToken(item, Error.Analysis.InconsistentModifierOrder));
 				}
 			}
 		}
-
 	}
 }

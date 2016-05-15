@@ -23,7 +23,6 @@ Options:
 Internal options:
   -mini             Enable mini mode (don't include standard libraries)
   -i <folder>       Include all *.cs files in this folder to process
-  -verbose          Enable verbose output mode
 ";
 
 		class OpenedFile
@@ -107,9 +106,6 @@ Internal options:
 								return null;
 							}
 							break;
-						case "-verbose":
-							config.IsVerboseMode = true;
-							break;
 						default:
 							inputFiles.Add(args[currentIndex]);
 							break;
@@ -187,7 +183,7 @@ Internal options:
 			}
 
 			try {
-				var codeHub = new CodeHub(config, new OutputByConsole());
+				var codeHub = new CodeHub(config, new OutputToConsole());
 			}
 			catch (KaleidoscopeSystemException) {
 				return -1;

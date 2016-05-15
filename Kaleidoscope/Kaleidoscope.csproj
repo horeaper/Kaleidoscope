@@ -80,7 +80,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Error.cs" />
     <Compile Include="IncludeHeaderFile.cs" />
-    <Compile Include="IInfoOutput.cs" />
+    <Compile Include="InfoOutput.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Preprocessor\BoolKeywordStatement.cs" />
     <Compile Include="Preprocessor\ConditionalExpression.cs" />
