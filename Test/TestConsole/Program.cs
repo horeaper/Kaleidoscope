@@ -44,7 +44,7 @@ namespace TestConsole
 [Another]
 ";
 			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false, false);
-			var file = new AnalyzedFile(new OutputToConsole(), new TokenBlock(tokens), LanguageType.CS);
+			var file = new CodeFile(new OutputToConsole(), new TokenBlock(tokens), LanguageType.CS);
 		}
 	}
 }

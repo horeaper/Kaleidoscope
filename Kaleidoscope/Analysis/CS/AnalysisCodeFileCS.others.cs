@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	partial class CodeFileAnalysisCS
+	partial class AnalysisCodeFileCS
 	{
 		void ReadEnum(AttributeObject[] customAttributes, bool isPublic)
 		{

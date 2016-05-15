@@ -14,26 +14,29 @@ namespace Kaleidoscope
 		public Configuration Configuration { get; }
 		public InfoOutput InfoOutput { get; }
 
-		public readonly ImmutableArray<AnalyzedFile> AnalyzedFiles;
+		public readonly ImmutableArray<CodeFile> AnalyzedFiles;
 
 		public CodeHub(Configuration config, InfoOutput infoOutput)
 		{
+			if (infoOutput == null) {
+				throw new ArgumentNullException(nameof(infoOutput));
+			}
 			Configuration = config;
 			InfoOutput = infoOutput;
 
 			//Analysis - Get code file structure
 			var errorList = new ConcurrentBag<ParseException>();
-			var codeFiles = new ConcurrentBag<AnalyzedFile>();
+			var codeFiles = new ConcurrentBag<CodeFile>();
 			Parallel.ForEach(Configuration.InputFiles, file => {
 				try {
 					string extension = Path.GetExtension(file.FileName);
 					if (string.Compare(extension, ".cs", StringComparison.CurrentCultureIgnoreCase) == 0) {
 						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, false, false);
-						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CS));
+						codeFiles.Add(new CodeFile(InfoOutput, new TokenBlock(tokens), LanguageType.CS));
 					}
 					else if (string.Compare(extension, ".cfs", StringComparison.CurrentCultureIgnoreCase) == 0) {
 						var tokens = Tokenizer.Tokenizer.Process(InfoOutput, file, Configuration.DefinedSymbols, true, false);
-						codeFiles.Add(new AnalyzedFile(InfoOutput, new TokenBlock(tokens), LanguageType.CFS));
+						codeFiles.Add(new CodeFile(InfoOutput, new TokenBlock(tokens), LanguageType.CFS));
 					}
 				}
 				catch (ParseException e) {

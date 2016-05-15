@@ -93,7 +93,6 @@ namespace Kaleidoscope
 				TokenType.@virtual,
 				TokenType.@override,
 				TokenType.@abstract,
-				TokenType.@sealed,
 				TokenType.@static,
 				TokenType.@extern,
 				TokenType.@const);

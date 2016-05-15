@@ -16,7 +16,8 @@
 			public const string BadCharConstant = "bad char constant";
 			public const string NewLineNotAllowedOnString = "new line is not allowed when declaring non-verbatim string constants";
 			public const string MultiLineCommentNotClosed = "'*/' expected";
-			public const string InvalidPreprocessor = "Invalid preprocessor directive";
+			public const string InvalidPreprocessor = "invalid preprocessor directive";
+			public const string PreprocessorLineNotSupported = "'line' preprocessor not supported";
 		}
 
 		public static class Analysis
@@ -45,6 +46,7 @@
 			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
 			public const string ConflictModifier = "conflicted modifier";
 			public const string InvalidModifier = "invalid modifier";
+			public const string SealedOnlyWithOverride = "'sealed' can only be applied to 'override' member";
 			public const string PartialWithClassOnly = "'partial' can only be applied to 'class', 'struct' and 'interface'";
 			public const string ExternImpliesStatic = "'extern' implies 'static'";
 

@@ -7,7 +7,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public abstract class CodeFileAnalysis
+	public abstract class AnalysisCodeFile
 	{
 	}
 }

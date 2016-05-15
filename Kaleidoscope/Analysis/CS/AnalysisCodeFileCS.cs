@@ -6,17 +6,17 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	partial class CodeFileAnalysisCS : CodeFileAnalysis
+	partial class AnalysisCodeFileCS : AnalysisCodeFile
 	{
 		readonly InfoOutput infoOutput;
-		readonly AnalyzedFile ownerFile;
+		readonly CodeFile ownerFile;
 		readonly TokenBlock block;
 
 		int index;
 		readonly UsingStack currentUsings = new UsingStack();
 		readonly NamespaceStack currentNamespace = new NamespaceStack();
 
-		public CodeFileAnalysisCS(InfoOutput infoOutput, AnalyzedFile ownerFile, TokenBlock block)
+		public AnalysisCodeFileCS(InfoOutput infoOutput, CodeFile ownerFile, TokenBlock block)
 		{
 			this.infoOutput = infoOutput;
 			this.ownerFile = ownerFile;
@@ -38,7 +38,7 @@ namespace Kaleidoscope.Analysis.CS
 					case TokenType.@using:
 						{
 							if (currentAttributes.Count > 0) {
-								infoOutput?.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
+								infoOutput.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
 								currentAttributes.Clear();
 							}
 							++index;
@@ -82,7 +82,7 @@ namespace Kaleidoscope.Analysis.CS
 					case TokenType.@namespace:
 						{
 							if (currentAttributes.Count > 0) {
-								infoOutput?.OutputMessage(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
+								infoOutput.OutputMessage(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
 								currentAttributes.Clear();
 							}
 
@@ -101,7 +101,7 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.Semicolon:
 						if (currentAttributes.Count > 0) {
-							infoOutput?.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
+							infoOutput.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
 							currentAttributes.Clear();
 						}
 						++index;
@@ -130,10 +130,10 @@ namespace Kaleidoscope.Analysis.CS
 				switch (token.Type) {
 					case TokenType.@public:
 						if (isPublic) {
-							infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedModifier));
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedModifier));
 						}
 						else {
-							infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.InconsistentModifierOrder));
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InconsistentModifierOrder));
 							isPublic = true;
 						}
 						break;
@@ -154,45 +154,37 @@ namespace Kaleidoscope.Analysis.CS
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-							instanceKindModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
 						ReadRootClassTypeDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct));
 						return;
 					case TokenType.@interface:
 						if (instanceKindModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-							instanceKindModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
 						ReadRootClassTypeDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, ReadInterfaceMembers<RootClassTypeDeclare.Builder>);
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-							instanceKindModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
 						if (unsafeModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
-							unsafeModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
 						}
 						if (partialModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
-							partialModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
 						ReadEnum(customAttributes, isPublic);
 						return;
 					case TokenType.@delegate:
 						if (instanceKindModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-							instanceKindModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
 						if (unsafeModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
-							unsafeModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
 						}
 						if (partialModifier != null) {
-							infoOutput?.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
-							partialModifier = null;
+							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
 						ReadDelegate(customAttributes, isPublic);
 						return;
@@ -205,7 +197,7 @@ namespace Kaleidoscope.Analysis.CS
 									partialModifier = identifierToken;
 									break;
 								case ContextualKeywordType.inline:
-									infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
+									infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
 									break;
 								default:
 									throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);

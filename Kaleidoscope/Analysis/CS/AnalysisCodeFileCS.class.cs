@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Kaleidoscope.Analysis.Internal;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	partial class CodeFileAnalysisCS
+	partial class AnalysisCodeFileCS
 	{
 		void ReadRootClassTypeDeclare(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, Func<TokenIdentifier, RootClassTypeDeclare.Builder> fnReadMembers)
 		{
@@ -45,6 +44,7 @@ namespace Kaleidoscope.Analysis.CS
 
 			TokenKeyword accessModifier = null;
 			TokenKeyword newModifier = null;
+			TokenKeyword sealedModifier = null;
 			TokenKeyword instanceKindModifier = null;
 			TokenKeyword readonlyModifier = null;
 			TokenKeyword unsafeModifier = null;
@@ -73,23 +73,31 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				else if (ConstantTable.AccessModifier.Contains(token.Type)) {
 					CheckConflict(accessModifier, token);
-					CheckInconsistent(newModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(newModifier, sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
 					accessModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@new) {
 					CheckDuplicate(newModifier, token);
-					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
 					newModifier = (TokenKeyword)token;
+				}
+				else if (token.Type == TokenType.@sealed) {
+					CheckDuplicate(sealedModifier, token);
+					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					sealedModifier = (TokenKeyword)token;
 				}
 				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
 					if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
 						(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
-						infoOutput?.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
+						infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
 					}
 					CheckConflict(instanceKindModifier, token);
 					CheckInconsistent(readonlyModifier, unsafeModifier, asyncModifier);
 					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
-						infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
+					}
+					else if (sealedModifier != null && token.Type != TokenType.@override) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.SealedOnlyWithOverride));
 					}
 					else {
 						instanceKindModifier = (TokenKeyword)token;
@@ -98,8 +106,8 @@ namespace Kaleidoscope.Analysis.CS
 				else if (token.Type == TokenType.@readonly) {
 					CheckDuplicate(readonlyModifier, token);
 					CheckInconsistent(unsafeModifier, asyncModifier);
-					if (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static) {
-						infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
+					if (sealedModifier != null || (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static)) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
 					else {
 						readonlyModifier = (TokenKeyword)token;
@@ -115,10 +123,10 @@ namespace Kaleidoscope.Analysis.CS
 					asyncModifier = (TokenIdentifier)token;
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
-					infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly));
+					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.inline) {
-					infoOutput?.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
+					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
 				}
 				//========================================================================
 				// Nested type
@@ -209,7 +217,9 @@ namespace Kaleidoscope.Analysis.CS
 
 /*
  * public/protected/private/internal
+ * 
  * new (with virtual/abstract/static/extern)
+ * sealed (with override)
  * 
  * virtual/override/abstract/sealed/static/extern/const
  * readonly (and static)
