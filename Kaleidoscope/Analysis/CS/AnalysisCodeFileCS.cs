@@ -150,7 +150,13 @@ namespace Kaleidoscope.Analysis.CS
 						unsafeModifier = (TokenKeyword)token;
 						break;
 					case TokenType.@class:
-						ReadRootClassTypeDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString()), nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@interface));
+						{
+							var instanceKind = TypeInstanceKind.None;
+							if (instanceKindModifier != null) {
+								instanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
+							}
+							ReadRootClassTypeDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@interface));
+						}
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {

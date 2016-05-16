@@ -33,7 +33,33 @@ namespace Kaleidoscope.Analysis.CS
 			builder.CustomAttributes = customAttributes;
 		}
 
-		T ReadClassMembers<T>(TokenIdentifier nameToken, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
+		void ReadNestedClassTypeDeclare(AttributeObjectOnMember[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, Func<TokenIdentifier, NestedClassTypeDeclare.Builder> fnReadMembers)
+		{
+			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
+			if (nameToken.Type != TokenType.Identifier) {
+				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
+			}
+
+			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
+			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
+			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
+
+			var builder = fnReadMembers((TokenIdentifier)nameToken);
+			builder.AccessModifier = accessModifier;
+			builder.IsNew = isNew;
+			builder.IsUnsafe = isUnsafe;
+			builder.IsPartial = isPartial;
+			builder.InstanceKind = instanceKind;
+			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
+			builder.Inherits = inherits;
+			builder.Name = (TokenIdentifier)nameToken;
+			builder.OwnerFile = ownerFile;
+			builder.Usings = new UsingBlob(currentUsings.Peek());
+			builder.Namespace = currentNamespace.ToArray();
+			builder.CustomAttributes = customAttributes.Cast<AttributeObject>().ToArray();
+		}
+
+		T ReadClassMembers<T>(TokenIdentifier className, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
 		{
 			var builder = new T();
 			builder.TypeKind = typeKind;
@@ -48,13 +74,16 @@ namespace Kaleidoscope.Analysis.CS
 			TokenKeyword instanceKindModifier = null;
 			TokenKeyword readonlyModifier = null;
 			TokenKeyword unsafeModifier = null;
+			TokenIdentifier partialModifier = null;
 			TokenIdentifier asyncModifier = null;
 			Action fnResetModifiers = () => {
 				accessModifier = null;
 				newModifier = null;
+				sealedModifier = null;
 				instanceKindModifier = null;
 				readonlyModifier = null;
 				unsafeModifier = null;
+				partialModifier = null;
 				asyncModifier = null;
 			};
 
@@ -73,17 +102,17 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				else if (ConstantTable.AccessModifier.Contains(token.Type)) {
 					CheckConflict(accessModifier, token);
-					CheckInconsistent(newModifier, sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(newModifier, sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
 					accessModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@new) {
 					CheckDuplicate(newModifier, token);
-					CheckInconsistent(sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
 					newModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@sealed) {
 					CheckDuplicate(sealedModifier, token);
-					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
 					sealedModifier = (TokenKeyword)token;
 				}
 				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
@@ -92,7 +121,7 @@ namespace Kaleidoscope.Analysis.CS
 						infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
 					}
 					CheckConflict(instanceKindModifier, token);
-					CheckInconsistent(readonlyModifier, unsafeModifier, asyncModifier);
+					CheckInconsistent(readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
 					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
@@ -105,7 +134,8 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else if (token.Type == TokenType.@readonly) {
 					CheckDuplicate(readonlyModifier, token);
-					CheckInconsistent(unsafeModifier, asyncModifier);
+					CheckInconsistent(unsafeModifier, partialModifier, asyncModifier);
+					CheckInvalid(partialModifier, asyncModifier);
 					if (sealedModifier != null || (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static)) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
@@ -115,15 +145,18 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else if (token.Type == TokenType.@unsafe) {
 					CheckDuplicate(unsafeModifier, token);
-					CheckInconsistent(asyncModifier);
+					CheckInconsistent(partialModifier, asyncModifier);
 					unsafeModifier = (TokenKeyword)token;
+				}
+				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
+					CheckDuplicate(partialModifier, token);
+					CheckInvalid(asyncModifier);
+					partialModifier = (TokenIdentifier)token;
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.async) {
 					CheckDuplicate(asyncModifier, token);
+					CheckInvalid(partialModifier);
 					asyncModifier = (TokenIdentifier)token;
-				}
-				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
-					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.PartialWithClassOnly));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.inline) {
 					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
@@ -132,6 +165,34 @@ namespace Kaleidoscope.Analysis.CS
 				// Nested type
 				//========================================================================
 				else if (token.Type == TokenType.@class) {
+					CheckInvalid(readonlyModifier, asyncModifier);
+
+					var access = AccessModifier.@private;
+					if (accessModifier != null) {
+						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
+					}
+
+					var instanceKind = TypeInstanceKind.None;
+					if (sealedModifier != null) {
+						instanceKind = TypeInstanceKind.@sealed;
+						if (instanceKindModifier != null) {
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+						}
+					}
+					else if (instanceKindModifier != null) {
+						if (instanceKindModifier.Type == KeywordType.@abstract) {
+							instanceKind = TypeInstanceKind.@abstract;
+						}
+						else if (instanceKindModifier.Type == KeywordType.@static) {
+							instanceKind = TypeInstanceKind.@static;
+						}
+						else {
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+						}
+					}
+
+					ReadNestedClassTypeDeclare(currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class));
+					currentAttributes.Clear();
 
 					//Next member
 					fnResetModifiers();
@@ -161,7 +222,7 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				else {
 					//Constructor
-					if (token.Text == nameToken.Text) {
+					if (token.Text == className.Text) {
 						var nextToken = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
 						if (nextToken.Type == TokenType.LeftParenthesis) {
 							
@@ -171,7 +232,7 @@ namespace Kaleidoscope.Analysis.CS
 					//Destructor
 					if (token.Type == TokenType.BitwiseNot) {
 						if (typeKind == ClassTypeKind.@struct) {
-							throw ParseException.AsToken(token, Error.Analysis.StructNoDestructor);
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
 						}
 
 					}

@@ -26,5 +26,14 @@ namespace Kaleidoscope.Analysis.CS
 				}
 			}
 		}
+
+		void CheckInvalid(params Token[] tokens)
+		{
+			foreach (var item in tokens) {
+				if (item != null) {
+					infoOutput.OutputError(ParseException.AsToken(item, Error.Analysis.InvalidModifier));
+				}
+			}
+		}
 	}
 }
