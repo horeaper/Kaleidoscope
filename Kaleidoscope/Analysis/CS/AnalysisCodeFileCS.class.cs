@@ -8,58 +8,68 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		void ReadRootClassTypeDeclare(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, Func<TokenIdentifier, RootClassTypeDeclare.Builder> fnReadMembers)
+		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(RootClassTypeDeclare self, TokenIdentifier nameToken);
+
+		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
+			return new RootClassTypeDeclare((TokenIdentifier)nameToken, customAttributes, self => ReadRootClassMembers(self, (TokenIdentifier)nameToken, isPublic, isUnsafe, isPartial, instanceKind, fnReadMembers));
+		}
+
+		RootClassTypeDeclare.Builder ReadRootClassMembers(RootClassTypeDeclare self, TokenIdentifier nameToken, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
+		{
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers((TokenIdentifier)nameToken);
-			builder.IsPublic = isPublic;
-			builder.IsUnsafe = isUnsafe;
-			builder.IsPartial = isPartial;
-			builder.InstanceKind = instanceKind;
-			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
-			builder.Inherits = inherits;
-			builder.Name = (TokenIdentifier)nameToken;
+			var builder = fnReadMembers(self, nameToken);
 			builder.OwnerFile = ownerFile;
 			builder.Usings = new UsingBlob(currentUsings.Peek());
 			builder.Namespace = currentNamespace.ToArray();
-			builder.CustomAttributes = customAttributes;
+			builder.IsPublic = isPublic;
+			builder.InstanceKind = instanceKind;
+			builder.IsUnsafe = isUnsafe;
+			builder.IsPartial = isPartial;
+			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
+			builder.Inherits = inherits;
+			return builder;
 		}
 
-		void ReadNestedClassTypeDeclare(AttributeObjectOnMember[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, Func<TokenIdentifier, NestedClassTypeDeclare.Builder> fnReadMembers)
+		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(NestedClassTypeDeclare self, TokenIdentifier nameToken);
+
+		NestedClassTypeDeclare ReadNestedClassDeclare(ClassTypeDeclare owner, AttributeObjectOnMember[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
+			return new NestedClassTypeDeclare((TokenIdentifier)nameToken, customAttributes.Cast<AttributeObject>().ToArray(), self => ReadNestedClassMembers(owner, self, (TokenIdentifier)nameToken, accessModifier, isNew, isUnsafe, isPartial, instanceKind, fnReadMembers));
+		}
+
+		NestedClassTypeDeclare.Builder ReadNestedClassMembers(ClassTypeDeclare owner, NestedClassTypeDeclare self, TokenIdentifier nameToken, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
+		{
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers((TokenIdentifier)nameToken);
+			var builder = fnReadMembers(self, nameToken);
+			builder.ContainerType = owner;
 			builder.AccessModifier = accessModifier;
 			builder.IsNew = isNew;
+			builder.InstanceKind = instanceKind;
 			builder.IsUnsafe = isUnsafe;
 			builder.IsPartial = isPartial;
-			builder.InstanceKind = instanceKind;
 			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
 			builder.Inherits = inherits;
-			builder.Name = (TokenIdentifier)nameToken;
-			builder.OwnerFile = ownerFile;
-			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.ToArray();
-			builder.CustomAttributes = customAttributes.Cast<AttributeObject>().ToArray();
+			return builder;
 		}
 
-		T ReadClassMembers<T>(TokenIdentifier className, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
+		T ReadClassMembers<T>(ClassTypeDeclare self, TokenIdentifier typeName, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
 		{
 			var builder = new T();
 			builder.TypeKind = typeKind;
@@ -76,7 +86,8 @@ namespace Kaleidoscope.Analysis.CS
 			TokenKeyword unsafeModifier = null;
 			TokenIdentifier partialModifier = null;
 			TokenIdentifier asyncModifier = null;
-			Action fnResetModifiers = () => {
+			var currentAttributes = new List<AttributeObjectOnMember>();
+			Action fnNextMember = () => {
 				accessModifier = null;
 				newModifier = null;
 				sealedModifier = null;
@@ -85,9 +96,9 @@ namespace Kaleidoscope.Analysis.CS
 				unsafeModifier = null;
 				partialModifier = null;
 				asyncModifier = null;
+				currentAttributes.Clear();
 			};
 
-			var currentAttributes = new List<AttributeObjectOnMember>();
 			while (true) {
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
@@ -191,38 +202,45 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 
-					ReadNestedClassTypeDeclare(currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class));
-					currentAttributes.Clear();
-
-					//Next member
-					fnResetModifiers();
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@class)));
+					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
+					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
 
-					//Next member
-					fnResetModifiers();
+					var access = AccessModifier.@private;
+					if (accessModifier != null) {
+						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
+					}
+
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@struct)));
+					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
+					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
 
-					//Next member
-					fnResetModifiers();
+					var access = AccessModifier.@private;
+					if (accessModifier != null) {
+						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
+					}
+
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nestedSelf, nameToken)));
+					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
 
-					//Next member
-					fnResetModifiers();
+					fnNextMember();
 				}
 				else if (token.Type == TokenType.@delegate) {
 
-					//Next member
-					fnResetModifiers();
+					fnNextMember();
 				}
 				//========================================================================
 				// Members
 				//========================================================================
 				else {
 					//Constructor
-					if (token.Text == className.Text) {
+					if (token.Text == typeName.Text) {
 						var nextToken = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
 						if (nextToken.Type == TokenType.LeftParenthesis) {
 							
@@ -243,12 +261,12 @@ namespace Kaleidoscope.Analysis.CS
 					}
 
 					//Next member
-					fnResetModifiers();
+					fnNextMember();
 				}
 			}
 		}
 
-		T ReadInterfaceMembers<T>(TokenIdentifier nameToken) where T : ClassTypeDeclare.Builder, new()
+		T ReadInterfaceMembers<T>(ClassTypeDeclare self, TokenIdentifier typeName) where T : ClassTypeDeclare.Builder, new()
 		{
 			var builder = new T();
 			builder.TypeKind = ClassTypeKind.@interface;
