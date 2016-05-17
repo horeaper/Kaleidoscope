@@ -14,15 +14,13 @@ namespace Kaleidoscope.Analysis
 		public bool IsPublic { get; }
 		public override string Fullname { get; }
 
-		public RootClassTypeDeclare(TokenIdentifier name, Func<RootClassTypeDeclare, Builder> fnReadNember)
-			: base(name)
+		public RootClassTypeDeclare(Builder builder)
+			: base(builder)
 		{
-			var builder = fnReadNember(this);
 			OwnerFile = builder.OwnerFile;
 			Usings = builder.Usings;
 			Namespace = ImmutableArray.Create(builder.Namespace);
 			IsPublic = builder.IsPublic;
-			ApplyMembers(builder);
 
 			var fullname = new StringBuilder();
 			foreach (var item in Namespace) {

@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections.Immutable;
-using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
+﻿using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
 	public sealed class NestedClassTypeDeclare : ClassTypeDeclare
 	{
-		public ClassTypeDeclare ContainerType { get; }
-		public AccessModifier AccessModifier { get; }
-		public bool IsNew { get; }
+		public readonly ClassTypeDeclare ContainerType;
+		public readonly AccessModifier AccessModifier;
+		public readonly bool IsNew;
 		public override string Fullname { get; }
 
-		public NestedClassTypeDeclare(TokenIdentifier name, Func<NestedClassTypeDeclare, Builder> fnReadNember)
-			: base(name)
+		public NestedClassTypeDeclare(Builder builder, ClassTypeDeclare containerType)
+			: base(builder)
 		{
-			var builder = fnReadNember(this);
-			ContainerType = builder.ContainerType;
+			ContainerType = containerType;
 			AccessModifier = builder.AccessModifier;
 			IsNew = builder.IsNew;
-			ApplyMembers(builder);
 
 			Fullname = ContainerType.Fullname + "." + Name.Text;
 		}
 
 		public new sealed class Builder : ClassTypeDeclare.Builder
 		{
-			public ClassTypeDeclare ContainerType;
 			public AccessModifier AccessModifier;
 			public bool IsNew;
 		}

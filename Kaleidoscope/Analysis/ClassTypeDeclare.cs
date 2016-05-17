@@ -8,23 +8,18 @@ namespace Kaleidoscope.Analysis
 {
 	public abstract class ClassTypeDeclare : InstanceTypeDeclare
 	{
-		public ClassTypeKind TypeKind { get; protected set; }
-		public TypeInstanceKind InstanceKind { get; protected set; }
-		public bool IsUnsafe { get; protected set; }
-		public bool IsPartial { get; protected set; }
-		public ImmutableArray<GenericDeclare> GenericTypes { get; protected set; }
-		public ImmutableArray<ReferenceToManagedType> Inherits { get; protected set; }
+		public readonly ClassTypeKind TypeKind;
+		public readonly TypeInstanceKind InstanceKind;
+		public readonly bool IsUnsafe;
+		public readonly bool IsPartial;
+		public readonly ImmutableArray<GenericDeclare> GenericTypes;
+		public readonly ImmutableArray<ReferenceToManagedType> Inherits;
 
-		public ImmutableArray<NestedClassTypeDeclare> NestedClasses { get; protected set; }
+		public readonly ImmutableArray<NestedClassTypeDeclare> NestedClasses;
 
-		protected ClassTypeDeclare(TokenIdentifier name)
-			: base(name)
+		protected ClassTypeDeclare(Builder builder)
+			: base(builder)
 		{
-		}
-
-		protected void ApplyMembers(Builder builder)
-		{
-			CustomAttributes = ImmutableArray.CreateRange(builder.CustomAttributes.Select(item => new AttributeObject(item, this)));
 			TypeKind = builder.TypeKind;
 			InstanceKind = builder.InstanceKind;
 			IsUnsafe = builder.IsUnsafe;
@@ -32,12 +27,11 @@ namespace Kaleidoscope.Analysis
 			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes);
 			Inherits = ImmutableArray.CreateRange(builder.Inherits);
 
-			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses);
+			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses.Select(item => new NestedClassTypeDeclare(item, this)));
 		}
 
-		public abstract class Builder
+		public new abstract class Builder : InstanceTypeDeclare.Builder
 		{
-			public IEnumerable<AttributeObject.Builder> CustomAttributes;
 			public ClassTypeKind TypeKind;
 			public TypeInstanceKind InstanceKind;
 			public bool IsUnsafe;
@@ -45,7 +39,7 @@ namespace Kaleidoscope.Analysis
 			public IEnumerable<GenericDeclare> GenericTypes;
 			public IEnumerable<ReferenceToManagedType> Inherits;
 
-			public readonly List<NestedClassTypeDeclare> NestedClasses = new List<NestedClassTypeDeclare>();
+			public readonly List<NestedClassTypeDeclare.Builder> NestedClasses = new List<NestedClassTypeDeclare.Builder>();
 		}
 	}
 }

@@ -155,20 +155,20 @@ namespace Kaleidoscope.Analysis.CS
 							if (instanceKindModifier != null) {
 								instanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
 							}
-							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, (self, nameToken) => ReadClassMembers<RootClassTypeDeclare.Builder>(self, nameToken, ClassTypeKind.@interface)));
+							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@interface)));
 						}
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (self, nameToken) => ReadClassMembers<RootClassTypeDeclare.Builder>(self, nameToken, ClassTypeKind.@struct)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
 						return;
 					case TokenType.@interface:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (self, nameToken) => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(self, nameToken)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(nameToken)));
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {
