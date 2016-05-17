@@ -3,7 +3,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public class AttributeObject
+	public sealed class AttributeObject
 	{
 		public readonly ManagedDeclare Target;
 		public readonly ReferenceToManagedType Type;

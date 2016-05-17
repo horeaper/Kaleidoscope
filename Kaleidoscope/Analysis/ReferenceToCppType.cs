@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {

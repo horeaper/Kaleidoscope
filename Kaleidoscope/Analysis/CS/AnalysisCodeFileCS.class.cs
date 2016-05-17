@@ -35,7 +35,7 @@ namespace Kaleidoscope.Analysis.CS
 			builder.InstanceKind = instanceKind;
 			builder.IsUnsafe = isUnsafe;
 			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
+			builder.GenericTypes = generics.Select(item => new GenericDeclare(item));
 			builder.Inherits = inherits;
 			return builder;
 		}
@@ -66,7 +66,7 @@ namespace Kaleidoscope.Analysis.CS
 			builder.InstanceKind = instanceKind;
 			builder.IsUnsafe = isUnsafe;
 			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics.Select(item => new GenericDeclare(item)).ToArray();
+			builder.GenericTypes = generics.Select(item => new GenericDeclare(item));
 			builder.Inherits = inherits;
 			return builder;
 		}

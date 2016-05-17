@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
@@ -7,7 +6,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class InheritanceReader
 	{
-		public static ReferenceToManagedType[] ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
+		public static IEnumerable<ReferenceToManagedType> ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
 		{
 			var result = new List<ReferenceToManagedType>();
 
@@ -27,12 +26,7 @@ namespace Kaleidoscope.Analysis.CS
 				}
 			}
 
-			return result.ToArray();
-		}
-
-		public static ReferenceToManagedType ReadEnumType(TokenBlock block, ref int index, string eofErrorMessage)
-		{
-			throw new NotImplementedException();
+			return result;
 		}
 	}
 }

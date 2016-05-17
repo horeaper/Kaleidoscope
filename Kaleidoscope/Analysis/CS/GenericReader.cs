@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
@@ -13,10 +10,11 @@ namespace Kaleidoscope.Analysis.CS
 	{
 		public static GenericDeclare.Builder[] ReadDeclare(TokenBlock block, ref int index, string eofErrorMessage)
 		{
-			var token = block.GetToken(index++, eofErrorMessage);
+			var token = block.GetToken(index, eofErrorMessage);
 			if (token.Type != TokenType.LeftArrow) {
 				return new GenericDeclare.Builder[0];
 			}
+			++index;
 
 			var result = new List<GenericDeclare.Builder>();
 			while (true) {
@@ -25,6 +23,10 @@ namespace Kaleidoscope.Analysis.CS
 				var item = new GenericDeclare.Builder();
 				if (token.Type == TokenType.@in) {
 					item.IsContravariance = true;
+					token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
+				}
+				else if (token.Type == TokenType.@out) {
+					item.IsContravariance = false;
 					token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 				}
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kaleidoscope.SyntaxObject;
+﻿using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
@@ -17,26 +12,11 @@ namespace Kaleidoscope.Analysis.CS
 				token.Type == TokenType.BooleanLiteral ||
 				token.Type == TokenType.Character ||
 				token.Type == TokenType.String) {
+				++index;
 				return new ReferenceToInstance(block.AsBeginEnd(index, 1), isConstantOnly);
 			}
 
-			var startIndex = index;
-			while (true) {
-				token = block.GetToken(index++);
-				if (token == null) {
-					throw ParseException.AsToken(block.Last, Error.Analysis.IdentifierExpected);
-				}
-
-				token = block.GetToken(index);
-				if (token?.Type == TokenType.Dot) {
-					++index;
-				}
-				else {
-					break;
-				}
-			}
-
-			return new ReferenceToInstance(block.AsBeginEnd(startIndex, index), isConstantOnly);
+			return new ReferenceToInstance(TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.None), isConstantOnly);
 		}
 	}
 }

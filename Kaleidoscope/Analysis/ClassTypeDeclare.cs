@@ -29,8 +29,8 @@ namespace Kaleidoscope.Analysis
 			InstanceKind = builder.InstanceKind;
 			IsUnsafe = builder.IsUnsafe;
 			IsPartial = builder.IsPartial;
-			GenericTypes = ImmutableArray.Create(builder.GenericTypes);
-			Inherits = ImmutableArray.Create(builder.Inherits);
+			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes);
+			Inherits = ImmutableArray.CreateRange(builder.Inherits);
 
 			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses);
 		}
@@ -42,8 +42,8 @@ namespace Kaleidoscope.Analysis
 			public TypeInstanceKind InstanceKind;
 			public bool IsUnsafe;
 			public bool IsPartial;
-			public GenericDeclare[] GenericTypes;
-			public ReferenceToManagedType[] Inherits;
+			public IEnumerable<GenericDeclare> GenericTypes;
+			public IEnumerable<ReferenceToManagedType> Inherits;
 
 			public readonly List<NestedClassTypeDeclare> NestedClasses = new List<NestedClassTypeDeclare>();
 		}
