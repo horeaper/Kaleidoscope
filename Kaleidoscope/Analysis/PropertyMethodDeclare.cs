@@ -4,8 +4,8 @@
 	{
 		public readonly bool IsAuto;
 
-		public PropertyMethodDeclare(Builder builder)
-			: base(builder)
+		public PropertyMethodDeclare(Builder builder, InstanceTypeDeclare owner)
+			: base(builder, owner)
 		{
 			IsAuto = builder.IsAuto;
 		}

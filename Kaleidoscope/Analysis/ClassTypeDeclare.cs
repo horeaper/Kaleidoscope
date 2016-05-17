@@ -15,6 +15,14 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<GenericDeclare> GenericTypes;
 		public readonly ImmutableArray<ReferenceToManagedType> Inherits;
 
+		public readonly ConstructorDeclare StaticConstructor;
+		public readonly ImmutableArray<ConstructorDeclare> Constructors;
+		public readonly DestructorDeclare Destructor;
+
+		public readonly ImmutableArray<MemberMethodDeclare> Methods;
+		public readonly ImmutableArray<OperatorOverloadDeclare> OperatorOverloads;
+		public readonly ImmutableArray<ConversionOperatorDeclare> ConversionOperators;
+
 		public readonly ImmutableArray<NestedClassTypeDeclare> NestedClasses;
 
 		protected ClassTypeDeclare(Builder builder)
@@ -27,6 +35,14 @@ namespace Kaleidoscope.Analysis
 			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes);
 			Inherits = ImmutableArray.CreateRange(builder.Inherits);
 
+			StaticConstructor = new ConstructorDeclare(builder.StaticConstructor, this);
+			Constructors = ImmutableArray.CreateRange(builder.Constructors.Select(item => new ConstructorDeclare(item, this)));
+			Destructor = new DestructorDeclare(builder.Destructor, this);
+
+			Methods = ImmutableArray.CreateRange(builder.Methods.Select(item => new MemberMethodDeclare(item, this)));
+			OperatorOverloads = ImmutableArray.CreateRange(builder.OperatorOverloads.Select(item => new OperatorOverloadDeclare(item, this)));
+			ConversionOperators = ImmutableArray.CreateRange(builder.ConversionOperators.Select(item => new ConversionOperatorDeclare(item, this)));
+
 			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses.Select(item => new NestedClassTypeDeclare(item, this)));
 		}
 
@@ -38,6 +54,14 @@ namespace Kaleidoscope.Analysis
 			public bool IsPartial;
 			public IEnumerable<GenericDeclare> GenericTypes;
 			public IEnumerable<ReferenceToManagedType> Inherits;
+
+			public ConstructorDeclare.Builder StaticConstructor;
+			public readonly List<ConstructorDeclare.Builder> Constructors = new List<ConstructorDeclare.Builder>();
+			public DestructorDeclare.Builder Destructor;
+
+			public readonly List<MemberMethodDeclare.Builder> Methods = new List<MemberMethodDeclare.Builder>();
+			public readonly List<OperatorOverloadDeclare.Builder> OperatorOverloads = new List<OperatorOverloadDeclare.Builder>();
+			public readonly List<ConversionOperatorDeclare.Builder> ConversionOperators = new List<ConversionOperatorDeclare.Builder>();
 
 			public readonly List<NestedClassTypeDeclare.Builder> NestedClasses = new List<NestedClassTypeDeclare.Builder>();
 		}

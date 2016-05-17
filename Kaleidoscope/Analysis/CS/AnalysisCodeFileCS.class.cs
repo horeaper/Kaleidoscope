@@ -14,7 +14,8 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
-				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
+				--index;
+				infoOutput.OutputError(ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected));
 			}
 
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
@@ -41,7 +42,8 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
-				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
+				--index;
+				infoOutput.OutputError(ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected));
 			}
 
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
@@ -90,6 +92,14 @@ namespace Kaleidoscope.Analysis.CS
 				currentAttributes.Clear();
 			};
 
+			Func<AccessModifier> fnGetAccessModifier = () => {
+				var access = AccessModifier.@private;
+				if (accessModifier != null) {
+					access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
+				}
+				return access;
+			};
+
 			while (true) {
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
@@ -118,11 +128,6 @@ namespace Kaleidoscope.Analysis.CS
 					sealedModifier = (TokenKeyword)token;
 				}
 				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
-					if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
-						(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
-						infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
-					}
-					CheckConflict(instanceKindModifier, token);
 					CheckInconsistent(readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
 					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
@@ -131,7 +136,17 @@ namespace Kaleidoscope.Analysis.CS
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.SealedOnlyWithOverride));
 					}
 					else {
-						instanceKindModifier = (TokenKeyword)token;
+						if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
+							(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
+							infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
+							if (token.Type == TokenType.@extern) {
+								instanceKindModifier = (TokenKeyword)token;
+							}
+						}
+						else {
+							CheckConflict(instanceKindModifier, token);
+							instanceKindModifier = (TokenKeyword)token;
+						}
 					}
 				}
 				else if (token.Type == TokenType.@readonly) {
@@ -169,11 +184,6 @@ namespace Kaleidoscope.Analysis.CS
 				else if (token.Type == TokenType.@class) {
 					CheckInvalid(readonlyModifier, asyncModifier);
 
-					var access = AccessModifier.@private;
-					if (accessModifier != null) {
-						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
-					}
-
 					var instanceKind = TypeInstanceKind.None;
 					if (sealedModifier != null) {
 						instanceKind = TypeInstanceKind.@sealed;
@@ -193,29 +203,17 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-
-					var access = AccessModifier.@private;
-					if (accessModifier != null) {
-						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
-					}
-
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-
-					var access = AccessModifier.@private;
-					if (accessModifier != null) {
-						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
-					}
-
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
@@ -231,7 +229,13 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				else if (token.Text == typeName.Text) { //Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
+					var constructor = new ConstructorDeclare.Builder {
+						Name = (TokenIdentifier)token,
+						CustomAttributes = currentAttributes,
+						AccessModifier = fnGetAccessModifier(),
+					};
 
+					//'static' modifier
 					bool isStatic = false;
 					if (instanceKindModifier != null) {
 						if (instanceKindModifier.Type != KeywordType.@static) {
@@ -241,42 +245,92 @@ namespace Kaleidoscope.Analysis.CS
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
 					}
+					if (isStatic && builder.StaticConstructor != null) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedStaticConstructor));
+					}
+					constructor.InstanceKind = isStatic ? MethodInstanceKind.@static : MethodInstanceKind.None;
 
+					//Parameters
 					token = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
 					if (token.Type != TokenType.LeftParenthesis) {
 						throw ParseException.AsToken(token, Error.Analysis.LeftParenthesisExpected);
 					}
+					var parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
+					if (isStatic && parameters.Count > 0) {
+						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StaticConstructorNoParams));
+					}
+					if (typeKind == ClassTypeKind.@struct && parameters.Count == 0) {
+						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StructConstructorInvalid));
+					}
+					constructor.Parameters = parameters;
 
-					var parameterContent = block.ReadParenthesisBlock(ref index);
+					//base() call
+					token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
+					if (token.Type == TokenType.Colon) {
+						++index;
+						token = block.GetToken(index, Error.Analysis.UnexpectedToken);
+						if (token.Type != TokenType.@base && token.Type != TokenType.@this) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.UnexpectedToken));
+							index = block.FindToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+						}
+						else {
+							constructor.ChainCallContent = block.ReadPastSpecificToken(ref index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+							--index;
+							token = block.GetToken(index, Error.Analysis.UnexpectedToken);
+						}
+					}
+
+					//Body
+					if (token.Type == TokenType.LeftBrace) {
+						constructor.BodyContent = block.ReadBraceBlock(ref index);
+					}
+					else if (token.Type == TokenType.Lambda) {
+						++index;
+						token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
+						if (token.Type != TokenType.LeftBrace) {
+							constructor.LambdaContentStyle = LambdaStyle.SingleLine;
+							constructor.BodyContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
+						}
+						else {
+							constructor.LambdaContentStyle = LambdaStyle.MultiLine;
+							constructor.BodyContent = block.ReadBraceBlock(ref index);
+						}
+					}
+					else if (token.Type == TokenType.Semicolon) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
+						++index;
+					}
+					else {
+						throw ParseException.AsToken(token, Error.Analysis.MethodBodyExpected);
+					}
+
+					if (isStatic) {
+						builder.StaticConstructor = constructor;
+					}
+					else {
+						builder.Constructors.Add(constructor);
+					}
+					fnNextMember();
+				}
+				else if (token.Type == TokenType.BitwiseNot) {  //Destructor
+					if (typeKind == ClassTypeKind.@struct) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
+					}
+
+					var nameToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
+					if (nameToken.Text != typeName.Text) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
+					}
+
+					//TODO:
+					fnNextMember();
+				}
+				else if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {  //Conversion operator
+					//TODO:
+					fnNextMember();
 				}
 				else {
-					//Constructor
-					if (token.Text == typeName.Text) {
-						var nextToken = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
-						if (nextToken.Type == TokenType.LeftParenthesis) {
-							
-						}
-					}
-
-					//Destructor
-					if (token.Type == TokenType.BitwiseNot) {
-						if (typeKind == ClassTypeKind.@struct) {
-							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
-						}
-
-						var nextToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
-						if (nextToken.Text != typeName.Text) {
-							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
-						}
-					}
-
-					//Conversion operator
-					if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {
-						
-					}
-
-					//Next member
-					fnNextMember();
+					throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
 				}
 			}
 		}

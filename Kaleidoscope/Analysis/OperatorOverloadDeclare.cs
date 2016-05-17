@@ -7,8 +7,8 @@ namespace Kaleidoscope.Analysis
 		public readonly ReferenceToType ReturnType;
 		public readonly TokenSymbol Operator;
 
-		public OperatorOverloadDeclare(Builder builder)
-			: base(builder)
+		public OperatorOverloadDeclare(Builder builder, InstanceTypeDeclare owner)
+			: base(builder, owner)
 		{
 			ReturnType = builder.ReturnType;
 			Operator = builder.Operator;

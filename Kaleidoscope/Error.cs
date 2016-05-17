@@ -57,8 +57,22 @@
 			public const string NewConstraintInvalid = "'new' constraint is only allowed with 'class', 'interface' or 'cpp'";
 			public const string EnumValueIntOnly = "only integer type (such as int or byte) are allowed as enum value type";
 
+			public const string DuplicatedStaticConstructor = "duplicated static constructor";
 			public const string StructNoDestructor = "value type cannot have destructor";
+			public const string StaticConstructorNoParams = "static constructor cannot have parameters";
+			public const string StructConstructorInvalid = "struct cannot contain explicit parameterless constructor";
 			public const string DestructorNameInvalid = "name of destructor must match the name of the class";
+
+			public const string ParameterThisFirstOnly = "modifier 'this' should be on the first parameter";
+			public const string ParameterThisManagedOnly = "modifier 'this' can only apply to managed types";
+			public const string ParameterThisStaticOnly = "extension method can only be declared in non-generic, non-nested static class";
+			public const string ParamsMustBeLast = "a 'params' parameter must be the last parameter in a formal parameter list";
+			public const string ParamsMustBeManagedType = "parameter with 'params' modifier cannot be a C++ type";
+			public const string ParamsMustBeArray = "parameter with 'params' modifier must have an array type";
+			public const string ParameterNoDefault = "a 'ref', 'out' or 'params' parameter cannot have default value";
+
+			public const string MethodBodyExpected = "method body block expected";
+
 		}
 	}
 }

@@ -5,8 +5,8 @@
 		public readonly ReferenceToType ReturnType;
 		public readonly bool IsExplicit;
 
-		public ConversionOperatorDeclare(Builder builder)
-			: base(builder)
+		public ConversionOperatorDeclare(Builder builder, InstanceTypeDeclare owner)
+			: base(builder, owner)
 		{
 			ReturnType = builder.ReturnType;
 			IsExplicit = builder.IsExplicit;

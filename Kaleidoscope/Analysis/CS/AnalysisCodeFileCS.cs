@@ -206,7 +206,8 @@ namespace Kaleidoscope.Analysis.CS
 									infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
 									break;
 								default:
-									throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+									infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.UnexpectedToken));
+									break;
 							}
 						}
 						break;

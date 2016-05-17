@@ -10,17 +10,16 @@ namespace Kaleidoscope.Analysis
 		public readonly InstanceTypeDeclare OwnerType;
 		public readonly ImmutableArray<AttributeObject> CustomAttributes;
 
-		protected MemberDeclare(Builder builder)
+		protected MemberDeclare(Builder builder, InstanceTypeDeclare owner)
 			: base(builder.Name)
 		{
-			OwnerType = builder.OwnerType;
+			OwnerType = owner;
 			CustomAttributes = ImmutableArray.CreateRange(builder.CustomAttributes.Select(item => new AttributeObject(item, this)));
 		}
 
 		public abstract class Builder
 		{
 			public TokenIdentifier Name;
-			public InstanceTypeDeclare OwnerType;
 			public IEnumerable<AttributeObject.Builder> CustomAttributes;
 		}
 	}

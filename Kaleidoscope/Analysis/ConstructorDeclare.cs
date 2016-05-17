@@ -4,17 +4,17 @@ namespace Kaleidoscope.Analysis
 {
 	public sealed class ConstructorDeclare : MethodDeclare
 	{
-		public readonly TokenBlock ParentCallContent;
+		public readonly TokenBlock ChainCallContent;
 
-		public ConstructorDeclare(Builder builder)
-			: base(builder)
+		public ConstructorDeclare(Builder builder, InstanceTypeDeclare owner)
+			: base(builder, owner)
 		{
-			ParentCallContent = builder.ParentCallContent;
+			ChainCallContent = builder.ChainCallContent;
 		}
 
 		public new sealed class Builder : MethodDeclare.Builder
 		{
-			public TokenBlock ParentCallContent;
+			public TokenBlock ChainCallContent;
 		}
 	}
 }

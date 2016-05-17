@@ -102,6 +102,12 @@ namespace Kaleidoscope
 				TokenType.@abstract,
 				TokenType.@static,
 				TokenType.@extern);
+
+			ValidParameterKindModifier = ImmutableSortedSet.Create(
+				TokenType.@this,
+				TokenType.@ref,
+				TokenType.@out,
+				TokenType.@params);
 		}
 
 		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
@@ -111,5 +117,6 @@ namespace Kaleidoscope
 		public static readonly ImmutableSortedSet<TokenType> AccessModifier;
 		public static readonly ImmutableSortedSet<TokenType> InstanceKindModifier;
 		public static readonly ImmutableSortedSet<TokenType> ValidNewInstanceKindModifier;
+		public static readonly ImmutableSortedSet<TokenType> ValidParameterKindModifier;
 	}
 }

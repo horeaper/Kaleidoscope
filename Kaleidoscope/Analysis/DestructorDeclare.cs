@@ -2,8 +2,8 @@
 {
 	public sealed class DestructorDeclare : MethodDeclare
 	{
-		public DestructorDeclare(Builder builder)
-			: base(builder)
+		public DestructorDeclare(Builder builder, InstanceTypeDeclare owner)
+			: base(builder, owner)
 		{
 		}
 
