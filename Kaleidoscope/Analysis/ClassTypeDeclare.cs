@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
@@ -16,13 +17,14 @@ namespace Kaleidoscope.Analysis
 
 		public ImmutableArray<NestedClassTypeDeclare> NestedClasses { get; protected set; }
 
-		protected ClassTypeDeclare(TokenIdentifier name, AttributeObject[] customAttributes)
-			: base(name, customAttributes)
+		protected ClassTypeDeclare(TokenIdentifier name)
+			: base(name)
 		{
 		}
 
 		protected void ApplyMembers(Builder builder)
 		{
+			CustomAttributes = ImmutableArray.CreateRange(builder.CustomAttributes.Select(item => new AttributeObject(item, this)));
 			TypeKind = builder.TypeKind;
 			InstanceKind = builder.InstanceKind;
 			IsUnsafe = builder.IsUnsafe;
@@ -35,6 +37,7 @@ namespace Kaleidoscope.Analysis
 
 		public abstract class Builder
 		{
+			public IEnumerable<AttributeObject.Builder> CustomAttributes;
 			public ClassTypeKind TypeKind;
 			public TypeInstanceKind InstanceKind;
 			public bool IsUnsafe;

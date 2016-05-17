@@ -8,7 +8,6 @@ namespace Kaleidoscope.Analysis
 	public abstract class ManagedDeclare
 	{
 		public readonly TokenIdentifier Name;
-		public abstract string Fullname { get; }
 
 		protected ManagedDeclare(TokenIdentifier name)
 		{

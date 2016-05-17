@@ -12,8 +12,8 @@ namespace Kaleidoscope.Analysis
 		public bool IsNew { get; }
 		public override string Fullname { get; }
 
-		public NestedClassTypeDeclare(TokenIdentifier name, AttributeObject[] customAttributes, Func<NestedClassTypeDeclare, Builder> fnReadNember)
-			: base(name, customAttributes)
+		public NestedClassTypeDeclare(TokenIdentifier name, Func<NestedClassTypeDeclare, Builder> fnReadNember)
+			: base(name)
 		{
 			var builder = fnReadNember(this);
 			ContainerType = builder.ContainerType;

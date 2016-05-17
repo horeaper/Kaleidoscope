@@ -58,6 +58,7 @@
 			public const string EnumValueIntOnly = "only integer type (such as int or byte) are allowed as enum value type";
 
 			public const string StructNoDestructor = "value type cannot have destructor";
+			public const string DestructorNameInvalid = "name of destructor must match the name of the class";
 		}
 	}
 }

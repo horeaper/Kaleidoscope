@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.SyntaxObject
@@ -107,7 +108,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// </summary>
 		public int FindNextBraceBlockEnd(int index)
 		{
-			index = FindToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+			Debug.Assert(this[index].Type == TokenType.LeftBrace);
 
 			int braceCount = 0;
 			while (true) {
@@ -133,7 +134,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// </summary>
 		public int FindNextParenthesisBlockEnd(int index)
 		{
-			index = FindToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
+			Debug.Assert(this[index].Type == TokenType.LeftParenthesis);
 
 			int braceCount = 0;
 			while (true) {
@@ -157,10 +158,23 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Read the next {...} block, and move index past the end. return value does not contain '{' and '}'
 		/// </summary>
-		public TokenBlock ReadNextBraceBlock(ref int index)
+		public TokenBlock ReadBraceBlock(ref int index)
 		{
-			int startIndex = FindToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+			Debug.Assert(this[index].Type == TokenType.LeftBrace);
+			int startIndex = index;
 			int endIndex = FindNextBraceBlockEnd(startIndex);
+			index = endIndex;
+			return AsBeginEnd(startIndex + 1, endIndex - 1);
+		}
+
+		/// <summary>
+		/// Read the next (...) block, and move index past the end. return value does not contain '(' and ')'
+		/// </summary>
+		public TokenBlock ReadParenthesisBlock(ref int index)
+		{
+			Debug.Assert(this[index].Type == TokenType.LeftParenthesis);
+			int startIndex = index;
+			int endIndex = FindNextParenthesisBlockEnd(startIndex);
 			index = endIndex;
 			return AsBeginEnd(startIndex + 1, endIndex - 1);
 		}

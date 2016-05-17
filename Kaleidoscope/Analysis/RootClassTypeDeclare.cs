@@ -14,8 +14,8 @@ namespace Kaleidoscope.Analysis
 		public bool IsPublic { get; }
 		public override string Fullname { get; }
 
-		public RootClassTypeDeclare(TokenIdentifier name, AttributeObject[] customAttributes, Func<RootClassTypeDeclare, Builder> fnReadNember)
-			: base(name, customAttributes)
+		public RootClassTypeDeclare(TokenIdentifier name, Func<RootClassTypeDeclare, Builder> fnReadNember)
+			: base(name)
 		{
 			var builder = fnReadNember(this);
 			OwnerFile = builder.OwnerFile;

@@ -1,50 +1,35 @@
-﻿using Kaleidoscope.SyntaxObject;
+﻿using System.Linq;
+using System.Collections.Generic;
+using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
 	public static class AttributeObjectReader
 	{
-		public static AttributeObjectOnType ReadOnType(TokenBlock block, ref int index, UsingBlob.Builder currentUsings, TokenIdentifier[] currentNamespace)
+		public static AttributeObject.Builder Read(TokenBlock block, ref int index)
 		{
 			var type = (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None);
 
 			TokenBlock content = null;
 			var token = block.GetToken(index, Error.Analysis.RightBracketExpected);
 			if (token.Type == TokenType.LeftParenthesis) {
-				int startIndex = index + 1;
-				int endIndex = block.FindNextParenthesisBlockEnd(index);
-				content = block.AsBeginEnd(startIndex, endIndex - 1);
-
-				index = endIndex;
+				content = block.ReadParenthesisBlock(ref index);
 				token = block.GetToken(index++, Error.Analysis.RightBracketExpected);
 			}
 			if (token.Type != TokenType.RightBracket) {
 				throw ParseException.AsToken(token, Error.Analysis.RightBracketExpected);
 			}
 
-			return new AttributeObjectOnType(type, content, new UsingBlob(currentUsings), currentNamespace);
+			return new AttributeObject.Builder {
+				Type = type,
+				ConstructContent = content,
+			};
 		}
 
-		public static AttributeObjectOnMember ReadOnMember(TokenBlock block, ref int index)
+		public static IEnumerable<AttributeObject> Get(IEnumerable<AttributeObject.Builder> attributes, ManagedDeclare target)
 		{
-			var type = (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None);
-
-			TokenBlock content = null;
-			var token = block.GetToken(index, Error.Analysis.RightBracketExpected);
-			if (token.Type == TokenType.LeftParenthesis) {
-				int startIndex = index + 1;
-				int endIndex = block.FindNextParenthesisBlockEnd(index);
-				content = block.AsBeginEnd(startIndex, endIndex - 1);
-
-				index = endIndex;
-				token = block.GetToken(index++, Error.Analysis.RightBracketExpected);
-			}
-			if (token.Type != TokenType.RightBracket) {
-				throw ParseException.AsToken(token, Error.Analysis.RightBracketExpected);
-			}
-
-			return new AttributeObjectOnMember(type, content);
+			return attributes.Select(builder => new AttributeObject(builder, target));
 		}
 	}
 }

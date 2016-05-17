@@ -3,30 +3,38 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public abstract class AttributeObject
+	public class AttributeObject
 	{
+		public readonly ManagedDeclare Target;
 		public readonly ReferenceToManagedType Type;
 		public readonly TokenBlock ConstructContent;
 		readonly string m_displayName;
 
-		protected AttributeObject(ReferenceToManagedType type, TokenBlock constructContent)
+		public AttributeObject(Builder builder, ManagedDeclare target)
 		{
-			Type = type;
-			ConstructContent = constructContent;
+			Target = target;
+			Type = builder.Type;
+			ConstructContent = builder.ConstructContent;
 
-			var builder = new StringBuilder();
-			builder.Append(Type.Text);
+			var displayName = new StringBuilder();
+			displayName.Append(Type.Text);
 			if (ConstructContent != null) {
-				builder.Append('(');
-				builder.Append(ConstructContent.Text);
-				builder.Append(')');
+				displayName.Append('(');
+				displayName.Append(ConstructContent.Text);
+				displayName.Append(')');
 			}
-			m_displayName = builder.ToString();
+			m_displayName = displayName.ToString();
 		}
 
 		public override string ToString()
 		{
 			return $"[AttributeObject] {m_displayName}({ConstructContent?.Text})" ;
+		}
+
+		public sealed class Builder
+		{
+			public ReferenceToManagedType Type;
+			public TokenBlock ConstructContent;
 		}
 	}
 }

@@ -10,23 +10,24 @@ namespace Kaleidoscope.Analysis.CS
 	{
 		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(RootClassTypeDeclare self, TokenIdentifier nameToken);
 
-		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
+		RootClassTypeDeclare ReadRootClassDeclare(IEnumerable<AttributeObject.Builder> customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
-			return new RootClassTypeDeclare((TokenIdentifier)nameToken, customAttributes, self => ReadRootClassMembers(self, (TokenIdentifier)nameToken, isPublic, isUnsafe, isPartial, instanceKind, fnReadMembers));
+			return new RootClassTypeDeclare((TokenIdentifier)nameToken, self => ReadRootClassMembers(self, customAttributes, (TokenIdentifier)nameToken, isPublic, isUnsafe, isPartial, instanceKind, fnReadMembers));
 		}
 
-		RootClassTypeDeclare.Builder ReadRootClassMembers(RootClassTypeDeclare self, TokenIdentifier nameToken, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
+		RootClassTypeDeclare.Builder ReadRootClassMembers(RootClassTypeDeclare self, IEnumerable<AttributeObject.Builder> customAttributes, TokenIdentifier nameToken, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
 			var builder = fnReadMembers(self, nameToken);
+			builder.CustomAttributes = customAttributes;
 			builder.OwnerFile = ownerFile;
 			builder.Usings = new UsingBlob(currentUsings.Peek());
 			builder.Namespace = currentNamespace.ToArray();
@@ -41,23 +42,24 @@ namespace Kaleidoscope.Analysis.CS
 
 		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(NestedClassTypeDeclare self, TokenIdentifier nameToken);
 
-		NestedClassTypeDeclare ReadNestedClassDeclare(ClassTypeDeclare owner, AttributeObjectOnMember[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
+		NestedClassTypeDeclare ReadNestedClassDeclare(ClassTypeDeclare owner, IEnumerable<AttributeObject.Builder> customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
-			return new NestedClassTypeDeclare((TokenIdentifier)nameToken, customAttributes.Cast<AttributeObject>().ToArray(), self => ReadNestedClassMembers(owner, self, (TokenIdentifier)nameToken, accessModifier, isNew, isUnsafe, isPartial, instanceKind, fnReadMembers));
+			return new NestedClassTypeDeclare((TokenIdentifier)nameToken, self => ReadNestedClassMembers(owner, self, customAttributes, (TokenIdentifier)nameToken, accessModifier, isNew, isUnsafe, isPartial, instanceKind, fnReadMembers));
 		}
 
-		NestedClassTypeDeclare.Builder ReadNestedClassMembers(ClassTypeDeclare owner, NestedClassTypeDeclare self, TokenIdentifier nameToken, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
+		NestedClassTypeDeclare.Builder ReadNestedClassMembers(ClassTypeDeclare owner, NestedClassTypeDeclare self, IEnumerable<AttributeObject.Builder> customAttributes, TokenIdentifier nameToken, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
 			var builder = fnReadMembers(self, nameToken);
+			builder.CustomAttributes = customAttributes;
 			builder.ContainerType = owner;
 			builder.AccessModifier = accessModifier;
 			builder.IsNew = isNew;
@@ -86,7 +88,7 @@ namespace Kaleidoscope.Analysis.CS
 			TokenKeyword unsafeModifier = null;
 			TokenIdentifier partialModifier = null;
 			TokenIdentifier asyncModifier = null;
-			var currentAttributes = new List<AttributeObjectOnMember>();
+			var currentAttributes = new List<AttributeObject.Builder>();
 			Action fnNextMember = () => {
 				accessModifier = null;
 				newModifier = null;
@@ -106,7 +108,7 @@ namespace Kaleidoscope.Analysis.CS
 					return builder;
 				}
 				else if (token.Type == TokenType.LeftBracket) {
-					currentAttributes.Add(AttributeObjectReader.ReadOnMember(block, ref index));
+					currentAttributes.Add(AttributeObjectReader.Read(block, ref index));
 				}
 				//========================================================================
 				// Modifiers
@@ -202,7 +204,7 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 
-					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@class)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@class)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
@@ -213,7 +215,7 @@ namespace Kaleidoscope.Analysis.CS
 						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
 					}
 
-					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@struct)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadClassMembers<NestedClassTypeDeclare.Builder>(nestedSelf, nameToken, ClassTypeKind.@struct)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
@@ -224,7 +226,7 @@ namespace Kaleidoscope.Analysis.CS
 						access = (AccessModifier)Enum.Parse(typeof(AccessModifier), accessModifier.Type.ToString());
 					}
 
-					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes.ToArray(), access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nestedSelf, nameToken)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(self, currentAttributes, access, newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, (nestedSelf, nameToken) => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nestedSelf, nameToken)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
@@ -238,6 +240,26 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
+				else if (token.Text == typeName.Text) { //Constructor
+					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
+
+					bool isStatic = false;
+					if (instanceKindModifier != null) {
+						if (instanceKindModifier.Type != KeywordType.@static) {
+							isStatic = true;
+						}
+						else {
+							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+						}
+					}
+
+					token = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
+					if (token.Type != TokenType.LeftParenthesis) {
+						throw ParseException.AsToken(token, Error.Analysis.LeftParenthesisExpected);
+					}
+
+					var parameterContent = block.ReadParenthesisBlock(ref index);
+				}
 				else {
 					//Constructor
 					if (token.Text == typeName.Text) {
@@ -253,6 +275,10 @@ namespace Kaleidoscope.Analysis.CS
 							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
 						}
 
+						var nextToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
+						if (nextToken.Text != typeName.Text) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
+						}
 					}
 
 					//Conversion operator

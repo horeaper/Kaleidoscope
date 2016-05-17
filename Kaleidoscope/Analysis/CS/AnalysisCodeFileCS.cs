@@ -26,7 +26,7 @@ namespace Kaleidoscope.Analysis.CS
 
 		void ReadContent()
 		{
-			var currentAttributes = new List<AttributeObject>();
+			var currentAttributes = new List<AttributeObject.Builder>();
 
 			while (true) {
 				var token = block.GetToken(index);
@@ -97,7 +97,7 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.LeftBracket:
 						++index;
-						currentAttributes.Add(AttributeObjectReader.ReadOnType(block, ref index, currentUsings.Peek(), currentNamespace.ToArray()));
+						currentAttributes.Add(AttributeObjectReader.Read(block, ref index));
 						break;
 					case TokenType.Semicolon:
 						if (currentAttributes.Count > 0) {
@@ -108,18 +108,18 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.@public:
 						++index;
-						ReadNextTypeDeclare(true, currentAttributes.ToArray());
+						ReadNextTypeDeclare(true, currentAttributes);
 						currentAttributes.Clear();
 						break;
 					default:
-						ReadNextTypeDeclare(false, currentAttributes.ToArray());
+						ReadNextTypeDeclare(false, currentAttributes);
 						currentAttributes.Clear();
 						break;
 				}
 			}
 		}
 
-		void ReadNextTypeDeclare(bool isPublic, AttributeObject[] customAttributes)
+		void ReadNextTypeDeclare(bool isPublic, IEnumerable<AttributeObject.Builder> customAttributes)
 		{
 			TokenKeyword instanceKindModifier = null;
 			TokenKeyword unsafeModifier = null;
@@ -180,7 +180,7 @@ namespace Kaleidoscope.Analysis.CS
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
-						ReadEnum(customAttributes, isPublic);
+// 						ReadEnum(customAttributes, isPublic);
 						return;
 					case TokenType.@delegate:
 						if (instanceKindModifier != null) {
@@ -192,7 +192,7 @@ namespace Kaleidoscope.Analysis.CS
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
-						ReadDelegate(customAttributes, isPublic);
+// 						ReadDelegate(customAttributes, isPublic);
 						return;
 					default:
 						{

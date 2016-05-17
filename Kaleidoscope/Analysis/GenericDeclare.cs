@@ -15,7 +15,6 @@ namespace Kaleidoscope.Analysis
 		public readonly TokenKeyword NewConstraint;
 		public readonly TokenKeyword EnumTypeConstraint;
 		public readonly ImmutableArray<ReferenceToManagedType> TypeConstraints;
-		public override string Fullname => Name.Text;
 
 		public GenericDeclare(Builder builder)
 			: base(builder.Name)
