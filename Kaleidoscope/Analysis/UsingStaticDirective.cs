@@ -12,9 +12,9 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace; 
 		public readonly ReferenceToManagedType Type;
 
-		public UsingStaticDirective(TokenIdentifier[] ownerNamespace, ReferenceToManagedType type)
+		public UsingStaticDirective(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, ReferenceToManagedType type)
 		{
-			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
+			OwnerNamespace = ownerNamespace.MoveToImmutable();
 			Type = type;
 		}
 

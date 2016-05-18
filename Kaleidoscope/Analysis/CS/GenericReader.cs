@@ -8,15 +8,16 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class GenericReader
 	{
-		public static GenericDeclare.Builder[] ReadDeclare(TokenBlock block, ref int index, string eofErrorMessage)
+		public static IEnumerable<GenericDeclare.Builder> ReadDeclare(TokenBlock block, ref int index, string eofErrorMessage)
 		{
+			var result = new List<GenericDeclare.Builder>();
+
 			var token = block.GetToken(index, eofErrorMessage);
 			if (token.Type != TokenType.LeftArrow) {
-				return new GenericDeclare.Builder[0];
+				return result;
 			}
 			++index;
 
-			var result = new List<GenericDeclare.Builder>();
 			while (true) {
 				token = block.GetToken(index++, Error.Analysis.UnexpectedToken);
 
@@ -53,10 +54,10 @@ namespace Kaleidoscope.Analysis.CS
 				}
 			}
 
-			return result.ToArray();
+			return result;
 		}
 
-		public static void ReadConstraint(GenericDeclare.Builder[] generics, TokenBlock block, ref int index, string eofErrorMessage)   //where T : IDisposable, IComparable<T>
+		public static void ReadConstraint(IEnumerable<GenericDeclare.Builder> generics, TokenBlock block, ref int index, string eofErrorMessage)   //where T : IDisposable, IComparable<T>
 		{
 			while (true) {
 				//where

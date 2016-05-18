@@ -83,6 +83,18 @@ namespace Kaleidoscope.SyntaxObject
 		}
 
 		/// <summary>
+		/// Get the next token and ensure it's of certain token type
+		/// </summary>
+		public Token NextToken(int index, TokenType type, string errorMessage)
+		{
+			var token = GetToken(index, errorMessage);
+			if (token.Type != type) {
+				throw ParseException.AsToken(token, errorMessage);
+			}
+			return token;
+		}
+
+		/// <summary>
 		/// Find a symbol token, starting from index
 		/// </summary>
 		public int FindToken(int index, TokenType target, string errorMessage = null)

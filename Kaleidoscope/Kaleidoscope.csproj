@@ -49,6 +49,7 @@
     <Compile Include="Analysis\CS\GenericReader.cs" />
     <Compile Include="Analysis\CS\InheritanceReader.cs" />
     <Compile Include="Analysis\CS\InstanceReferenceReader.cs" />
+    <Compile Include="Analysis\CS\MethodBodyReader.cs" />
     <Compile Include="Analysis\CS\ParameterReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Cpp.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.cs" />

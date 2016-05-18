@@ -13,7 +13,7 @@ namespace Kaleidoscope.Analysis
 		public readonly ReferenceToType Type;
 		public readonly TokenBlock DefaultValueContent;
 
-		public ParameterObject(TokenIdentifier name, IEnumerable<AttributeObject.Builder> customAttributes, ParameterKind parameterKind, ReferenceToType type, TokenBlock defaultValueContent)
+		public ParameterObject(TokenIdentifier name, AttributeObject.Builder[] customAttributes, ParameterKind parameterKind, ReferenceToType type, TokenBlock defaultValueContent)
 			: base(name)
 		{
 			CustomAttributes = ImmutableArray.CreateRange(customAttributes.Select(item => new AttributeObject(item, this)));

@@ -13,10 +13,10 @@ Use `'` (single quote) or `_` (underscore) as digit separator
 
 Some WRONG (won't compile) examples:
 ```
-3.14_           // separator cannot be the last digit character
+3.14_           // separators cannot be the last digit character
 1000'_0000      // looks weird, right?
 200''000''000   // single quotes cannot be used consecutively
-123456'.245     // separator must be followed by a digit number
+123456'.245     // separators must be followed by a digit number
 ```
 
 ### Binary number literal (C# 7 feature)
@@ -69,23 +69,3 @@ AnotherMethod(ref false);
 - cpp
 
 The "Type" in `enum` constraint can be any primitive integer type (`byte`, `ushort`, `int`, `long`, etc)
-
-### Allow `object`, `null` and `bool?` on if
-```C#
-var target = SomeMethod();  // 'target' is a reference type
-if (target) {
-    // will execute if target != null
-}
-if (!target) {
-    // will execute if target == null
-}
-if ((target as MyClass)?.IsAlive) {     // 'IsAlive' is boolean
-    // will execute if target is MyClass and IsAlive == true
-    // in the old days one have to write "if ((target as MyClass)?.IsAlive == true)"
-}
-
-var another = AnotherMethod();  // 'another' is a value type
-if (another) {
-    // will always execute, equivalent as "if (true)"
-}
-```

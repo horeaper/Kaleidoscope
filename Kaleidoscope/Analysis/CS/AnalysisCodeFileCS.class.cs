@@ -10,7 +10,7 @@ namespace Kaleidoscope.Analysis.CS
 	{
 		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(TokenIdentifier nameToken);
 
-		RootClassTypeDeclare ReadRootClassDeclare(IEnumerable<AttributeObject.Builder> customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
+		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -26,7 +26,7 @@ namespace Kaleidoscope.Analysis.CS
 			builder.CustomAttributes = customAttributes;
 			builder.OwnerFile = ownerFile;
 			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.ToArray();
+			builder.Namespace = currentNamespace.Get();
 			builder.IsPublic = isPublic;
 			builder.InstanceKind = instanceKind;
 			builder.IsUnsafe = isUnsafe;
@@ -38,7 +38,7 @@ namespace Kaleidoscope.Analysis.CS
 
 		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(TokenIdentifier nameToken);
 
-		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(IEnumerable<AttributeObject.Builder> customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
+		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -203,17 +203,17 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes, fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
@@ -231,7 +231,7 @@ namespace Kaleidoscope.Analysis.CS
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
 						Name = (TokenIdentifier)token,
-						CustomAttributes = currentAttributes,
+						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = fnGetAccessModifier(),
 					};
 
@@ -251,10 +251,7 @@ namespace Kaleidoscope.Analysis.CS
 					constructor.InstanceKind = isStatic ? MethodInstanceKind.@static : MethodInstanceKind.None;
 
 					//Parameters
-					token = block.GetToken(index, Error.Analysis.LeftParenthesisExpected);
-					if (token.Type != TokenType.LeftParenthesis) {
-						throw ParseException.AsToken(token, Error.Analysis.LeftParenthesisExpected);
-					}
+					block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
 					var parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
 					if (isStatic && parameters.Count > 0) {
 						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StaticConstructorNoParams));
@@ -281,27 +278,12 @@ namespace Kaleidoscope.Analysis.CS
 					}
 
 					//Body
-					if (token.Type == TokenType.LeftBrace) {
-						constructor.BodyContent = block.ReadBraceBlock(ref index);
-					}
-					else if (token.Type == TokenType.Lambda) {
-						++index;
-						token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
-						if (token.Type != TokenType.LeftBrace) {
-							constructor.LambdaContentStyle = LambdaStyle.SingleLine;
-							constructor.BodyContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
-						}
-						else {
-							constructor.LambdaContentStyle = LambdaStyle.MultiLine;
-							constructor.BodyContent = block.ReadBraceBlock(ref index);
-						}
-					}
-					else if (token.Type == TokenType.Semicolon) {
+					if (token.Type == TokenType.Semicolon) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
 						++index;
 					}
 					else {
-						throw ParseException.AsToken(token, Error.Analysis.MethodBodyExpected);
+						MethodBodyReader.Read(block, ref index, constructor);
 					}
 
 					if (isStatic) {
@@ -313,16 +295,42 @@ namespace Kaleidoscope.Analysis.CS
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.BitwiseNot) {  //Destructor
+					CheckInvalid(accessModifier, newModifier, sealedModifier, instanceKindModifier, readonlyModifier, partialModifier);
 					if (typeKind == ClassTypeKind.@struct) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
 					}
+					if (builder.Destructor != null) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicateDestructor));
+					}
+					var destructor = new DestructorDeclare.Builder {
+						CustomAttributes = currentAttributes.ToArray(),
+						AccessModifier = AccessModifier.@private,
+						InstanceKind = MethodInstanceKind.None,
+						Parameters = new ParameterObject[0],
+					};
 
 					var nameToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
 					if (nameToken.Text != typeName.Text) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
 					}
+					else {
+						destructor.Name = (TokenIdentifier)nameToken;
+					}
 
-					//TODO:
+					//Empty parameter
+					block.NextToken(index++, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
+					block.NextToken(index++, TokenType.RightParenthesis, Error.Analysis.RightParenthesisExpected);
+
+					//Body
+					if (token.Type == TokenType.Semicolon) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
+						++index;
+					}
+					else {
+						MethodBodyReader.Read(block, ref index, destructor);
+					}
+
+					builder.Destructor = destructor;
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {  //Conversion operator

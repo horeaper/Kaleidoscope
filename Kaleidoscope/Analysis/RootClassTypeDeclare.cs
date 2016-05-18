@@ -17,7 +17,7 @@ namespace Kaleidoscope.Analysis
 		{
 			OwnerFile = builder.OwnerFile;
 			Usings = builder.Usings;
-			Namespace = ImmutableArray.Create(builder.Namespace);
+			Namespace = builder.Namespace.MoveToImmutable();
 			IsPublic = builder.IsPublic;
 
 			var fullname = new StringBuilder();
@@ -38,7 +38,7 @@ namespace Kaleidoscope.Analysis
 		{
 			public CodeFile OwnerFile;
 			public UsingBlob Usings;
-			public TokenIdentifier[] Namespace;
+			public ImmutableArray<TokenIdentifier>.Builder Namespace;
 			public bool IsPublic;
 		}
 	}

@@ -47,7 +47,7 @@ namespace Kaleidoscope.Analysis.CS
 							if (token.Type == TokenType.@static) {
 								++index;
 								var typeContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
-								currentUsings.Peek().UsingStaticDirectives.Add(UsingReader.ReadStatic(currentNamespace.ToArray(), typeContent));
+								currentUsings.Peek().UsingStaticDirectives.Add(UsingReader.ReadStatic(currentNamespace.Get(), typeContent));
 								continue;
 							}
 
@@ -63,7 +63,7 @@ namespace Kaleidoscope.Analysis.CS
 							var content = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
 							if (content.FindToken(0, TokenType.Assign) == -1) {
 								if (!isCppType) {
-									currentUsings.Peek().UsingCSNamespaceDirectives.Add(UsingReader.ReadCSNamespace(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCSNamespaceDirectives.Add(UsingReader.ReadCSNamespace(currentNamespace.Get(), content));
 								}
 								else {
 									currentUsings.Peek().UsingCppNamespaceDirectives.Add(UsingReader.ReadCppNamespace(content));
@@ -71,7 +71,7 @@ namespace Kaleidoscope.Analysis.CS
 							}
 							else {
 								if (!isCppType) {
-									currentUsings.Peek().UsingCSAliasDirectives.Add(UsingReader.ReadCSAlias(currentNamespace.ToArray(), content));
+									currentUsings.Peek().UsingCSAliasDirectives.Add(UsingReader.ReadCSAlias(currentNamespace.Get(), content));
 								}
 								else {
 									currentUsings.Peek().UsingCppAliasDirectives.Add(UsingReader.ReadCppAlias(content));
@@ -108,18 +108,18 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.@public:
 						++index;
-						ReadNextTypeDeclare(true, currentAttributes);
+						ReadNextTypeDeclare(true, currentAttributes.ToArray());
 						currentAttributes.Clear();
 						break;
 					default:
-						ReadNextTypeDeclare(false, currentAttributes);
+						ReadNextTypeDeclare(false, currentAttributes.ToArray());
 						currentAttributes.Clear();
 						break;
 				}
 			}
 		}
 
-		void ReadNextTypeDeclare(bool isPublic, IEnumerable<AttributeObject.Builder> customAttributes)
+		void ReadNextTypeDeclare(bool isPublic, AttributeObject.Builder[] customAttributes)
 		{
 			TokenKeyword instanceKindModifier = null;
 			TokenKeyword unsafeModifier = null;

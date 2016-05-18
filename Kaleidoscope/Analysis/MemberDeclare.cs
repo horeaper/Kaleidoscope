@@ -20,7 +20,7 @@ namespace Kaleidoscope.Analysis
 		public abstract class Builder
 		{
 			public TokenIdentifier Name;
-			public IEnumerable<AttributeObject.Builder> CustomAttributes;
+			public AttributeObject.Builder[] CustomAttributes;
 		}
 	}
 }

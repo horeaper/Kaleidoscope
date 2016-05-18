@@ -61,7 +61,7 @@ namespace Kaleidoscope
 
 			bool isErrorExist = false;
 			foreach (var error in errorList) {
-				InfoOutput?.OutputError(error);
+				InfoOutput.OutputError(error);
 				isErrorExist = true;
 			}
 			if (isErrorExist) {

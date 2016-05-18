@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.Internal
@@ -20,9 +21,11 @@ namespace Kaleidoscope.Analysis.Internal
 			m_tokens.RemoveRange(newIndex, m_tokens.Count - newIndex);
 		}
 
-		public TokenIdentifier[] ToArray()
+		public ImmutableArray<TokenIdentifier>.Builder Get()
 		{
-			return m_tokens.ToArray();
+			var builder = ImmutableArray.CreateBuilder<TokenIdentifier>(m_tokens.Count);
+			builder.AddRange(m_tokens);
+			return builder;
 		}
 	}
 }

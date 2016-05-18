@@ -14,9 +14,9 @@ namespace Kaleidoscope.Analysis
 		public readonly Token Name;
 		public readonly ReferenceToManagedType Type;
 
-		public UsingCSAliasDirective(TokenIdentifier[] ownerNamespace, Token name, ReferenceToManagedType type)
+		public UsingCSAliasDirective(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, Token name, ReferenceToManagedType type)
 		{
-			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
+			OwnerNamespace = ownerNamespace.MoveToImmutable();
 			Name = name;
 			Type = type;
 		}

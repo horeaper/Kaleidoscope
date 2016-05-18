@@ -26,10 +26,5 @@ namespace Kaleidoscope.Analysis.CS
 				ConstructContent = content,
 			};
 		}
-
-		public static IEnumerable<AttributeObject> Get(IEnumerable<AttributeObject.Builder> attributes, ManagedDeclare target)
-		{
-			return attributes.Select(builder => new AttributeObject(builder, target));
-		}
 	}
 }

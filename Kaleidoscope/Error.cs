@@ -30,7 +30,7 @@
 			public const string RightBraceExpected = "} expected";
 			public const string LeftParenthesisExpected = "( expected";
 			public const string RightParenthesisExpected = ") expected";
-			public const string LeftBracketExpected = "] expected";
+			public const string LeftBracketExpected = "[ expected";
 			public const string RightBracketExpected = "] expected";
 			public const string LeftArrowExpected = "< expected";
 			public const string RightArrowExpected = "> expected";
@@ -62,6 +62,7 @@
 			public const string StaticConstructorNoParams = "static constructor cannot have parameters";
 			public const string StructConstructorInvalid = "struct cannot contain explicit parameterless constructor";
 			public const string DestructorNameInvalid = "name of destructor must match the name of the class";
+			public const string DuplicateDestructor = "you can have only one destructor";
 
 			public const string ParameterThisFirstOnly = "modifier 'this' should be on the first parameter";
 			public const string ParameterThisManagedOnly = "modifier 'this' can only apply to managed types";

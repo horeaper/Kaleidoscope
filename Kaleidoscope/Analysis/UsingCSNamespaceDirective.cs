@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 using Kaleidoscope.Tokenizer;
 
@@ -13,10 +14,10 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<TokenIdentifier> Namespace;
 		readonly string m_displayName;
 
-		internal UsingCSNamespaceDirective(TokenIdentifier[] ownerNamespace, TokenIdentifier[] @namespace)
+		internal UsingCSNamespaceDirective(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, IEnumerable<TokenIdentifier> @namespace)
 		{
-			OwnerNamespace = ImmutableArray.Create(ownerNamespace);
-			Namespace = ImmutableArray.Create(@namespace);
+			OwnerNamespace = ownerNamespace.MoveToImmutable();
+			Namespace = ImmutableArray.CreateRange(@namespace);
 
 			var builder = new StringBuilder();
 			for (int cnt = 0; cnt < Namespace.Length; ++cnt) {

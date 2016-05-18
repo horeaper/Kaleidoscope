@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
@@ -13,13 +14,13 @@ namespace Kaleidoscope.Analysis.CS
 			return ReadNamespaceWorker(block, ref index, token => token.Type == TokenType.Identifier).Cast<TokenIdentifier>();
 		}
 
-		static Token[] ReadNamespace(TokenBlock block, Func<Token, bool> fnCheckTokenType)
+		static IEnumerable<Token> ReadNamespace(TokenBlock block, Func<Token, bool> fnCheckTokenType)
 		{
 			int index = 0;
 			return ReadNamespaceWorker(block, ref index, fnCheckTokenType);
 		}
 
-		static Token[] ReadNamespaceWorker(TokenBlock block, ref int index, Func<Token, bool> fnCheckTokenType)
+		static IEnumerable<Token> ReadNamespaceWorker(TokenBlock block, ref int index, Func<Token, bool> fnCheckTokenType)
 		{
 			var ns = new List<Token>();
 			while (true) {
@@ -29,7 +30,7 @@ namespace Kaleidoscope.Analysis.CS
 
 					token = block.GetToken(index);
 					if (token == null) {
-						return ns.ToArray();
+						return ns;
 					}
 					else if (token.Type == TokenType.Dot) {
 						++index;
@@ -44,13 +45,13 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
-		public static UsingStaticDirective ReadStatic(TokenIdentifier[] ownerNamespace, TokenBlock block)
+		public static UsingStaticDirective ReadStatic(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, TokenBlock block)
 		{
 			int index = 0;
 			return new UsingStaticDirective(ownerNamespace, (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
 		}
 
-		public static UsingCSNamespaceDirective ReadCSNamespace(TokenIdentifier[] ownerNamespace, TokenBlock block)
+		public static UsingCSNamespaceDirective ReadCSNamespace(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, TokenBlock block)
 		{
 			return new UsingCSNamespaceDirective(ownerNamespace, ReadNamespace(block, token => token.Type == TokenType.Identifier).Cast<TokenIdentifier>().ToArray());
 		}
@@ -60,7 +61,7 @@ namespace Kaleidoscope.Analysis.CS
 			return new UsingCppNamespaceDirective(ReadNamespace(block, token => token is TokenKeyword || token.Type == TokenType.Identifier));
 		}
 
-		public static UsingCSAliasDirective ReadCSAlias(TokenIdentifier[] ownerNamespace, TokenBlock block)
+		public static UsingCSAliasDirective ReadCSAlias(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, TokenBlock block)
 		{
 			int index = 0;
 
