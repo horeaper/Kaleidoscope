@@ -43,7 +43,6 @@
     <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.class.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.cs" />
-    <Compile Include="Analysis\CS\AnalysisCodeFileCS.member.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.others.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.util.cs" />
     <Compile Include="Analysis\CS\GenericReader.cs" />

@@ -118,7 +118,7 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Find the end of next {...} block
 		/// </summary>
-		public int FindNextBraceBlockEnd(int index)
+		public int FindBraceBlockEnd(int index)
 		{
 			Debug.Assert(this[index].Type == TokenType.LeftBrace);
 
@@ -144,20 +144,46 @@ namespace Kaleidoscope.SyntaxObject
 		/// <summary>
 		/// Find the end of next (...) block
 		/// </summary>
-		public int FindNextParenthesisBlockEnd(int index)
+		public int FindParenthesisBlockEnd(int index)
 		{
 			Debug.Assert(this[index].Type == TokenType.LeftParenthesis);
 
-			int braceCount = 0;
+			int parenthesisCount = 0;
 			while (true) {
 				var token = GetToken(index, Error.Analysis.RightParenthesisExpected);
 				switch (token.Type) {
 					case TokenType.LeftParenthesis:
-						++braceCount;
+						++parenthesisCount;
 						break;
 					case TokenType.RightParenthesis:
-						--braceCount;
-						if (braceCount == 0) {
+						--parenthesisCount;
+						if (parenthesisCount == 0) {
+							return index + 1;
+						}
+						break;
+				}
+
+				++index;
+			}
+		}
+
+		/// <summary>
+		/// Find the end of next [...] block
+		/// </summary>
+		public int FindBracketBlockEnd(int index)
+		{
+			Debug.Assert(this[index].Type == TokenType.LeftBracket);
+
+			int bracketCount = 0;
+			while (true) {
+				var token = GetToken(index, Error.Analysis.RightBracketExpected);
+				switch (token.Type) {
+					case TokenType.LeftBracket:
+						++bracketCount;
+						break;
+					case TokenType.RightBracket:
+						--bracketCount;
+						if (bracketCount == 0) {
 							return index + 1;
 						}
 						break;
@@ -174,7 +200,7 @@ namespace Kaleidoscope.SyntaxObject
 		{
 			Debug.Assert(this[index].Type == TokenType.LeftBrace);
 			int startIndex = index;
-			int endIndex = FindNextBraceBlockEnd(startIndex);
+			int endIndex = FindBraceBlockEnd(startIndex);
 			index = endIndex;
 			return AsBeginEnd(startIndex + 1, endIndex - 1);
 		}
@@ -186,7 +212,19 @@ namespace Kaleidoscope.SyntaxObject
 		{
 			Debug.Assert(this[index].Type == TokenType.LeftParenthesis);
 			int startIndex = index;
-			int endIndex = FindNextParenthesisBlockEnd(startIndex);
+			int endIndex = FindParenthesisBlockEnd(startIndex);
+			index = endIndex;
+			return AsBeginEnd(startIndex + 1, endIndex - 1);
+		}
+
+		/// <summary>
+		/// Read the next [...] block, and move index past the end. return value does not contain '(' and ')'
+		/// </summary>
+		public TokenBlock ReadBracketBlock(ref int index)
+		{
+			Debug.Assert(this[index].Type == TokenType.LeftBracket);
+			int startIndex = index;
+			int endIndex = FindBracketBlockEnd(startIndex);
 			index = endIndex;
 			return AsBeginEnd(startIndex + 1, endIndex - 1);
 		}

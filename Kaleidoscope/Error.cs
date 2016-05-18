@@ -58,9 +58,10 @@
 			public const string EnumValueIntOnly = "only integer type (such as int or byte) are allowed as enum value type";
 
 			public const string DuplicatedStaticConstructor = "duplicated static constructor";
-			public const string StructNoDestructor = "value type cannot have destructor";
+			public const string StaticConstructorNoAccessModifier = "static constructor cannot have access modifiers";
 			public const string StaticConstructorNoParams = "static constructor cannot have parameters";
 			public const string StructConstructorInvalid = "struct cannot contain explicit parameterless constructor";
+			public const string StructNoDestructor = "value type cannot have destructor";
 			public const string DestructorNameInvalid = "name of destructor must match the name of the class";
 			public const string DuplicateDestructor = "you can have only one destructor";
 
@@ -73,6 +74,11 @@
 			public const string ParameterNoDefault = "a 'ref', 'out' or 'params' parameter cannot have default value";
 
 			public const string MethodBodyExpected = "method body block expected";
+			public const string MemberCannotHaveBody = "'abstract' or 'extern' member cannot have body";
+			public const string ConversionStaticOnly = "conversion operator must be declared as static";
+			public const string OperatorPublicStaticOnly = "user-defined operator must be declared static and public";
+			public const string OperatorParameterInvalid = "cannot define operator with these parameters";
+			public const string InvalidOperatorToken = "valid operator symbol expected";
 
 		}
 	}

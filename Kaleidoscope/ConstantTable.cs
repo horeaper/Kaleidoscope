@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
@@ -108,15 +109,41 @@ namespace Kaleidoscope
 				TokenType.@ref,
 				TokenType.@out,
 				TokenType.@params);
+
+			ValidArithmeticOperators = ImmutableList.Create(
+				new Tuple<TokenType, int>(TokenType.Add, 1),
+				new Tuple<TokenType, int>(TokenType.Minus, 1),
+				new Tuple<TokenType, int>(TokenType.LogicalNot, 1),
+				new Tuple<TokenType, int>(TokenType.BitwiseNot, 1),
+				new Tuple<TokenType, int>(TokenType.Increment, 1),
+				new Tuple<TokenType, int>(TokenType.Decrement, 1),
+
+				new Tuple<TokenType, int>(TokenType.Add, 2),
+				new Tuple<TokenType, int>(TokenType.Minus, 2),
+				new Tuple<TokenType, int>(TokenType.Asterisk, 2),
+				new Tuple<TokenType, int>(TokenType.Divide, 2),
+				new Tuple<TokenType, int>(TokenType.Mod, 2),
+				new Tuple<TokenType, int>(TokenType.Ampersand, 2),
+				new Tuple<TokenType, int>(TokenType.BitwiseOr, 2),
+				new Tuple<TokenType, int>(TokenType.BitwiseXor, 2),
+				new Tuple<TokenType, int>(TokenType.ShiftLeft, 2),
+				new Tuple<TokenType, int>(TokenType.ShiftRight, 2),
+
+				new Tuple<TokenType, int>(TokenType.Equal, 2),
+				new Tuple<TokenType, int>(TokenType.NotEqual, 2),
+				new Tuple<TokenType, int>(TokenType.LeftArrow, 2),
+				new Tuple<TokenType, int>(TokenType.RightArrow, 2),
+				new Tuple<TokenType, int>(TokenType.LessEqual, 2),
+				new Tuple<TokenType, int>(TokenType.GreatEqual, 2));
 		}
 
 		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
 		public static readonly ImmutableSortedSet<TokenType> Alias;
 		public static readonly ImmutableSortedSet<TokenType> IntegerTypeAlias;
-
 		public static readonly ImmutableSortedSet<TokenType> AccessModifier;
 		public static readonly ImmutableSortedSet<TokenType> InstanceKindModifier;
 		public static readonly ImmutableSortedSet<TokenType> ValidNewInstanceKindModifier;
 		public static readonly ImmutableSortedSet<TokenType> ValidParameterKindModifier;
+		public static readonly ImmutableList<Tuple<TokenType, int>> ValidArithmeticOperators;
 	}
 }

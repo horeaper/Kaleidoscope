@@ -10,24 +10,38 @@ namespace Kaleidoscope.Analysis.CS
 {
 	static class MethodBodyReader
 	{
-		public static void Read(TokenBlock block, ref int index, MethodDeclare.Builder builder)
+		public static void Read(InfoOutput infoOutput, TokenBlock block, ref int index, MethodDeclare.Builder method)
 		{
-			var token = block.GetToken(index);
+			var token = block.GetToken(index, Error.Analysis.UnexpectedToken);
+			if (token.Type == TokenType.Semicolon && method.InstanceKind != MethodInstanceKind.@abstract && method.InstanceKind != MethodInstanceKind.@extern) {
+				infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
+				++index;
+			}
+			else if (token.Type != TokenType.Semicolon && (method.InstanceKind == MethodInstanceKind.@abstract || method.InstanceKind == MethodInstanceKind.@extern)) {
+				var exception = ParseException.AsToken(token, Error.Analysis.MemberCannotHaveBody);
+				if (token.Type == TokenType.LeftBrace || token.Type == TokenType.Lambda) {
+					infoOutput.OutputError(exception);
+				}
+				else {
+					throw exception;
+				}
+			}
+
 			switch (token.Type) {
 				case TokenType.LeftBrace:
-					builder.LambdaContentStyle = LambdaStyle.NotLambda;
-					builder.BodyContent = block.ReadBraceBlock(ref index);
+					method.LambdaContentStyle = LambdaStyle.NotLambda;
+					method.BodyContent = block.ReadBraceBlock(ref index);
 					break;
 				case TokenType.Lambda:
 					++index;
 					token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
 					if (token.Type != TokenType.LeftBrace) {
-						builder.LambdaContentStyle = LambdaStyle.SingleLine;
-						builder.BodyContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
+						method.LambdaContentStyle = LambdaStyle.SingleLine;
+						method.BodyContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
 					}
 					else {
-						builder.LambdaContentStyle = LambdaStyle.MultiLine;
-						builder.BodyContent = block.ReadBraceBlock(ref index);
+						method.LambdaContentStyle = LambdaStyle.MultiLine;
+						method.BodyContent = block.ReadBraceBlock(ref index);
 					}
 					break;
 				default:

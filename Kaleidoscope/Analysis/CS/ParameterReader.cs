@@ -66,7 +66,7 @@ namespace Kaleidoscope.Analysis.CS
 
 					token = block.GetToken(index);
 					if (token == null) {
-						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes.ToArray(), kind, returnType, null));
+						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, null));
 						currentAttributes.Clear();
 						for (int cnt = 0; cnt < result.Count - 1; ++cnt) {
 							if (result[cnt].ParameterKind == ParameterKind.@params) {
@@ -76,7 +76,7 @@ namespace Kaleidoscope.Analysis.CS
 						return result;
 					}
 					else if (token.Type == TokenType.Comma) {
-						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes.ToArray(), kind, returnType, null));
+						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, null));
 						currentAttributes.Clear();
 						++index;
 					}
@@ -87,7 +87,7 @@ namespace Kaleidoscope.Analysis.CS
 
 						++index;
 						var content = block.ReadPastSpecificToken(ref index, TokenType.Comma);
-						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes.ToArray(), kind, returnType, content));
+						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, content));
 						currentAttributes.Clear();
 					}
 					else {

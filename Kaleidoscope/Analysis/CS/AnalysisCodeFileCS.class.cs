@@ -227,7 +227,8 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
-				else if (token.Text == typeName.Text) { //Constructor
+				else if (token.Text == typeName.Text) {
+					//Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
 						Name = (TokenIdentifier)token,
@@ -239,14 +240,18 @@ namespace Kaleidoscope.Analysis.CS
 					bool isStatic = false;
 					if (instanceKindModifier != null) {
 						if (instanceKindModifier.Type != KeywordType.@static) {
+							if (builder.StaticConstructor != null) {
+								infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedStaticConstructor));
+							}
+							if (accessModifier != null) {
+								infoOutput.OutputError(ParseException.AsToken(accessModifier, Error.Analysis.StaticConstructorNoAccessModifier));
+							}
 							isStatic = true;
+							constructor.AccessModifier = AccessModifier.@private;
 						}
 						else {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-					}
-					if (isStatic && builder.StaticConstructor != null) {
-						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicatedStaticConstructor));
 					}
 					constructor.InstanceKind = isStatic ? MethodInstanceKind.@static : MethodInstanceKind.None;
 
@@ -273,18 +278,11 @@ namespace Kaleidoscope.Analysis.CS
 						else {
 							constructor.ChainCallContent = block.ReadPastSpecificToken(ref index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
 							--index;
-							token = block.GetToken(index, Error.Analysis.UnexpectedToken);
 						}
 					}
 
 					//Body
-					if (token.Type == TokenType.Semicolon) {
-						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
-						++index;
-					}
-					else {
-						MethodBodyReader.Read(block, ref index, constructor);
-					}
+					MethodBodyReader.Read(infoOutput, block, ref index, constructor);
 
 					if (isStatic) {
 						builder.StaticConstructor = constructor;
@@ -294,7 +292,8 @@ namespace Kaleidoscope.Analysis.CS
 					}
 					fnNextMember();
 				}
-				else if (token.Type == TokenType.BitwiseNot) {  //Destructor
+				else if (token.Type == TokenType.BitwiseNot) {
+					//Destructor
 					CheckInvalid(accessModifier, newModifier, sealedModifier, instanceKindModifier, readonlyModifier, partialModifier);
 					if (typeKind == ClassTypeKind.@struct) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
@@ -322,23 +321,157 @@ namespace Kaleidoscope.Analysis.CS
 					block.NextToken(index++, TokenType.RightParenthesis, Error.Analysis.RightParenthesisExpected);
 
 					//Body
-					if (token.Type == TokenType.Semicolon) {
-						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MethodBodyExpected));
-						++index;
-					}
-					else {
-						MethodBodyReader.Read(block, ref index, destructor);
-					}
+					MethodBodyReader.Read(infoOutput, block, ref index, destructor);
 
 					builder.Destructor = destructor;
 					fnNextMember();
 				}
-				else if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {  //Conversion operator
-					//TODO:
+				else if (token.Type == TokenType.@explicit || token.Type == TokenType.@implicit) {
+					//Conversion operator
+					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
+					if (instanceKindModifier?.Type != KeywordType.@static) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConversionStaticOnly));
+					}
+					var conversion = new ConversionOperatorDeclare.Builder {
+						Name = null,
+						CustomAttributes = currentAttributes.ToArray(),
+						AccessModifier = fnGetAccessModifier(),
+						InstanceKind = MethodInstanceKind.@static,
+						IsExplicit = token.Type == TokenType.@explicit,
+					};
+
+					//'operator'
+					block.NextToken(index++, TokenType.@operator, Error.Analysis.UnexpectedToken);
+
+					//ReturnType
+					conversion.ReturnType = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType);
+
+					//Parameters
+					block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
+					var parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
+					if (parameters.Count != 1) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.OperatorParameterInvalid));
+					}
+					conversion.Parameters = parameters;
+
+					//Body
+					MethodBodyReader.Read(infoOutput, block, ref index, conversion);
+
+					builder.ConversionOperators.Add(conversion);
 					fnNextMember();
 				}
 				else {
-					throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+					//Type
+					var type = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+
+					//Next
+					token = block.GetToken(index, Error.Analysis.UnexpectedToken);
+					if (token.Type == TokenType.@operator) {
+						//Operator overloads
+						CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
+						var instanceKind = MethodInstanceKind.@static;
+						if (accessModifier == null || instanceKindModifier == null) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.OperatorPublicStaticOnly));
+						}
+						else {
+							if (accessModifier.Type != KeywordType.@public) {
+								infoOutput.OutputError(ParseException.AsToken(accessModifier, Error.Analysis.OperatorPublicStaticOnly));
+							}
+							if (instanceKindModifier.Type != KeywordType.@static && instanceKindModifier.Type != KeywordType.@extern) {
+								infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.OperatorPublicStaticOnly));
+							}
+							else {
+								instanceKind = (MethodInstanceKind)Enum.Parse(typeof(MethodInstanceKind), instanceKindModifier.Type.ToString());
+							}
+						}
+						if (type is ReferenceVoid) {
+							infoOutput.OutputError(ParseException.AsTokenBlock(type.Content, Error.Analysis.VoidNotAllowed));
+						}
+						var overloads = new OperatorOverloadDeclare.Builder {
+							Name = null,
+							CustomAttributes = currentAttributes.ToArray(),
+							AccessModifier = AccessModifier.@public,
+							InstanceKind = instanceKind,
+							ReturnType = type,
+						};
+
+						//Operator symbol
+						++index;
+						var operatorToken = block.GetToken(index++, Error.Analysis.InvalidOperatorToken);
+						if (!ConstantTable.ValidArithmeticOperators.Any(item => item.Item1 == operatorToken.Type)) {
+							throw ParseException.AsToken(operatorToken, Error.Analysis.InvalidOperatorToken);
+						}
+						overloads.Operator = (TokenSymbol)operatorToken;
+
+						//Parameters
+						block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
+						var parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
+						if (!ConstantTable.ValidArithmeticOperators.Any(item => item.Item1 == operatorToken.Type && parameters.Count == item.Item2)) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.OperatorParameterInvalid));
+						}
+						overloads.Parameters = parameters;
+
+						//Body
+						MethodBodyReader.Read(infoOutput, block, ref index, overloads);
+
+						builder.OperatorOverloads.Add(overloads);
+						fnNextMember();
+					}
+					else {
+						//Name
+						var nameContent = TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.None);
+						token = block.GetToken(index, Error.Analysis.SemicolonExpected);
+
+						//Next
+						switch (token.Type) {
+							case TokenType.LeftParenthesis:
+								{
+									//Method
+									CheckInvalid(readonlyModifier, partialModifier);
+									var method = new MemberMethodDeclare.Builder {
+										NameContent = nameContent,
+										CustomAttributes = currentAttributes.ToArray(),
+										AccessModifier = fnGetAccessModifier(),
+										IsNew = newModifier != null,
+										ReturnType = type,
+									};
+									if (instanceKindModifier != null) {
+										method.InstanceKind = (MethodInstanceKind)Enum.Parse(typeof(MethodInstanceKind), instanceKindModifier.Type.ToString());
+									}
+
+									//Parameters
+									method.Parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
+
+									//Generic constraint
+									token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
+									if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.where) {
+										var endMark = (method.InstanceKind != MethodInstanceKind.@abstract && method.InstanceKind != MethodInstanceKind.@extern) ? TokenType.LeftBrace : TokenType.Semicolon;
+										var errorMessage = (method.InstanceKind != MethodInstanceKind.@abstract && method.InstanceKind != MethodInstanceKind.@extern) ? Error.Analysis.LeftBraceExpected : Error.Analysis.SemicolonExpected;
+										method.GenericConstraintContent = block.ReadPastSpecificToken(ref index, endMark, errorMessage);
+										--index;
+									}
+
+									//Body
+									MethodBodyReader.Read(infoOutput, block, ref index, method);
+
+									builder.Methods.Add(method);
+									fnNextMember();
+								}
+								break;
+							case TokenType.LeftBrace:
+							case TokenType.LeftBracket:
+							case TokenType.Lambda:
+								{
+									//Property
+									CheckInvalid(readonlyModifier, partialModifier);
+									if (type is ReferenceVoid) {
+										infoOutput.OutputError(ParseException.AsTokenBlock(type.Content, Error.Analysis.VoidNotAllowed));
+									}
+								}
+								break;
+						}
+
+					}
 				}
 			}
 		}
