@@ -231,9 +231,9 @@ namespace Kaleidoscope.Analysis.CS
 					//Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
-						Name = (TokenIdentifier)token,
 						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = fnGetAccessModifier(),
+						Name = (TokenIdentifier)token,
 					};
 
 					//'static' modifier
@@ -333,7 +333,6 @@ namespace Kaleidoscope.Analysis.CS
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConversionStaticOnly));
 					}
 					var conversion = new ConversionOperatorDeclare.Builder {
-						Name = null,
 						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = fnGetAccessModifier(),
 						InstanceKind = MethodInstanceKind.@static,
@@ -388,7 +387,6 @@ namespace Kaleidoscope.Analysis.CS
 							infoOutput.OutputError(ParseException.AsTokenBlock(type.Content, Error.Analysis.VoidNotAllowed));
 						}
 						var overloads = new OperatorOverloadDeclare.Builder {
-							Name = null,
 							CustomAttributes = currentAttributes.ToArray(),
 							AccessModifier = AccessModifier.@public,
 							InstanceKind = instanceKind,
@@ -429,14 +427,19 @@ namespace Kaleidoscope.Analysis.CS
 									//Method
 									CheckInvalid(readonlyModifier, partialModifier);
 									var method = new MemberMethodDeclare.Builder {
-										NameContent = nameContent,
 										CustomAttributes = currentAttributes.ToArray(),
 										AccessModifier = fnGetAccessModifier(),
 										IsNew = newModifier != null,
 										ReturnType = type,
+										NameContent = nameContent,
+										IsSealed = sealedModifier != null,
 									};
+
+									//Instance kind
 									if (instanceKindModifier != null) {
-										method.InstanceKind = (MethodInstanceKind)Enum.Parse(typeof(MethodInstanceKind), instanceKindModifier.Type.ToString());
+										if (!Enum.TryParse(instanceKindModifier.Type.ToString(), out method.InstanceKind)) {
+											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+										}
 									}
 
 									//Parameters
@@ -463,9 +466,64 @@ namespace Kaleidoscope.Analysis.CS
 							case TokenType.Lambda:
 								{
 									//Property
+									bool isIndexer = token.Type == TokenType.LeftBracket;
 									CheckInvalid(readonlyModifier, partialModifier);
 									if (type is ReferenceVoid) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(type.Content, Error.Analysis.VoidNotAllowed));
+									}
+									if (isIndexer && nameContent.Last.Type != TokenType.@this) {
+										infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.UnexpectedToken));
+									}
+
+									var property = isIndexer ? (PropertyDeclare.Builder)new IndexerDeclare.Builder() : new MemberPropertyDeclare.Builder();
+									property.CustomAttributes = currentAttributes.ToArray();
+									property.AccessModifier = fnGetAccessModifier();
+									property.IsNew = newModifier != null;
+									property.IsSealed = sealedModifier != null;
+									if (instanceKindModifier != null) {
+										if (!Enum.TryParse(instanceKindModifier.Type.ToString(), out property.InstanceKind)) {
+											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+										}
+									}
+									property.Type = type;
+									property.NameContent = nameContent;
+
+									//Parameter
+									if (isIndexer) {
+										var parameters = ParameterReader.Read(infoOutput, block.ReadBracketBlock(ref index), false);
+										if (parameters.Count == 0) {
+											infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.IndexerParameterInvalid));
+										}
+										((IndexerDeclare.Builder)property).Parameters = parameters;
+										token = block.NextToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+									}
+
+									//Expression body
+									if (token.Type == TokenType.Lambda) {
+										if (property.InstanceKind == PropertyInstanceKind.@abstract) {
+											infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.MemberCannotHaveBody));
+										}
+										++index;
+										token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
+										if (token.Type != TokenType.LeftBrace) {
+											property.GetterMethod.LambdaContentStyle = LambdaStyle.SingleLine;
+											property.GetterMethod.BodyContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
+										}
+										else {
+											property.GetterMethod.LambdaContentStyle = LambdaStyle.MultiLine;
+											property.GetterMethod.BodyContent = block.ReadBraceBlock(ref index);
+										}
+										goto tagAddProperty;
+									}
+
+									//Accessors
+
+									tagAddProperty:
+									if (isIndexer) {
+										builder.Indexers.Add((IndexerDeclare.Builder)property);
+									}
+									else {
+										builder.Properties.Add((MemberPropertyDeclare.Builder)property);
 									}
 								}
 								break;

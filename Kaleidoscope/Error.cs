@@ -77,8 +77,9 @@
 			public const string MemberCannotHaveBody = "'abstract' or 'extern' member cannot have body";
 			public const string ConversionStaticOnly = "conversion operator must be declared as static";
 			public const string OperatorPublicStaticOnly = "user-defined operator must be declared static and public";
-			public const string OperatorParameterInvalid = "cannot define operator with these parameters";
 			public const string InvalidOperatorToken = "valid operator symbol expected";
+			public const string OperatorParameterInvalid = "cannot define operator with these parameters";
+			public const string IndexerParameterInvalid = "cannot define indexer with these parameters";
 
 		}
 	}

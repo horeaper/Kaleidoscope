@@ -1,12 +1,11 @@
 ﻿namespace Kaleidoscope.SyntaxObject
 {
-	public enum MethodInstanceKind
+	public enum PropertyInstanceKind
 	{
 		None,
 		@virtual,
 		@override,
 		@abstract,
 		@static,
-		@extern,
 	}
 }
