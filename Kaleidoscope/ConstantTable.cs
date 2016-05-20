@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope
@@ -84,7 +86,7 @@ namespace Kaleidoscope
 				TokenType.@long,
 				TokenType.@ulong);
 
-			AccessModifier = ImmutableSortedSet.Create(
+			AccessModifiers = ImmutableSortedSet.Create(
 				TokenType.@public,
 				TokenType.@protected,
 				TokenType.@private,
@@ -135,15 +137,23 @@ namespace Kaleidoscope
 				new Tuple<TokenType, int>(TokenType.RightArrow, 2),
 				new Tuple<TokenType, int>(TokenType.LessEqual, 2),
 				new Tuple<TokenType, int>(TokenType.GreatEqual, 2));
+
+			var validPropertyMethodAccessors = ImmutableDictionary.CreateBuilder<AccessModifier, AccessModifier[]>();
+			validPropertyMethodAccessors.Add(AccessModifier.@public, new[] { AccessModifier.@protected, AccessModifier.@private });
+			validPropertyMethodAccessors.Add(AccessModifier.@protected, new[] { AccessModifier.@internal, AccessModifier.@private });
+			validPropertyMethodAccessors.Add(AccessModifier.@private, new[] { AccessModifier.@internal });
+			validPropertyMethodAccessors.Add(AccessModifier.@internal, new AccessModifier[0]);
+			ValidPropertyMethodAccessors = validPropertyMethodAccessors.ToImmutable();
 		}
 
 		public static readonly ImmutableDictionary<string, SymbolType> SymbolMap;
 		public static readonly ImmutableSortedSet<TokenType> Alias;
 		public static readonly ImmutableSortedSet<TokenType> IntegerTypeAlias;
-		public static readonly ImmutableSortedSet<TokenType> AccessModifier;
+		public static readonly ImmutableSortedSet<TokenType> AccessModifiers;
 		public static readonly ImmutableSortedSet<TokenType> InstanceKindModifier;
 		public static readonly ImmutableSortedSet<TokenType> ValidNewInstanceKindModifier;
 		public static readonly ImmutableSortedSet<TokenType> ValidParameterKindModifier;
 		public static readonly ImmutableList<Tuple<TokenType, int>> ValidArithmeticOperators;
+		public static readonly ImmutableDictionary<AccessModifier, AccessModifier[]> ValidPropertyMethodAccessors;
 	}
 }

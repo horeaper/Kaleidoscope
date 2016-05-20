@@ -58,7 +58,7 @@ namespace Kaleidoscope.Analysis.CS
 			while (true) {
 				var token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 
-				if (ConstantTable.Alias.Contains(token.Type) || token is TokenIdentifier) {
+				if (ConstantTable.Alias.Contains(token.Type) || token.Type == TokenType.Identifier) {
 					if (!AdvanceIndex(block, ref index, ref arrowCount, style)) {
 						break;
 					}

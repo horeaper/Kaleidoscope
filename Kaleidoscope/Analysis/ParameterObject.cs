@@ -29,6 +29,8 @@ namespace Kaleidoscope.Analysis
 				builder.Append(' ');
 			}
 			builder.Append(Type.Text);
+			builder.Append(' ');
+			builder.Append(Name.Text);
 			if (DefaultValueContent != null) {
 				builder.Append(" = ");
 				builder.Append(DefaultValueContent.Text);

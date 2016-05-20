@@ -37,10 +37,7 @@ namespace Kaleidoscope.Analysis.CS
 				switch (token.Type) {
 					case TokenType.@using:
 						{
-							if (currentAttributes.Count > 0) {
-								infoOutput.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
-								currentAttributes.Clear();
-							}
+							CheckEmpty(currentAttributes);
 							++index;
 							token = block.GetToken(index);
 
@@ -81,11 +78,7 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.@namespace:
 						{
-							if (currentAttributes.Count > 0) {
-								infoOutput.OutputMessage(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
-								currentAttributes.Clear();
-							}
-
+							CheckEmpty(currentAttributes);
 							++index;
 							var ns = UsingReader.ReadNamespace(block, ref index);
 							currentNamespace.Push(ns);
@@ -100,10 +93,7 @@ namespace Kaleidoscope.Analysis.CS
 						currentAttributes.Add(AttributeObjectReader.Read(block, ref index));
 						break;
 					case TokenType.Semicolon:
-						if (currentAttributes.Count > 0) {
-							infoOutput.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));
-							currentAttributes.Clear();
-						}
+						CheckEmpty(currentAttributes);
 						++index;
 						break;
 					case TokenType.@public:

@@ -10,7 +10,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	static class MethodBodyReader
 	{
-		public static void Read(InfoOutput infoOutput, TokenBlock block, ref int index, MethodDeclare.Builder method)
+		public static void ReadAsMethod(InfoOutput infoOutput, TokenBlock block, ref int index, MethodDeclare.Builder method)
 		{
 			var token = block.GetToken(index, Error.Analysis.UnexpectedToken);
 			if (token.Type == TokenType.Semicolon && method.InstanceKind != MethodInstanceKind.@abstract && method.InstanceKind != MethodInstanceKind.@extern) {
@@ -46,6 +46,31 @@ namespace Kaleidoscope.Analysis.CS
 					break;
 				default:
 					throw ParseException.AsToken(token, Error.Analysis.MethodBodyExpected);
+			}
+		}
+
+		public static void ReadAsProperty(InfoOutput infoOutput, TokenBlock block, ref int index, PropertyDeclare.Builder property, PropertyMethodDeclare.Builder method)
+		{
+			var token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
+			if (token.Type == TokenType.Semicolon) {
+				method.BodyContent = null;
+				++index;
+			}
+			else if (token.Type != TokenType.Semicolon && property.InstanceKind == PropertyInstanceKind.@abstract) {
+				var exception = ParseException.AsToken(token, Error.Analysis.MemberCannotHaveBody);
+				if (token.Type == TokenType.LeftBrace) {
+					infoOutput.OutputError(exception);
+				}
+				else {
+					throw exception;
+				}
+			}
+
+			if (token.Type == TokenType.LeftBrace) {
+				method.BodyContent = block.ReadBraceBlock(ref index);
+			}
+			else {
+				throw ParseException.AsToken(token, Error.Analysis.AccessorBodyExpected);
 			}
 		}
 	}

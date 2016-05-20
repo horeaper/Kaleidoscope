@@ -73,13 +73,21 @@
 			public const string ParamsMustBeArray = "parameter with 'params' modifier must have an array type";
 			public const string ParameterNoDefault = "a 'ref', 'out' or 'params' parameter cannot have default value";
 
-			public const string MethodBodyExpected = "method body block expected";
 			public const string MemberCannotHaveBody = "'abstract' or 'extern' member cannot have body";
+			public const string MethodBodyExpected = "method body block expected";
 			public const string ConversionStaticOnly = "conversion operator must be declared as static";
 			public const string OperatorPublicStaticOnly = "user-defined operator must be declared static and public";
 			public const string InvalidOperatorToken = "valid operator symbol expected";
 			public const string OperatorParameterInvalid = "cannot define operator with these parameters";
+
 			public const string IndexerParameterInvalid = "cannot define indexer with these parameters";
+			public const string PropertyGetterRequired = "property must have a getter";
+			public const string DuplicatePropertyAccessor = "property accessor already declared";
+			public const string AccessorBodyExpected = "accessor must declare a body";
+			public const string PropertyInvalidAuto = "auto-property cannot have body";
+			public const string IndexerNoDefaultValue = "indexer cannot have default value";
+			public const string PropertyDefaultValueOnlyForAuto = "only auto property can have a default value";
+			public const string AbstractPropertyCannotHaveDefaultValue = "abstract property cannot have default value";
 
 		}
 	}

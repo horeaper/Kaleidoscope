@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Kaleidoscope.Analysis
 {
@@ -20,13 +17,14 @@ namespace Kaleidoscope.Analysis
 			var text = new StringBuilder();
 			text.Append("[Indexer] ");
 			PrintAccessModifier(text);
-			if (IsNew) {
-				text.Append("new ");
-			}
 			PrintInstanceKind(text);
 			text.Append(Type.Text);
 			text.Append(' ');
-			text.Append(NameContent.Text);
+			if (ExplicitInterface != null) {
+				text.Append(ExplicitInterface.Text);
+				text.Append('.');
+			}
+			text.Append(Name.Text);
 			text.Append('[');
 			for (int cnt = 0; cnt < Parameters.Length; ++cnt) {
 				text.Append(Parameters[cnt].Text);

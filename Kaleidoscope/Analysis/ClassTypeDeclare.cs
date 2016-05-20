@@ -25,6 +25,7 @@ namespace Kaleidoscope.Analysis
 
 		public readonly ImmutableArray<IndexerDeclare> Indexers;
 		public readonly ImmutableArray<MemberPropertyDeclare> Properties;
+		public readonly ImmutableArray<FieldDeclare> Fields;
 
 		public readonly ImmutableArray<NestedClassTypeDeclare> NestedClasses;
 
@@ -35,7 +36,7 @@ namespace Kaleidoscope.Analysis
 			InstanceKind = builder.InstanceKind;
 			IsUnsafe = builder.IsUnsafe;
 			IsPartial = builder.IsPartial;
-			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes);
+			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes.Select(item => new GenericDeclare(item)));
 			Inherits = ImmutableArray.CreateRange(builder.Inherits);
 
 			StaticConstructor = new ConstructorDeclare(builder.StaticConstructor, this);
@@ -48,6 +49,7 @@ namespace Kaleidoscope.Analysis
 
 			Indexers = ImmutableArray.CreateRange(builder.Indexers.Select(item => new IndexerDeclare(item, this)));
 			Properties = ImmutableArray.CreateRange(builder.Properties.Select(item => new MemberPropertyDeclare(item, this)));
+			Fields = ImmutableArray.CreateRange(builder.Fields.Select(item => new FieldDeclare(item, this)));
 
 			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses.Select(item => new NestedClassTypeDeclare(item, this)));
 		}
@@ -58,7 +60,7 @@ namespace Kaleidoscope.Analysis
 			public TypeInstanceKind InstanceKind;
 			public bool IsUnsafe;
 			public bool IsPartial;
-			public IEnumerable<GenericDeclare> GenericTypes;
+			public IEnumerable<GenericDeclare.Builder> GenericTypes;
 			public IEnumerable<ReferenceToManagedType> Inherits;
 
 			public ConstructorDeclare.Builder StaticConstructor;
@@ -71,6 +73,7 @@ namespace Kaleidoscope.Analysis
 
 			public readonly List<IndexerDeclare.Builder> Indexers = new List<IndexerDeclare.Builder>();
 			public readonly List<MemberPropertyDeclare.Builder> Properties = new List<MemberPropertyDeclare.Builder>();
+			public readonly List<FieldDeclare.Builder> Fields = new List<FieldDeclare.Builder>();
 
 			public readonly List<NestedClassTypeDeclare.Builder> NestedClasses = new List<NestedClassTypeDeclare.Builder>();
 		}

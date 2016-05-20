@@ -9,6 +9,8 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly bool IsSealed;
 		public readonly MethodInstanceKind InstanceKind;
+		public readonly bool IsUnsafe;
+		public readonly bool IsAsync;
 		public readonly ImmutableArray<ParameterObject> Parameters;
 		public readonly LambdaStyle LambdaContentStyle;
 		public readonly TokenBlock BodyContent;
@@ -18,6 +20,8 @@ namespace Kaleidoscope.Analysis
 		{
 			IsSealed = builder.IsSealed;
 			InstanceKind = builder.InstanceKind;
+			IsUnsafe = builder.IsUnsafe;
+			IsAsync = builder.IsAsync;
 			Parameters = ImmutableArray.CreateRange(builder.Parameters);
 			LambdaContentStyle = builder.LambdaContentStyle;
 			BodyContent = builder.BodyContent;
@@ -25,9 +29,18 @@ namespace Kaleidoscope.Analysis
 
 		protected void PrintInstanceKind(StringBuilder builder)
 		{
+			if (IsSealed) {
+				builder.Append("sealed ");
+			}
 			if (InstanceKind != MethodInstanceKind.None) {
 				builder.Append(InstanceKind);
 				builder.Append(' ');
+			}
+			if (IsUnsafe) {
+				builder.Append("unsafe ");
+			}
+			if (IsAsync) {
+				builder.Append("async ");
 			}
 		}
 
@@ -47,6 +60,8 @@ namespace Kaleidoscope.Analysis
 		{
 			public bool IsSealed;
 			public MethodInstanceKind InstanceKind;
+			public bool IsUnsafe;
+			public bool IsAsync;
 			public IEnumerable<ParameterObject> Parameters;
 			public LambdaStyle LambdaContentStyle;
 			public TokenBlock BodyContent;

@@ -55,6 +55,7 @@
     <Compile Include="Analysis\CS\TypeReferenceReader.Managed.cs" />
     <Compile Include="Analysis\CS\UsingReader.cs" />
     <Compile Include="Analysis\DestructorDeclare.cs" />
+    <Compile Include="Analysis\FieldDeclare.cs" />
     <Compile Include="Analysis\IndexerDeclare.cs" />
     <Compile Include="Analysis\Internal\UsingStack.cs" />
     <Compile Include="Analysis\MemberDeclare.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="Analysis\PropertyDeclare.cs" />
     <Compile Include="Analysis\PropertyMethodDeclare.cs" />
     <Compile Include="Analysis\RootClassTypeDeclare.cs" />
-    <Compile Include="SyntaxObject\FieldAccessType.cs" />
+    <Compile Include="SyntaxObject\FieldInstanceKind.cs" />
     <Compile Include="SyntaxObject\GenericKeywordConstraintType.cs" />
     <Compile Include="Analysis\GenericDeclare.cs" />
     <Compile Include="Analysis\InstanceTypeDeclare.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="SyntaxObject\MethodInstanceKind.cs" />
     <Compile Include="SyntaxObject\ParameterKind.cs" />
     <Compile Include="SyntaxObject\PropertyInstanceKind.cs" />
+    <Compile Include="SyntaxObject\TokenItem.cs" />
     <Compile Include="SyntaxObject\TypeInstanceKind.cs" />
     <Compile Include="SyntaxObject\TokenBlock.cs" />
     <Compile Include="CodeHub.cs" />

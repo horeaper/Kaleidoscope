@@ -8,7 +8,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class GenericReader
 	{
-		public static IEnumerable<GenericDeclare.Builder> ReadDeclare(TokenBlock block, ref int index, string eofErrorMessage)
+		public static List<GenericDeclare.Builder> ReadDeclare(TokenBlock block, ref int index, string eofErrorMessage)
 		{
 			var result = new List<GenericDeclare.Builder>();
 
@@ -31,7 +31,7 @@ namespace Kaleidoscope.Analysis.CS
 					token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 				}
 
-				if (token is TokenIdentifier) {
+				if (token.Type == TokenType.Identifier) {
 					item.Name = (TokenIdentifier)token;
 
 					//Check duplicate

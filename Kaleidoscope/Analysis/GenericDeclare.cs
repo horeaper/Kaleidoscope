@@ -15,6 +15,7 @@ namespace Kaleidoscope.Analysis
 		public readonly TokenKeyword NewConstraint;
 		public readonly TokenKeyword EnumTypeConstraint;
 		public readonly ImmutableArray<ReferenceToManagedType> TypeConstraints;
+		public string Text => Name.Text;
 
 		public GenericDeclare(Builder builder)
 			: base(builder.Name)
@@ -23,7 +24,7 @@ namespace Kaleidoscope.Analysis
 			KeywordConstraint = builder.KeywordConstraint;
 			NewConstraint = builder.NewConstraint;
 			EnumTypeConstraint = builder.EnumTypeConstraint;
-			TypeConstraints = ImmutableArray.Create(builder.TypeConstraints.ToArray());
+			TypeConstraints = ImmutableArray.CreateRange(builder.TypeConstraints);
 		}
 
 		public override string ToString()

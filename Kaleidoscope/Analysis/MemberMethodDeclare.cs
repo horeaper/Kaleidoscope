@@ -1,5 +1,7 @@
-﻿using System.Text;
-using Kaleidoscope.SyntaxObject;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
 
 namespace Kaleidoscope.Analysis
 {
@@ -7,8 +9,8 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly bool IsNew;
 		public readonly ReferenceToType ReturnType;
-		public readonly TokenBlock NameContent;
-		public readonly TokenBlock GenericConstraintContent;
+		public readonly ReferenceToType ExplicitInterface;
+		public readonly ImmutableArray<GenericDeclare> GenericTypes;
 		readonly string m_displayName;
 
 		public MemberMethodDeclare(Builder builder, InstanceTypeDeclare owner)
@@ -16,8 +18,8 @@ namespace Kaleidoscope.Analysis
 		{
 			IsNew = builder.IsNew;
 			ReturnType = builder.ReturnType;
-			NameContent = builder.NameContent;
-			GenericConstraintContent = builder.GenericConstraintContent;
+			ExplicitInterface = builder.ExplicitInterface;
+			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes.Select(item => new GenericDeclare(item)));
 
 			var text = new StringBuilder();
 			text.Append("[Method] ");
@@ -28,7 +30,21 @@ namespace Kaleidoscope.Analysis
 			PrintInstanceKind(text);
 			text.Append(ReturnType.Text);
 			text.Append(' ');
-			text.Append(NameContent.Text);
+			if (ExplicitInterface != null) {
+				text.Append(ExplicitInterface.Text);
+				text.Append('.');
+			}
+			text.Append(Name.Text);
+			if (GenericTypes.Length > 0) {
+				text.Append('<');
+				for (int cnt = 0; cnt < GenericTypes.Length; ++cnt) {
+					text.Append(GenericTypes[cnt].Text);
+					if (cnt < GenericTypes.Length - 1) {
+						text.Append(", ");
+					}
+				}
+				text.Append('>');
+			}
 			PrintParameters(text);
 			m_displayName = text.ToString();
 		}
@@ -42,8 +58,8 @@ namespace Kaleidoscope.Analysis
 		{
 			public bool IsNew;
 			public ReferenceToType ReturnType;
-			public TokenBlock NameContent;
-			public TokenBlock GenericConstraintContent;
+			public ReferenceToType ExplicitInterface;
+			public IEnumerable<GenericDeclare.Builder> GenericTypes;
 		}
 	}
 }
