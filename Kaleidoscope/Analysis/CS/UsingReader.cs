@@ -29,7 +29,7 @@ namespace Kaleidoscope.Analysis.CS
 					ns.Add(token);
 
 					token = block.GetToken(index);
-					if (token == null) {
+					if (token == null || token.Type == TokenType.LeftBrace) {
 						return ns;
 					}
 					else if (token.Type == TokenType.Dot) {

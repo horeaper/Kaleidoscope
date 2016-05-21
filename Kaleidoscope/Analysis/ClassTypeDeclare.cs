@@ -39,9 +39,9 @@ namespace Kaleidoscope.Analysis
 			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes.Select(item => new GenericDeclare(item)));
 			Inherits = ImmutableArray.CreateRange(builder.Inherits);
 
-			StaticConstructor = new ConstructorDeclare(builder.StaticConstructor, this);
+			StaticConstructor = builder.StaticConstructor != null ? new ConstructorDeclare(builder.StaticConstructor, this) : null;
 			Constructors = ImmutableArray.CreateRange(builder.Constructors.Select(item => new ConstructorDeclare(item, this)));
-			Destructor = new DestructorDeclare(builder.Destructor, this);
+			Destructor = builder.Destructor != null ? new DestructorDeclare(builder.Destructor, this) : null;
 
 			Methods = ImmutableArray.CreateRange(builder.Methods.Select(item => new MemberMethodDeclare(item, this)));
 			OperatorOverloads = ImmutableArray.CreateRange(builder.OperatorOverloads.Select(item => new OperatorOverloadDeclare(item, this)));

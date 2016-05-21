@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.SyntaxObject
@@ -12,10 +13,10 @@ namespace Kaleidoscope.SyntaxObject
 	{
 		public readonly ImmutableArray<Token> Items;
 
-		public Token First => Items[0];
-		public Token Last => Items[Items.Length - 1];
+		public Token First => Items.Length > 0 ? Items[0] : null;
+		public Token Last => Items.Length > 0 ? Items[Items.Length - 1] : null;
 		public int Count => Items.Length;
-		public SourceTextFile SourceFile => First.SourceFile;
+		public SourceTextFile SourceFile => Items.Length > 0 ? First.SourceFile : null;
 		public string Text => SourceFile.Substring(First.Begin, Last.End);
 
 		public Token this[int index] => Items[index];
@@ -32,19 +33,22 @@ namespace Kaleidoscope.SyntaxObject
 			if (tokens == null) {
 				throw new ArgumentNullException(nameof(tokens));
 			}
-			if (tokens.Length == 0) {
-				throw new ArgumentOutOfRangeException(nameof(tokens));
-			}
 			Items = tokens;
 		}
 
 		public TokenBlock(Token[] tokens)
 		{
+			if (tokens == null) {
+				throw new ArgumentNullException(nameof(tokens));
+			}
 			Items = ImmutableArray.Create(tokens);
 		}
 
 		public TokenBlock(Token token)
 		{
+			if (token == null) {
+				throw new ArgumentNullException(nameof(token));
+			}
 			Items = ImmutableArray.Create(token);
 		}
 

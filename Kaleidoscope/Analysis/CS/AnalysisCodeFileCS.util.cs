@@ -5,7 +5,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		void CheckEmpty(List<AttributeObject.Builder> currentAttributes)
+		void EnsureEmpty(List<AttributeObject.Builder> currentAttributes)
 		{
 			if (currentAttributes.Count > 0) {
 				infoOutput.OutputError(ParseException.AsTokenBlock(currentAttributes[currentAttributes.Count - 1].Type.Content, Error.Analysis.InvalidAttributeUsage));

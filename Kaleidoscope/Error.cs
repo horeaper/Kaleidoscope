@@ -57,6 +57,10 @@
 			public const string NewConstraintInvalid = "'new' constraint is only allowed with 'class', 'interface' or 'cpp'";
 			public const string EnumValueIntOnly = "only integer type (such as int or byte) are allowed as enum value type";
 
+			public const string StaticTypeOnly = "static type cannot have instance member";
+			public const string StaticTypeNoOperator = "static type cannot declare operators";
+			public const string AbstractTypeOnly = "abstract member must have abstract class";
+
 			public const string DuplicatedStaticConstructor = "duplicated static constructor";
 			public const string StaticConstructorNoAccessModifier = "static constructor cannot have access modifiers";
 			public const string StaticConstructorNoParams = "static constructor cannot have parameters";

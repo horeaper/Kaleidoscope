@@ -15,9 +15,12 @@ namespace Kaleidoscope.Analysis.CS
 			var token = block.GetToken(index, Error.Analysis.RightBracketExpected);
 			if (token.Type == TokenType.LeftParenthesis) {
 				content = block.ReadParenthesisBlock(ref index);
-				token = block.GetToken(index++, Error.Analysis.RightBracketExpected);
+				token = block.GetToken(index, Error.Analysis.RightBracketExpected);
 			}
-			if (token.Type != TokenType.RightBracket) {
+			if (token.Type == TokenType.RightBracket) {
+				++index;
+			}
+			else {
 				throw ParseException.AsToken(token, Error.Analysis.RightBracketExpected);
 			}
 

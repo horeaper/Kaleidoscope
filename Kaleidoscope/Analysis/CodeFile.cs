@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using Kaleidoscope.Analysis.CS;
 using Kaleidoscope.SyntaxObject;
 
@@ -7,6 +8,7 @@ namespace Kaleidoscope.Analysis
 	public sealed class CodeFile
 	{
 		public readonly TokenBlock Tokens;
+		public readonly ImmutableArray<RootClassTypeDeclare> DefinedClasses;
 
 		public CodeFile(InfoOutput infoOutput, TokenBlock tokens, LanguageType languageType)
 		{
@@ -23,7 +25,7 @@ namespace Kaleidoscope.Analysis
 			}
 
 			Tokens = tokens;
-			//TODO: Set members
+			DefinedClasses = ImmutableArray.CreateRange(analysis.DefinedClasses);
 		}
 
 		public override string ToString()

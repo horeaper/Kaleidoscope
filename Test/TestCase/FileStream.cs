@@ -495,7 +495,7 @@ namespace System.IO
 			buf_dirty = true;
 		}
 
-		public override int Read ([In,Out] byte[] array, int offset, int count)
+		public override int Read (byte[] array, int offset, int count)
 		{
 			if (handle == MonoIO.InvalidHandle)
 				throw new ObjectDisposedException ("Stream has been closed");

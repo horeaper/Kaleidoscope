@@ -37,5 +37,10 @@ namespace Kaleidoscope.Analysis
 			}
 			Text = builder.ToString();
 		}
+
+		public override string ToString()
+		{
+			return "[Parameter] " + Text;
+		}
 	}
 }

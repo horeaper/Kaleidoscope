@@ -3,6 +3,7 @@ using Kaleidoscope;
 using Kaleidoscope.Analysis;
 using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
+using System.Collections.Immutable;
 
 namespace TestConsole
 {
@@ -38,13 +39,6 @@ namespace TestConsole
 	{
 		static void Main(string[] args)
 		{
-			const string Content = 
-@"
-[Attribute(""SomeData"", First = ""First"", Second = 17, Third = new int[0])]
-[Another]
-";
-			var tokens = Tokenizer.Process(null, new SourceTextFile("", Content), null, false, false);
-			var file = new CodeFile(new OutputToConsole(), new TokenBlock(tokens), LanguageType.CS);
 		}
 	}
 }

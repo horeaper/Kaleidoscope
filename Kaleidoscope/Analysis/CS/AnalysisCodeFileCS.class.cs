@@ -8,64 +8,93 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(TokenIdentifier nameToken);
+		class ClassTraits
+		{
+			public AttributeObject.Builder[] CustomAttributes;
+			public bool IsRoot;
+			public AccessModifier AccessModifier;
+			public TokenIdentifier Name;
+			public TypeInstanceKind InstanceKind;
+			public bool IsUnsafe;
+			public bool IsPartial;
+			public List<GenericDeclare.Builder> GenericTypes;
+			public List<ReferenceToManagedType> Inherits;
+		}
+
+		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(ClassTraits classTraints);
 
 		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				--index;
-				infoOutput.OutputError(ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected));
+				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers((TokenIdentifier)nameToken);
-			builder.CustomAttributes = customAttributes;
+			var builder = fnReadMembers(new ClassTraits {
+				CustomAttributes = customAttributes,
+				IsRoot = true,
+				AccessModifier = isPublic ? AccessModifier.@public : AccessModifier.@internal,
+				Name = (TokenIdentifier)nameToken,
+				InstanceKind = instanceKind,
+				IsUnsafe = isUnsafe,
+				IsPartial = isPartial,
+				GenericTypes = generics,
+				Inherits = inherits
+			});
 			builder.OwnerFile = ownerFile;
 			builder.Usings = new UsingBlob(currentUsings.Peek());
 			builder.Namespace = currentNamespace.Get();
 			builder.IsPublic = isPublic;
-			builder.InstanceKind = instanceKind;
-			builder.IsUnsafe = isUnsafe;
-			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics;
-			builder.Inherits = inherits;
 			return new RootClassTypeDeclare(builder);
 		}
 
-		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(TokenIdentifier nameToken);
+		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(ClassTraits classTraints);
 
 		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
 				--index;
-				infoOutput.OutputError(ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected));
+				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
 			}
 
 			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers((TokenIdentifier)nameToken);
-			builder.CustomAttributes = customAttributes;
+			var builder = fnReadMembers(new ClassTraits {
+				CustomAttributes = customAttributes,
+				IsRoot = false,
+				AccessModifier = accessModifier,
+				Name = (TokenIdentifier)nameToken,
+				InstanceKind = instanceKind,
+				IsUnsafe = isUnsafe,
+				IsPartial = isPartial,
+				GenericTypes = generics,
+				Inherits = inherits
+			});
 			builder.AccessModifier = accessModifier;
 			builder.IsNew = isNew;
-			builder.InstanceKind = instanceKind;
-			builder.IsUnsafe = isUnsafe;
-			builder.IsPartial = isPartial;
-			builder.GenericTypes = generics;
-			builder.Inherits = inherits;
 			return builder;
 		}
 
-		T ReadClassMembers<T>(TokenIdentifier typeName, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
+		T ReadClassMembers<T>(ClassTraits classTraints, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
 		{
-			var builder = new T();
-			builder.TypeKind = typeKind;
+			var builder = new T {
+				TypeKind = typeKind,
+				CustomAttributes = classTraints.CustomAttributes,
+				Name = classTraints.Name,
+				InstanceKind = classTraints.InstanceKind,
+				IsUnsafe = classTraints.IsUnsafe,
+				IsPartial = classTraints.IsPartial,
+				GenericTypes = classTraints.GenericTypes,
+				Inherits = classTraints.Inherits
+			};
 			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
 			if (token.Type != TokenType.LeftBrace) {
 				throw ParseException.AsToken(token, Error.Analysis.LeftBraceExpected);
@@ -230,7 +259,7 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
-				else if (token.Text == typeName.Text) {
+				else if (token.Text == classTraints.Name.Text) {
 					//Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
@@ -259,6 +288,9 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 					constructor.InstanceKind = isStatic ? MethodInstanceKind.@static : MethodInstanceKind.None;
+					if (classTraints.InstanceKind == TypeInstanceKind.@static && constructor.InstanceKind != MethodInstanceKind.@static) {
+						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StaticTypeOnly));
+					}
 
 					//Parameters
 					block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
@@ -303,6 +335,9 @@ namespace Kaleidoscope.Analysis.CS
 					if (typeKind == ClassTypeKind.@struct) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
 					}
+					if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeOnly));
+					}
 					if (builder.Destructor != null) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DuplicateDestructor));
 					}
@@ -316,7 +351,7 @@ namespace Kaleidoscope.Analysis.CS
 					};
 
 					var nameToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
-					if (nameToken.Text != typeName.Text) {
+					if (nameToken.Text != classTraints.Name.Text) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
 					}
 					else {
@@ -338,6 +373,9 @@ namespace Kaleidoscope.Analysis.CS
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					if (instanceKindModifier?.Type != KeywordType.@static) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConversionStaticOnly));
+					}
+					if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeNoOperator));
 					}
 					var conversion = new ConversionOperatorDeclare.Builder {
 						CustomAttributes = currentAttributes.ToArray(),
@@ -370,6 +408,7 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else {
 					//Type
+					--index;
 					var type = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 
 					//Next
@@ -377,6 +416,9 @@ namespace Kaleidoscope.Analysis.CS
 					if (token.Type == TokenType.@operator) {
 						//Operator overloads
 						CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
+						if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeNoOperator));
+						}
 						var instanceKind = MethodInstanceKind.@static;
 						if (accessModifier == null || instanceKindModifier == null) {
 							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.OperatorPublicStaticOnly));
@@ -457,51 +499,57 @@ namespace Kaleidoscope.Analysis.CS
 											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 										}
 									}
+									if (classTraints.InstanceKind == TypeInstanceKind.@static && method.InstanceKind != MethodInstanceKind.@static) {
+										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.StaticTypeOnly));
+									}
+									if (classTraints.InstanceKind != TypeInstanceKind.@abstract && method.InstanceKind == MethodInstanceKind.@abstract) {
+										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.AbstractTypeOnly));
+									}
 
-									//Name content
-									Func<IEnumerable<GenericDeclare.Builder>> fnParseNameContent = () => {
-										var generics = new List<GenericDeclare.Builder>();
-										int nameTokenIndex = nameContent.Count - 1;
-										if (nameContent.Last.Type == TokenType.RightArrow) {
-											int startIndex = -1;
-											for (int cnt = nameTokenIndex; cnt >= 0; --cnt) {
-												if (nameContent[cnt].Type == TokenType.LeftArrow) {
-													nameTokenIndex = cnt;
-													break;
-												}
-											}
-											if (nameTokenIndex == 0 || nameTokenIndex == nameContent.Count - 1) {
-												throw ParseException.AsToken(nameContent.Last, Error.Analysis.UnexpectedToken);
-											}
-											else {
-												generics = GenericReader.ReadDeclare(nameContent, ref startIndex, null);
+									//Generic
+									int nameTokenIndex = nameContent.Count - 1;
+									if (nameContent.Last.Type == TokenType.RightArrow) {
+										int startIndex = -1;
+										for (int cnt = nameTokenIndex; cnt >= 0; --cnt) {
+											if (nameContent[cnt].Type == TokenType.LeftArrow) {
+												nameTokenIndex = cnt;
+												break;
 											}
 										}
-
-										var name = nameContent[nameTokenIndex];
-										if (name.Type != TokenType.Identifier) {
-											throw ParseException.AsToken(name, Error.Analysis.IdentifierExpected);
+										if (nameTokenIndex == 0 || nameTokenIndex == nameContent.Count - 1) {
+											throw ParseException.AsToken(nameContent.Last, Error.Analysis.UnexpectedToken);
 										}
-										method.Name = (TokenIdentifier)name;
-
-										if (nameTokenIndex > 0) {
-											int dotIndex = nameTokenIndex - 1;
-											if (dotIndex == 0 || nameContent[dotIndex].Type != TokenType.Dot) {
-												throw ParseException.AsToken(nameContent[dotIndex], Error.Analysis.UnexpectedToken);
-											}
-											var typeBuilder = new ReferenceToManagedType.Builder {
-												Content = block.AsBeginEnd(0, dotIndex),
-											};
-											method.ExplicitInterface = new ReferenceToManagedType(typeBuilder);
-											CheckInvalid(accessModifier, newModifier, sealedModifier, instanceKindModifier);
+										else {
+											method.GenericTypes = GenericReader.ReadDeclare(nameContent, ref startIndex, null);
 										}
+									}
+									if (method.GenericTypes == null) {
+										method.GenericTypes = new GenericDeclare.Builder[0];
+									}
 
-										return generics;
-									};
-									method.GenericTypes = fnParseNameContent();
+									//Name
+									var name = nameContent[nameTokenIndex];
+									if (name.Type != TokenType.Identifier) {
+										throw ParseException.AsToken(name, Error.Analysis.IdentifierExpected);
+									}
+									method.Name = (TokenIdentifier)name;
+
+									//Explicit interface
+									if (nameTokenIndex > 0) {
+										int dotIndex = nameTokenIndex - 1;
+										if (dotIndex == 0 || nameContent[dotIndex].Type != TokenType.Dot) {
+											throw ParseException.AsToken(nameContent[dotIndex], Error.Analysis.UnexpectedToken);
+										}
+										var typeBuilder = new ReferenceToManagedType.Builder {
+											Content = nameContent.AsBeginEnd(0, dotIndex),
+										};
+										method.ExplicitInterface = new ReferenceToManagedType(typeBuilder);
+										CheckInvalid(accessModifier, newModifier, sealedModifier, instanceKindModifier);
+									}
 
 									//Parameters
-									method.Parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
+									bool isExtensionMethodAvailable = instanceKindModifier?.Type == KeywordType.@static && classTraints.InstanceKind == TypeInstanceKind.@static && classTraints.GenericTypes.Count == 0 && classTraints.IsRoot;
+									method.Parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), isExtensionMethodAvailable);
 
 									//Generic constraint
 									token = block.GetToken(index, Error.Analysis.LeftBraceExpected);
@@ -540,6 +588,9 @@ namespace Kaleidoscope.Analysis.CS
 									property.IsNew = newModifier != null;
 									property.IsSealed = sealedModifier != null;
 									property.IsUnsafe = unsafeModifier != null;
+									property.Type = type;
+
+									//Instance kind
 									if (instanceKindModifier != null) {
 										if (sealedModifier != null && instanceKindModifier.Type != KeywordType.@override) {
 											infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.SealedOnlyWithOverride));
@@ -549,8 +600,13 @@ namespace Kaleidoscope.Analysis.CS
 											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 										}
 									}
-									property.Type = type;
-									
+									if (classTraints.InstanceKind == TypeInstanceKind.@static && property.InstanceKind != PropertyInstanceKind.@static) {
+										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.StaticTypeOnly));
+									}
+									if (classTraints.InstanceKind != TypeInstanceKind.@abstract && property.InstanceKind == PropertyInstanceKind.@abstract) {
+										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.AbstractTypeOnly));
+									}
+
 									//Name content
 									if (!isIndexer) {
 										property.Name = (TokenIdentifier)nameContent.Last;
@@ -610,7 +666,7 @@ namespace Kaleidoscope.Analysis.CS
 										token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 										if (token.Type == TokenType.RightBrace) {
 											if (property.GetterMethod == null) {
-												throw ParseException.AsToken(token, Error.Analysis.PropertyGetterRequired);
+												infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.PropertyGetterRequired));
 											}
 											break;
 										}
@@ -740,11 +796,15 @@ namespace Kaleidoscope.Analysis.CS
 									};
 
 									//Instance kind
-									if (!Enum.TryParse(instanceKindModifier.Type.ToString(), out field.InstanceKind)) {
+									if (instanceKindModifier != null && !Enum.TryParse(instanceKindModifier.Type.ToString(), out field.InstanceKind)) {
 										infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
+									}
+									if (classTraints.InstanceKind == TypeInstanceKind.@static && field.InstanceKind != FieldInstanceKind.@static) {
+										infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeOnly));
 									}
 
 									//Default value
+									++index;
 									if (token.Type == TokenType.Assign) {
 										field.DefaultValueContent = block.ReadPastSpecificToken(ref index, TokenType.Semicolon, Error.Analysis.SemicolonExpected);
 									}
@@ -760,10 +820,18 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
-		T ReadInterfaceMembers<T>(TokenIdentifier typeName) where T : ClassTypeDeclare.Builder, new()
+		T ReadInterfaceMembers<T>(ClassTraits classTraints) where T : ClassTypeDeclare.Builder, new()
 		{
-			var builder = new T();
-			builder.TypeKind = ClassTypeKind.@interface;
+			var builder = new T {
+				TypeKind = ClassTypeKind.@interface,
+				CustomAttributes = classTraints.CustomAttributes,
+				Name = classTraints.Name,
+				InstanceKind = classTraints.InstanceKind,
+				IsUnsafe = classTraints.IsUnsafe,
+				IsPartial = classTraints.IsPartial,
+				GenericTypes = classTraints.GenericTypes,
+				Inherits = classTraints.Inherits
+			};
 			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
 			if (token.Type != TokenType.LeftBrace) {
 				throw ParseException.AsToken(token, Error.Analysis.LeftBraceExpected);

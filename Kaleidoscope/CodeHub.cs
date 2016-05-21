@@ -43,30 +43,29 @@ namespace Kaleidoscope
 					errorList.Add(e);
 				}
 			});
-			CheckErrorList(errorList);
+			CheckErrorList(ref errorList);
 			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
 
 			//Extract - Get all declared types
 
 			//Bind - Resolve all ReferenceToType
+
+			//Arrange - Combine partials
+
+			//Generate - Output transpiled result
 		}
 
 #region Utility
 
-		void CheckErrorList(IEnumerable<ParseException> errorList)
+		void CheckErrorList(ref ConcurrentBag<ParseException> errorList)
 		{
 			if (errorList == null) {
 				throw new ArgumentNullException(nameof(errorList));
 			}
-
-			bool isErrorExist = false;
 			foreach (var error in errorList) {
 				InfoOutput.OutputError(error);
-				isErrorExist = true;
 			}
-			if (isErrorExist) {
-				throw new KaleidoscopeSystemException();
-			}
+			errorList = new ConcurrentBag<ParseException>();
 		}
 
 #endregion

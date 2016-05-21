@@ -8,27 +8,17 @@ namespace Kaleidoscope.Analysis
 		public readonly ManagedDeclare Target;
 		public readonly ReferenceToManagedType Type;
 		public readonly TokenBlock ConstructContent;
-		readonly string m_displayName;
 
 		public AttributeObject(Builder builder, ManagedDeclare target)
 		{
 			Target = target;
 			Type = builder.Type;
 			ConstructContent = builder.ConstructContent;
-
-			var displayName = new StringBuilder();
-			displayName.Append(Type.Text);
-			if (ConstructContent != null) {
-				displayName.Append('(');
-				displayName.Append(ConstructContent.Text);
-				displayName.Append(')');
-			}
-			m_displayName = displayName.ToString();
 		}
 
 		public override string ToString()
 		{
-			return $"[AttributeObject] {m_displayName}({ConstructContent?.Text})" ;
+			return $"[AttributeObject] {Type.Text}({ConstructContent?.Text})" ;
 		}
 
 		public sealed class Builder

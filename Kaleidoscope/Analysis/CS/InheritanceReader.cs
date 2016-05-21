@@ -6,7 +6,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class InheritanceReader
 	{
-		public static IEnumerable<ReferenceToManagedType> ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
+		public static List<ReferenceToManagedType> ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
 		{
 			var result = new List<ReferenceToManagedType>();
 

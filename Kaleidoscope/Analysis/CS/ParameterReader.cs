@@ -29,11 +29,13 @@ namespace Kaleidoscope.Analysis.CS
 					if (parameterKindModifier != null) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
-					if (token.Type == TokenType.@this && result.Count > 0) {
-						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ParameterThisFirstOnly));
-					}
-					if (!isAllowThisParameter) {
-						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ParameterThisStaticOnly));
+					if (token.Type == TokenType.@this) {
+						if (result.Count > 0) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ParameterThisFirstOnly));
+						}
+						if (!isAllowThisParameter) {
+							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ParameterThisStaticOnly));
+						}
 					}
 					parameterKindModifier = (TokenKeyword)token;
 					++index;
@@ -67,7 +69,6 @@ namespace Kaleidoscope.Analysis.CS
 					token = block.GetToken(index);
 					if (token == null) {
 						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, null));
-						currentAttributes.Clear();
 						for (int cnt = 0; cnt < result.Count - 1; ++cnt) {
 							if (result[cnt].ParameterKind == ParameterKind.@params) {
 								infoOutput.OutputError(ParseException.AsTokenBlock(result[cnt].Type.Content, Error.Analysis.ParamsMustBeLast));
@@ -78,6 +79,7 @@ namespace Kaleidoscope.Analysis.CS
 					else if (token.Type == TokenType.Comma) {
 						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, null));
 						currentAttributes.Clear();
+						parameterKindModifier = null;
 						++index;
 					}
 					else if (token.Type == TokenType.Assign) {
@@ -89,6 +91,7 @@ namespace Kaleidoscope.Analysis.CS
 						var content = block.ReadPastSpecificToken(ref index, TokenType.Comma);
 						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, content));
 						currentAttributes.Clear();
+						parameterKindModifier = null;
 					}
 					else {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.UnexpectedToken));

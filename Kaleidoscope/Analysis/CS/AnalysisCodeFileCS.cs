@@ -30,14 +30,14 @@ namespace Kaleidoscope.Analysis.CS
 
 			while (true) {
 				var token = block.GetToken(index);
-				if (token == null) {
+				if (token == null || token.Type == TokenType.RightBrace) {
 					return;
 				}
 
 				switch (token.Type) {
 					case TokenType.@using:
 						{
-							CheckEmpty(currentAttributes);
+							EnsureEmpty(currentAttributes);
 							++index;
 							token = block.GetToken(index);
 
@@ -78,14 +78,18 @@ namespace Kaleidoscope.Analysis.CS
 						break;
 					case TokenType.@namespace:
 						{
-							CheckEmpty(currentAttributes);
+							EnsureEmpty(currentAttributes);
 							++index;
 							var ns = UsingReader.ReadNamespace(block, ref index);
+							block.NextToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
+							++index;
 							currentNamespace.Push(ns);
 							currentUsings.Push();
 							ReadContent();
 							currentNamespace.Pop();
 							currentUsings.Pop();
+							block.NextToken(index, TokenType.RightBrace, Error.Analysis.RightBraceExpected);
+							++index;
 						}
 						break;
 					case TokenType.LeftBracket:
@@ -93,7 +97,7 @@ namespace Kaleidoscope.Analysis.CS
 						currentAttributes.Add(AttributeObjectReader.Read(block, ref index));
 						break;
 					case TokenType.Semicolon:
-						CheckEmpty(currentAttributes);
+						EnsureEmpty(currentAttributes);
 						++index;
 						break;
 					case TokenType.@public:
@@ -145,20 +149,20 @@ namespace Kaleidoscope.Analysis.CS
 							if (instanceKindModifier != null) {
 								instanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
 							}
-							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@interface)));
+							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@class)));
 						}
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<RootClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@struct)));
 						return;
 					case TokenType.@interface:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(nameToken)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, traits => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(traits)));
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {
