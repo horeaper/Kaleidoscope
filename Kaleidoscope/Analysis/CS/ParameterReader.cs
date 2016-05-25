@@ -7,12 +7,11 @@ namespace Kaleidoscope.Analysis.CS
 {
 	static class ParameterReader
 	{
-		public static List<ParameterObject> Read(InfoOutput infoOutput, TokenBlock block, bool isAllowThisParameter)
+		public static List<ParameterObject> Read(InfoOutput infoOutput, TokenBlock paremeterBlock, bool isAllowThisParameter)
 		{
-			if (block.Count == 0) {
+			if (paremeterBlock.Count == 0) {
 				return new List<ParameterObject>();
 			}
-
 
 			var result = new List<ParameterObject>();
 			var currentAttributes = new List<AttributeObject.Builder>();
@@ -20,10 +19,10 @@ namespace Kaleidoscope.Analysis.CS
 
 			int index = 0;
 			while (true) {
-				var token = block.GetToken(index, Error.Analysis.IdentifierExpected);
+				var token = paremeterBlock.GetToken(index, Error.Analysis.IdentifierExpected);
 				if (token.Type == TokenType.LeftBracket) {
 					++index;
-					currentAttributes.Add(AttributeObjectReader.Read(block, ref index));
+					currentAttributes.Add(AttributeObjectReader.Read(paremeterBlock, ref index));
 				}
 				else if (ConstantTable.ValidParameterKindModifier.Contains(token.Type)) {
 					if (parameterKindModifier != null) {
@@ -46,7 +45,7 @@ namespace Kaleidoscope.Analysis.CS
 						kind = (ParameterKind)Enum.Parse(typeof(ParameterKind), parameterKindModifier.Type.ToString());
 					}
 
-					var returnType = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+					var returnType = TypeReferenceReader.Read(paremeterBlock, ref index, TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 					var managedReturnType = returnType as ReferenceToManagedType;
 					if (kind ==	ParameterKind.@this && managedReturnType == null) {
 						infoOutput.OutputError(ParseException.AsTokenBlock(returnType.Content, Error.Analysis.ParameterThisManagedOnly));
@@ -60,13 +59,13 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 
-					var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
+					var nameToken = paremeterBlock.GetToken(index++, Error.Analysis.IdentifierExpected);
 					if (nameToken.Type != TokenType.Identifier) {
 						--index;
 						infoOutput.OutputError(ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected));
 					}
 
-					token = block.GetToken(index);
+					token = paremeterBlock.GetToken(index);
 					if (token == null) {
 						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, null));
 						for (int cnt = 0; cnt < result.Count - 1; ++cnt) {
@@ -88,7 +87,7 @@ namespace Kaleidoscope.Analysis.CS
 						}
 
 						++index;
-						var content = block.ReadPastSpecificToken(ref index, TokenType.Comma);
+						var content = paremeterBlock.ReadPastSpecificToken(ref index, TokenType.Comma);
 						result.Add(new ParameterObject((TokenIdentifier)nameToken, currentAttributes, kind, returnType, content));
 						currentAttributes.Clear();
 						parameterKindModifier = null;

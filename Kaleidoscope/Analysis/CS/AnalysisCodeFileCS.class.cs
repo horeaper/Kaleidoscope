@@ -604,7 +604,8 @@ namespace Kaleidoscope.Analysis.CS
 											asyncModifier = (TokenIdentifier)token;
 										}
 										else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.get ||
-												 (token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.set) {
+												 (token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.set)
+										{
 											bool isGetter = (token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.get;
 											if ((isGetter && property.GetterMethod != null) ||
 												(!isGetter && property.SetterMethod != null)) {
@@ -721,6 +722,8 @@ namespace Kaleidoscope.Analysis.CS
 									fnNextMember();
 								}
 								break;
+							default:
+								throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
 						}
 
 					}

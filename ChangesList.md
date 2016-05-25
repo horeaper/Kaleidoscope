@@ -7,5 +7,6 @@
 - `dynamic` is now a keyword
 - `var` is now a keyword
 - `partial` no longer allowed on methods
-- `unsafe` no longer allowed on class or methods, only available as block declare in method body
+- `unsafe` no longer allowed on class or methods, only available as a block (unsafe {...}) inside method body
 - `extern` only allowed on method, and is always (implicated) static
+- `fixed` is no longer necessery

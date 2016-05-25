@@ -41,7 +41,7 @@
 			public const string MissingCppKeyword = "missing 'cpp::' keyword";
 
 			public const string InvalidAttributeUsage = "invalid attribute usage";
-			public const string InlineNotAllowed = "'inline' not allowed here";
+			public const string InlineNotAllowed = "'inline' is not allowed here";
 			public const string UnsafeNotAllowed = "'unsafe' is not allowed here";
 			public const string DuplicatedModifier = "duplicated modifier";
 			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
@@ -94,6 +94,10 @@
 			public const string PropertyDefaultValueOnlyForAuto = "only auto property can have a default value";
 			public const string AbstractPropertyCannotHaveDefaultValue = "abstract property cannot have default value";
 
+			public const string InterfaceModifierNotAllowed = "modifier is not allowed for interface member declaration";
+			public const string InterfaceNoNestedType = "interface cannot have nested type";
+			public const string InterfaceMethodNoBody = "interface method cannot declare a body";
+			public const string InterfacePropertyNoBody = "interface property accessor cannot declare a body";
 		}
 	}
 }
