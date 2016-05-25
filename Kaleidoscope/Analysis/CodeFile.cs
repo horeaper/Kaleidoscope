@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Kaleidoscope.Analysis.CS;
 using Kaleidoscope.SyntaxObject;
 
@@ -9,6 +11,9 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly TokenBlock Tokens;
 		public readonly ImmutableArray<RootClassTypeDeclare> DefinedClasses;
+		public readonly ImmutableArray<RootInterfaceTypeDeclare> DefinedInterfaces;
+
+		public IEnumerable<InstanceTypeDeclare> DefinedTypes => DefinedClasses.Cast<InstanceTypeDeclare>().Concat(DefinedInterfaces);
 
 		public CodeFile(InfoOutput infoOutput, TokenBlock tokens, LanguageType languageType)
 		{
@@ -26,6 +31,7 @@ namespace Kaleidoscope.Analysis
 
 			Tokens = tokens;
 			DefinedClasses = ImmutableArray.CreateRange(analysis.DefinedClasses);
+			DefinedInterfaces = ImmutableArray.CreateRange(analysis.DefinedInterfaces);
 		}
 
 		public override string ToString()

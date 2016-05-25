@@ -159,7 +159,7 @@ namespace Kaleidoscope.Analysis.CS
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, traits => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(traits)));
+						DefinedInterfaces.Add(ReadRootInterfaceDeclare(customAttributes, isPublic, partialModifier != null));
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {

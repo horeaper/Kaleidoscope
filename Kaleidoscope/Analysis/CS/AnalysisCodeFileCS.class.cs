@@ -8,16 +8,16 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		T ReadClassMembers<T>(ClassTraits classTraints, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
+		T ReadClassMembers<T>(ClassTraits traits, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
 		{
 			var builder = new T {
 				TypeKind = typeKind,
-				CustomAttributes = classTraints.CustomAttributes,
-				Name = classTraints.Name,
-				InstanceKind = classTraints.InstanceKind,
-				IsPartial = classTraints.IsPartial,
-				GenericTypes = classTraints.GenericTypes,
-				Inherits = classTraints.Inherits
+				CustomAttributes = traits.CustomAttributes,
+				Name = traits.Name,
+				InstanceKind = traits.InstanceKind,
+				IsPartial = traits.IsPartial,
+				GenericTypes = traits.GenericTypes,
+				Inherits = traits.Inherits
 			};
 			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
 			if (token.Type != TokenType.LeftBrace) {
@@ -164,7 +164,7 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else if (token.Type == TokenType.@interface) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
+					builder.NestedInterfaces.Add(ReadNestedInterfaceDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
@@ -178,7 +178,7 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
-				else if (token.Text == classTraints.Name.Text) {
+				else if (token.Text == traits.Name.Text) {
 					//Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
@@ -206,7 +206,7 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 					constructor.InstanceKind = isStatic ? MethodInstanceKind.@static : MethodInstanceKind.None;
-					if (classTraints.InstanceKind == TypeInstanceKind.@static && constructor.InstanceKind != MethodInstanceKind.@static) {
+					if (traits.InstanceKind == TypeInstanceKind.@static && constructor.InstanceKind != MethodInstanceKind.@static) {
 						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StaticTypeOnly));
 					}
 
@@ -253,7 +253,7 @@ namespace Kaleidoscope.Analysis.CS
 					if (typeKind == ClassTypeKind.@struct) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StructNoDestructor));
 					}
-					if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+					if (traits.InstanceKind == TypeInstanceKind.@static) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeOnly));
 					}
 					if (builder.Destructor != null) {
@@ -268,7 +268,7 @@ namespace Kaleidoscope.Analysis.CS
 					};
 
 					var nameToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);
-					if (nameToken.Text != classTraints.Name.Text) {
+					if (nameToken.Text != traits.Name.Text) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.DestructorNameInvalid));
 					}
 					else {
@@ -291,7 +291,7 @@ namespace Kaleidoscope.Analysis.CS
 					if (instanceKindModifier?.Type != KeywordType.@static) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConversionStaticOnly));
 					}
-					if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+					if (traits.InstanceKind == TypeInstanceKind.@static) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeNoOperator));
 					}
 					var conversion = new ConversionOperatorDeclare.Builder {
@@ -332,7 +332,7 @@ namespace Kaleidoscope.Analysis.CS
 					if (token.Type == TokenType.@operator) {
 						//Operator overloads
 						CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
-						if (classTraints.InstanceKind == TypeInstanceKind.@static) {
+						if (traits.InstanceKind == TypeInstanceKind.@static) {
 							infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeNoOperator));
 						}
 						var instanceKind = MethodInstanceKind.@static;
@@ -413,10 +413,10 @@ namespace Kaleidoscope.Analysis.CS
 											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 										}
 									}
-									if (classTraints.InstanceKind == TypeInstanceKind.@static && method.InstanceKind != MethodInstanceKind.@static) {
+									if (traits.InstanceKind == TypeInstanceKind.@static && method.InstanceKind != MethodInstanceKind.@static) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.StaticTypeOnly));
 									}
-									if (classTraints.InstanceKind != TypeInstanceKind.@abstract && method.InstanceKind == MethodInstanceKind.@abstract) {
+									if (traits.InstanceKind != TypeInstanceKind.@abstract && method.InstanceKind == MethodInstanceKind.@abstract) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.AbstractTypeOnly));
 									}
 
@@ -462,7 +462,7 @@ namespace Kaleidoscope.Analysis.CS
 									}
 
 									//Parameters
-									bool isExtensionMethodAvailable = instanceKindModifier?.Type == KeywordType.@static && classTraints.InstanceKind == TypeInstanceKind.@static && classTraints.GenericTypes.Count == 0 && classTraints.IsRoot;
+									bool isExtensionMethodAvailable = instanceKindModifier?.Type == KeywordType.@static && traits.InstanceKind == TypeInstanceKind.@static && traits.GenericTypes.Count == 0 && traits.IsRoot;
 									method.Parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), isExtensionMethodAvailable);
 
 									//Generic constraint
@@ -513,10 +513,10 @@ namespace Kaleidoscope.Analysis.CS
 											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 										}
 									}
-									if (classTraints.InstanceKind == TypeInstanceKind.@static && property.InstanceKind != PropertyInstanceKind.@static) {
+									if (traits.InstanceKind == TypeInstanceKind.@static && property.InstanceKind != PropertyInstanceKind.@static) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.StaticTypeOnly));
 									}
-									if (classTraints.InstanceKind != TypeInstanceKind.@abstract && property.InstanceKind == PropertyInstanceKind.@abstract) {
+									if (traits.InstanceKind != TypeInstanceKind.@abstract && property.InstanceKind == PropertyInstanceKind.@abstract) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.AbstractTypeOnly));
 									}
 
@@ -708,7 +708,7 @@ namespace Kaleidoscope.Analysis.CS
 									if (instanceKindModifier != null && !Enum.TryParse(instanceKindModifier.Type.ToString(), out field.InstanceKind)) {
 										infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 									}
-									if (classTraints.InstanceKind == TypeInstanceKind.@static && field.InstanceKind != FieldInstanceKind.@static) {
+									if (traits.InstanceKind == TypeInstanceKind.@static && field.InstanceKind != FieldInstanceKind.@static) {
 										infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeOnly));
 									}
 

@@ -7,16 +7,14 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		T ReadInterfaceMembers<T>(ClassTraits classTraints) where T : ClassTypeDeclare.Builder, new()
+		T ReadInterfaceMembers<T>(InterfaceTraits traits) where T : InterfaceTypeDeclare.Builder, new()
 		{
 			var builder = new T {
-				TypeKind = ClassTypeKind.@interface,
-				CustomAttributes = classTraints.CustomAttributes,
-				Name = classTraints.Name,
-				InstanceKind = classTraints.InstanceKind,
-				IsPartial = classTraints.IsPartial,
-				GenericTypes = classTraints.GenericTypes,
-				Inherits = classTraints.Inherits
+				CustomAttributes = traits.CustomAttributes,
+				Name = traits.Name,
+				IsPartial = traits.IsPartial,
+				GenericTypes = traits.GenericTypes,
+				Inherits = traits.Inherits
 			};
 			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
 			if (token.Type != TokenType.LeftBrace) {
@@ -70,7 +68,7 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
-				else if (token.Text == classTraints.Name.Text ||
+				else if (token.Text == traits.Name.Text ||
 						 token.Type == TokenType.BitwiseNot ||
 						 token.Type == TokenType.@explicit ||
 						 token.Type == TokenType.@implicit)

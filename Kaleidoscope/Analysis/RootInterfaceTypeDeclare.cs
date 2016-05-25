@@ -4,7 +4,7 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
-	public sealed class RootClassTypeDeclare : ClassTypeDeclare
+	public sealed class RootInterfaceTypeDeclare : InterfaceTypeDeclare
 	{
 		public readonly CodeFile OwnerFile;
 		public readonly UsingBlob Usings;
@@ -13,7 +13,7 @@ namespace Kaleidoscope.Analysis
 		public override string Fullname { get; }
 		readonly string m_displayName;
 
-		public RootClassTypeDeclare(Builder builder)
+		public RootInterfaceTypeDeclare(Builder builder)
 			: base(builder)
 		{
 			OwnerFile = builder.OwnerFile;
@@ -30,12 +30,11 @@ namespace Kaleidoscope.Analysis
 			Fullname = fullname.ToString();
 
 			var text = new StringBuilder();
-			text.Append("[RootClassTypeDeclare] ");
+			text.Append("[RootInterfaceTypeDeclare] ");
 			if (IsPublic) {
 				text.Append("public ");
 			}
-			text.Append(TypeKind);
-			text.Append(' ');
+			text.Append("interface ");
 			text.Append(Fullname);
 			m_displayName = text.ToString();
 		}
@@ -45,7 +44,7 @@ namespace Kaleidoscope.Analysis
 			return m_displayName;
 		}
 
-		public new sealed class Builder : ClassTypeDeclare.Builder
+		public new sealed class Builder : InterfaceTypeDeclare.Builder
 		{
 			public CodeFile OwnerFile;
 			public UsingBlob Usings;
