@@ -13,7 +13,7 @@ namespace Kaleidoscope.Analysis
 		public readonly bool IsContravariance;
 		public readonly GenericKeywordConstraintType KeywordConstraint;
 		public readonly TokenKeyword NewConstraint;
-		public readonly TokenKeyword EnumTypeConstraint;
+		public readonly EnumValueType? EnumTypeConstraint;
 		public readonly ImmutableArray<ReferenceToManagedType> TypeConstraints;
 		public string Text => Name.Text;
 
@@ -38,7 +38,7 @@ namespace Kaleidoscope.Analysis
 			public bool IsContravariance;
 			public GenericKeywordConstraintType KeywordConstraint = GenericKeywordConstraintType.None;
 			public TokenKeyword NewConstraint;
-			public TokenKeyword EnumTypeConstraint;
+			public EnumValueType? EnumTypeConstraint;
 			public readonly List<ReferenceToManagedType> TypeConstraints = new List<ReferenceToManagedType>();
 		}
 	}

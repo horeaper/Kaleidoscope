@@ -3,7 +3,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public sealed class NestedInterfaceTypeDeclare : InterfaceTypeDeclare
+	public sealed class NestedDelegateTypeDeclare : DelegateTypeDeclare
 	{
 		public readonly ClassTypeDeclare ContainerType;
 		public readonly AccessModifier AccessModifier;
@@ -11,7 +11,7 @@ namespace Kaleidoscope.Analysis
 		public override string Fullname { get; }
 		readonly string m_displayName;
 
-		public NestedInterfaceTypeDeclare(Builder builder, ClassTypeDeclare containerType)
+		public NestedDelegateTypeDeclare(Builder builder, ClassTypeDeclare containerType)
 			: base(builder)
 		{
 			ContainerType = containerType;
@@ -21,7 +21,7 @@ namespace Kaleidoscope.Analysis
 			Fullname = ContainerType.Fullname + "." + Name.Text;
 
 			var text = new StringBuilder();
-			text.Append("[NestedInterfaceTypeDeclare] ");
+			text.Append("[NestedDelegateTypeDeclare] ");
 			if (AccessModifier != AccessModifier.@private) {
 				text.Append(AccessModifier);
 				text.Append(' ');
@@ -29,7 +29,7 @@ namespace Kaleidoscope.Analysis
 			if (IsNew) {
 				text.Append("new ");
 			}
-			text.Append("interface ");
+			text.Append("enum ");
 			text.Append(Fullname);
 			m_displayName = text.ToString();
 		}
@@ -39,7 +39,7 @@ namespace Kaleidoscope.Analysis
 			return m_displayName;
 		}
 
-		public new sealed class Builder : InterfaceTypeDeclare.Builder
+		public new sealed class Builder : DelegateTypeDeclare.Builder
 		{
 			public AccessModifier AccessModifier;
 			public bool IsNew;

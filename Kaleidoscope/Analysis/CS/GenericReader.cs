@@ -90,7 +90,8 @@ namespace Kaleidoscope.Analysis.CS
 						token.Type == TokenType.@interface ||
 						token.Type == TokenType.@enum ||
 						token.Type == TokenType.@delegate ||
-						(token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.cpp) {
+						(token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.cpp)
+					{
 						if (keywordConstraintToken != null) {
 							throw ParseException.AsToken(token, Error.Analysis.DuplicatedGenericConstraint);
 						}
@@ -110,7 +111,7 @@ namespace Kaleidoscope.Analysis.CS
 								if (!ConstantTable.IntegerTypeAlias.Contains(token.Type)) {
 									throw ParseException.AsToken(token, Error.Analysis.EnumValueIntOnly);
 								}
-								targetItem.EnumTypeConstraint = (TokenKeyword)token;
+								targetItem.EnumTypeConstraint = (EnumValueType)Enum.Parse(typeof(EnumValueType), token.Text);
 								token = block.GetToken(index++, Error.Analysis.RightParenthesisExpected);
 								if (token.Type != TokenType.RightParenthesis) {
 									throw ParseException.AsToken(token, Error.Analysis.RightParenthesisExpected);
@@ -129,6 +130,7 @@ namespace Kaleidoscope.Analysis.CS
 						CheckNewConstraint(keywordConstraintToken, token);
 						targetItem.NewConstraint = (TokenKeyword)token;
 						++index;
+						//TODO: new(XXXX)
 					}
 					else {
 						targetItem.TypeConstraints.Add((ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
