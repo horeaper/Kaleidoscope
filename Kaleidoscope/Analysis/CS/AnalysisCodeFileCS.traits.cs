@@ -13,7 +13,6 @@ namespace Kaleidoscope.Analysis.CS
 			public AccessModifier AccessModifier;
 			public TokenIdentifier Name;
 			public TypeInstanceKind InstanceKind;
-			public bool IsUnsafe;
 			public bool IsPartial;
 			public List<GenericDeclare.Builder> GenericTypes;
 			public List<ReferenceToManagedType> Inherits;
@@ -21,7 +20,7 @@ namespace Kaleidoscope.Analysis.CS
 
 		delegate RootClassTypeDeclare.Builder FuncReadRootMembers(ClassTraits classTraints);
 
-		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
+		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isPartial, TypeInstanceKind instanceKind, FuncReadRootMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -39,7 +38,6 @@ namespace Kaleidoscope.Analysis.CS
 				AccessModifier = isPublic ? AccessModifier.@public : AccessModifier.@internal,
 				Name = (TokenIdentifier)nameToken,
 				InstanceKind = instanceKind,
-				IsUnsafe = isUnsafe,
 				IsPartial = isPartial,
 				GenericTypes = generics,
 				Inherits = inherits
@@ -53,7 +51,7 @@ namespace Kaleidoscope.Analysis.CS
 
 		delegate NestedClassTypeDeclare.Builder FuncReadNestedMembers(ClassTraits classTraints);
 
-		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isUnsafe, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
+		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isPartial, TypeInstanceKind instanceKind, FuncReadNestedMembers fnReadMembers)
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -71,7 +69,6 @@ namespace Kaleidoscope.Analysis.CS
 				AccessModifier = accessModifier,
 				Name = (TokenIdentifier)nameToken,
 				InstanceKind = instanceKind,
-				IsUnsafe = isUnsafe,
 				IsPartial = isPartial,
 				GenericTypes = generics,
 				Inherits = inherits

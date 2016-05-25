@@ -116,7 +116,6 @@ namespace Kaleidoscope.Analysis.CS
 		void ReadNextTypeDeclare(bool isPublic, AttributeObject.Builder[] customAttributes)
 		{
 			TokenKeyword instanceKindModifier = null;
-			TokenKeyword unsafeModifier = null;
 			TokenIdentifier partialModifier = null;
 
 			while (true) {
@@ -135,13 +134,11 @@ namespace Kaleidoscope.Analysis.CS
 					case TokenType.@sealed:
 					case TokenType.@static:
 						CheckConflict(instanceKindModifier, token);
-						CheckInconsistent(unsafeModifier, partialModifier);
+						CheckInconsistent(partialModifier);
 						instanceKindModifier = (TokenKeyword)token;
 						break;
 					case TokenType.@unsafe:
-						CheckDuplicate(unsafeModifier, token);
-						CheckInconsistent(partialModifier);
-						unsafeModifier = (TokenKeyword)token;
+						infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 						break;
 					case TokenType.@class:
 						{
@@ -149,27 +146,24 @@ namespace Kaleidoscope.Analysis.CS
 							if (instanceKindModifier != null) {
 								instanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
 							}
-							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, instanceKind, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@class)));
+							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, instanceKind, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@class)));
 						}
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@struct)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@struct)));
 						return;
 					case TokenType.@interface:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, traits => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(traits)));
+						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, traits => ReadInterfaceMembers<RootClassTypeDeclare.Builder>(traits)));
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-						}
-						if (unsafeModifier != null) {
-							infoOutput.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
 						}
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
@@ -179,9 +173,6 @@ namespace Kaleidoscope.Analysis.CS
 					case TokenType.@delegate:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
-						}
-						if (unsafeModifier != null) {
-							infoOutput.OutputError(ParseException.AsToken(unsafeModifier, Error.Analysis.InvalidModifier));
 						}
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));

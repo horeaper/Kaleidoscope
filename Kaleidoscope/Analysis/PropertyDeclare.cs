@@ -7,7 +7,6 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly bool IsNew;
 		public readonly bool IsSealed;
-		public readonly bool IsUnsafe;
 		public readonly PropertyInstanceKind InstanceKind; 
 		public readonly ReferenceToType Type;
 		public readonly ReferenceToType ExplicitInterface;
@@ -19,7 +18,6 @@ namespace Kaleidoscope.Analysis
 		{
 			IsNew = builder.IsNew;
 			IsSealed = builder.IsSealed;
-			IsUnsafe = builder.IsUnsafe;
 			InstanceKind = builder.InstanceKind;
 			Type = builder.Type;
 			ExplicitInterface = builder.ExplicitInterface;
@@ -39,9 +37,6 @@ namespace Kaleidoscope.Analysis
 				builder.Append(InstanceKind);
 				builder.Append(' ');
 			}
-			if (IsUnsafe) {
-				builder.Append("unsafe ");
-			}
 		}
 
 		protected void PrintMethods(StringBuilder builder)
@@ -57,7 +52,6 @@ namespace Kaleidoscope.Analysis
 		{
 			public bool IsNew;
 			public bool IsSealed;
-			public bool IsUnsafe;
 			public PropertyInstanceKind InstanceKind;
 			public ReferenceToType Type;
 			public ReferenceToType ExplicitInterface;

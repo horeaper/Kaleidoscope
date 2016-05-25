@@ -10,7 +10,6 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly ClassTypeKind TypeKind;
 		public readonly TypeInstanceKind InstanceKind;
-		public readonly bool IsUnsafe;
 		public readonly bool IsPartial;
 		public readonly ImmutableArray<GenericDeclare> GenericTypes;
 		public readonly ImmutableArray<ReferenceToManagedType> Inherits;
@@ -34,7 +33,6 @@ namespace Kaleidoscope.Analysis
 		{
 			TypeKind = builder.TypeKind;
 			InstanceKind = builder.InstanceKind;
-			IsUnsafe = builder.IsUnsafe;
 			IsPartial = builder.IsPartial;
 			GenericTypes = ImmutableArray.CreateRange(builder.GenericTypes.Select(item => new GenericDeclare(item)));
 			Inherits = ImmutableArray.CreateRange(builder.Inherits);
@@ -58,7 +56,6 @@ namespace Kaleidoscope.Analysis
 		{
 			public ClassTypeKind TypeKind;
 			public TypeInstanceKind InstanceKind;
-			public bool IsUnsafe;
 			public bool IsPartial;
 			public IEnumerable<GenericDeclare.Builder> GenericTypes;
 			public IEnumerable<ReferenceToManagedType> Inherits;

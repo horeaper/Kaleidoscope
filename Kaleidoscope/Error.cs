@@ -42,6 +42,7 @@
 
 			public const string InvalidAttributeUsage = "invalid attribute usage";
 			public const string InlineNotAllowed = "'inline' not allowed here";
+			public const string UnsafeNotAllowed = "'unsafe' is not allowed here";
 			public const string DuplicatedModifier = "duplicated modifier";
 			public const string InconsistentModifierOrder = "inconsistent modifier declare order";
 			public const string ConflictModifier = "conflicted modifier";

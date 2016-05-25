@@ -15,7 +15,6 @@ namespace Kaleidoscope.Analysis.CS
 				CustomAttributes = classTraints.CustomAttributes,
 				Name = classTraints.Name,
 				InstanceKind = classTraints.InstanceKind,
-				IsUnsafe = classTraints.IsUnsafe,
 				IsPartial = classTraints.IsPartial,
 				GenericTypes = classTraints.GenericTypes,
 				Inherits = classTraints.Inherits
@@ -30,7 +29,6 @@ namespace Kaleidoscope.Analysis.CS
 			TokenKeyword sealedModifier = null;
 			TokenKeyword instanceKindModifier = null;
 			TokenKeyword readonlyModifier = null;
-			TokenKeyword unsafeModifier = null;
 			TokenIdentifier partialModifier = null;
 			TokenIdentifier asyncModifier = null;
 			var currentAttributes = new List<AttributeObject.Builder>();
@@ -40,7 +38,6 @@ namespace Kaleidoscope.Analysis.CS
 				sealedModifier = null;
 				instanceKindModifier = null;
 				readonlyModifier = null;
-				unsafeModifier = null;
 				partialModifier = null;
 				asyncModifier = null;
 				currentAttributes.Clear();
@@ -62,7 +59,7 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else if (token.Type == TokenType.LeftBracket) {
 					var modifierTokens = new Token[] {
-						accessModifier, newModifier, sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier
+						accessModifier, newModifier, sealedModifier, instanceKindModifier, readonlyModifier, partialModifier, asyncModifier
 					};
 					if (modifierTokens.Any(item => item != null)) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InvalidAttributeUsage));
@@ -74,21 +71,21 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				else if (ConstantTable.AccessModifiers.Contains(token.Type)) {
 					CheckConflict(accessModifier, token);
-					CheckInconsistent(newModifier, sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
+					CheckInconsistent(newModifier, sealedModifier, instanceKindModifier, readonlyModifier, partialModifier, asyncModifier);
 					accessModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@new) {
 					CheckDuplicate(newModifier, token);
-					CheckInconsistent(sealedModifier, instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
+					CheckInconsistent(sealedModifier, instanceKindModifier, readonlyModifier, partialModifier, asyncModifier);
 					newModifier = (TokenKeyword)token;
 				}
 				else if (token.Type == TokenType.@sealed) {
 					CheckDuplicate(sealedModifier, token);
-					CheckInconsistent(instanceKindModifier, readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
+					CheckInconsistent(instanceKindModifier, readonlyModifier, partialModifier, asyncModifier);
 					sealedModifier = (TokenKeyword)token;
 				}
 				else if (ConstantTable.InstanceKindModifier.Contains(token.Type)) {
-					CheckInconsistent(readonlyModifier, unsafeModifier, partialModifier, asyncModifier);
+					CheckInconsistent(readonlyModifier, partialModifier, asyncModifier);
 					if (newModifier != null && !ConstantTable.ValidNewInstanceKindModifier.Contains(token.Type)) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
 					}
@@ -108,7 +105,6 @@ namespace Kaleidoscope.Analysis.CS
 				}
 				else if (token.Type == TokenType.@readonly) {
 					CheckDuplicate(readonlyModifier, token);
-					CheckInconsistent(unsafeModifier);
 					CheckInvalid(sealedModifier, partialModifier, asyncModifier);
 					if (instanceKindModifier != null && instanceKindModifier.Type != KeywordType.@static) {
 						infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.ConflictModifier));
@@ -118,9 +114,7 @@ namespace Kaleidoscope.Analysis.CS
 					}
 				}
 				else if (token.Type == TokenType.@unsafe) {
-					CheckDuplicate(unsafeModifier, token);
-					CheckInconsistent(partialModifier, asyncModifier);
-					unsafeModifier = (TokenKeyword)token;
+					infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
 					CheckDuplicate(partialModifier, token);
@@ -160,17 +154,17 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 					
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, unsafeModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
+					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadInterfaceMembers< NestedClassTypeDeclare.Builder>(nameToken)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
@@ -191,7 +185,6 @@ namespace Kaleidoscope.Analysis.CS
 						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = fnGetAccessModifier(),
 						Name = (TokenIdentifier)token,
-						IsUnsafe = unsafeModifier != null,
 						IsAsync = asyncModifier != null,
 					};
 
@@ -269,7 +262,6 @@ namespace Kaleidoscope.Analysis.CS
 					var destructor = new DestructorDeclare.Builder {
 						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = AccessModifier.@private,
-						IsUnsafe = unsafeModifier != null,
 						IsAsync = asyncModifier != null,
 						InstanceKind = MethodInstanceKind.None,
 						Parameters = new ParameterObject[0],
@@ -305,7 +297,6 @@ namespace Kaleidoscope.Analysis.CS
 					var conversion = new ConversionOperatorDeclare.Builder {
 						CustomAttributes = currentAttributes.ToArray(),
 						AccessModifier = fnGetAccessModifier(),
-						IsUnsafe = unsafeModifier != null,
 						IsAsync = asyncModifier != null,
 						InstanceKind = MethodInstanceKind.@static,
 						IsExplicit = token.Type == TokenType.@explicit,
@@ -365,7 +356,6 @@ namespace Kaleidoscope.Analysis.CS
 						var overloads = new OperatorOverloadDeclare.Builder {
 							CustomAttributes = currentAttributes.ToArray(),
 							AccessModifier = AccessModifier.@public,
-							IsUnsafe = unsafeModifier != null,
 							IsAsync = asyncModifier != null,
 							InstanceKind = instanceKind,
 							ReturnType = type,
@@ -408,7 +398,6 @@ namespace Kaleidoscope.Analysis.CS
 										CustomAttributes = currentAttributes.ToArray(),
 										AccessModifier = fnGetAccessModifier(),
 										IsNew = newModifier != null,
-										IsUnsafe = unsafeModifier != null,
 										IsAsync = asyncModifier != null,
 										ReturnType = type,
 										IsSealed = sealedModifier != null,
@@ -512,7 +501,6 @@ namespace Kaleidoscope.Analysis.CS
 									property.AccessModifier = fnGetAccessModifier();
 									property.IsNew = newModifier != null;
 									property.IsSealed = sealedModifier != null;
-									property.IsUnsafe = unsafeModifier != null;
 									property.Type = type;
 
 									//Instance kind
@@ -583,7 +571,6 @@ namespace Kaleidoscope.Analysis.CS
 
 									//Accessors
 									accessModifier = null;
-									unsafeModifier = null;
 									asyncModifier = null;
 									currentAttributes.Clear();
 									block.NextToken(index++, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
@@ -597,7 +584,7 @@ namespace Kaleidoscope.Analysis.CS
 										}
 										else if (token.Type == TokenType.LeftBracket) {
 											var modifierTokens = new Token[] {
-												accessModifier, unsafeModifier, asyncModifier
+												accessModifier, asyncModifier
 											};
 											if (modifierTokens.Any(item => item != null)) {
 												infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InvalidAttributeUsage));
@@ -606,13 +593,11 @@ namespace Kaleidoscope.Analysis.CS
 										}
 										else if (token.Type == TokenType.@protected || token.Type == TokenType.@private || token.Type == TokenType.@internal) {
 											CheckConflict(accessModifier, token);
-											CheckInconsistent(unsafeModifier, asyncModifier);
+											CheckInconsistent(asyncModifier);
 											accessModifier = (TokenKeyword)token;
 										}
 										else if (token.Type == TokenType.@unsafe) {
-											CheckDuplicate(unsafeModifier, token);
-											CheckInconsistent(asyncModifier);
-											unsafeModifier = (TokenKeyword)token;
+											infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 										}
 										else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.async) {
 											CheckDuplicate(asyncModifier, token);
@@ -629,7 +614,6 @@ namespace Kaleidoscope.Analysis.CS
 												CustomAttributes = currentAttributes.ToArray(),
 												AccessModifier = AccessModifier.@public,
 												Parameters = new ParameterObject[0],
-												IsUnsafe = unsafeModifier != null,
 												IsAsync = asyncModifier != null,
 											};
 											currentAttributes.Clear();
@@ -716,7 +700,6 @@ namespace Kaleidoscope.Analysis.CS
 										Name = (TokenIdentifier)nameContent.First,
 										IsNew = newModifier != null,
 										IsReadonly = readonlyModifier != null,
-										IsUnsafe = unsafeModifier != null,
 										Type = type,
 									};
 

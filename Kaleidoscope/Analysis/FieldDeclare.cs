@@ -8,7 +8,6 @@ namespace Kaleidoscope.Analysis
 		public readonly bool IsNew;
 		public readonly FieldInstanceKind InstanceKind;
 		public readonly bool IsReadonly;
-		public readonly bool IsUnsafe;
 		public readonly ReferenceToType Type;
 		public readonly TokenBlock DefaultValueContent;
 		readonly string m_displayName;
@@ -19,7 +18,6 @@ namespace Kaleidoscope.Analysis
 			IsNew = builder.IsNew;
 			InstanceKind = builder.InstanceKind;
 			IsReadonly = builder.IsReadonly;
-			IsUnsafe = builder.IsUnsafe;
 			Type = builder.Type;
 			DefaultValueContent = builder.DefaultValueContent;
 
@@ -35,9 +33,6 @@ namespace Kaleidoscope.Analysis
 			}
 			if (IsReadonly) {
 				text.Append("readonly ");
-			}
-			if (IsUnsafe) {
-				text.Append("unsafe ");
 			}
 			text.Append(Type.Text);
 			text.Append(' ');
@@ -59,7 +54,6 @@ namespace Kaleidoscope.Analysis
 			public bool IsNew;
 			public FieldInstanceKind InstanceKind;
 			public bool IsReadonly;
-			public bool IsUnsafe;
 			public ReferenceToType Type;
 			public TokenBlock DefaultValueContent;
 		}

@@ -17,7 +17,6 @@ namespace Kaleidoscope.Analysis.CS
 				CustomAttributes = classTraints.CustomAttributes,
 				Name = classTraints.Name,
 				InstanceKind = classTraints.InstanceKind,
-				IsUnsafe = classTraints.IsUnsafe,
 				IsPartial = classTraints.IsPartial,
 				GenericTypes = classTraints.GenericTypes,
 				Inherits = classTraints.Inherits
