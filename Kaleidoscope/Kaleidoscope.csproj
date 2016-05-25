@@ -40,8 +40,10 @@
     <Compile Include="Analysis\AnalysisCodeFile.cs" />
     <Compile Include="Analysis\ConstructorDeclare.cs" />
     <Compile Include="Analysis\ConversionOperatorDeclare.cs" />
-    <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.class.cs" />
+    <Compile Include="Analysis\CS\AnalysisCodeFileCS.interface.cs" />
+    <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
+    <Compile Include="Analysis\CS\AnalysisCodeFileCS.traits.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.others.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.util.cs" />
