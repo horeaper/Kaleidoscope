@@ -146,20 +146,20 @@ namespace Kaleidoscope.Analysis.CS
 							if (instanceKindModifier != null) {
 								instanceKind = (TypeInstanceKind)Enum.Parse(typeof(TypeInstanceKind), instanceKindModifier.Type.ToString());
 							}
-							DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, instanceKind, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@class)));
+							DefinedClasses.Add(ReadRootTypeDeclare<ClassTypeDeclare>(customAttributes, isPublic, partialModifier != null, instanceKind, traits => ReadClassMembers(traits, ClassTypeKind.@class)));
 						}
 						return;
 					case TokenType.@struct:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedClasses.Add(ReadRootClassDeclare(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, traits => ReadClassMembers<RootClassTypeDeclare.Builder>(traits, ClassTypeKind.@struct)));
+						DefinedClasses.Add(ReadRootTypeDeclare<ClassTypeDeclare>(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, traits => ReadClassMembers(traits, ClassTypeKind.@struct)));
 						return;
 					case TokenType.@interface:
 						if (instanceKindModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 						}
-						DefinedInterfaces.Add(ReadRootInterfaceDeclare(customAttributes, isPublic, partialModifier != null));
+						DefinedInterfaces.Add(ReadRootTypeDeclare<InterfaceTypeDeclare>(customAttributes, isPublic, partialModifier != null, TypeInstanceKind.None, ReadInterfaceMembers));
 						return;
 					case TokenType.@enum:
 						if (instanceKindModifier != null) {

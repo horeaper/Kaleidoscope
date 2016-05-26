@@ -8,9 +8,9 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		T ReadClassMembers<T>(ClassTraits traits, ClassTypeKind typeKind) where T : ClassTypeDeclare.Builder, new()
+		ClassTypeDeclare ReadClassMembers(TypeTraits traits, ClassTypeKind typeKind)
 		{
-			var builder = new T {
+			var builder = new ClassTypeDeclare.Builder {
 				TypeKind = typeKind,
 				CustomAttributes = traits.CustomAttributes,
 				Name = traits.Name,
@@ -55,7 +55,7 @@ namespace Kaleidoscope.Analysis.CS
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
 				if (token.Type == TokenType.RightBrace) {
-					return builder;
+					return new ClassTypeDeclare(builder);
 				}
 				else if (token.Type == TokenType.LeftBracket) {
 					var modifierTokens = new Token[] {
@@ -154,17 +154,17 @@ namespace Kaleidoscope.Analysis.CS
 						}
 					}
 					
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, instanceKind, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@class)));
+					builder.NestedClasses.Add(ReadNestedTypeDeclare<ClassTypeDeclare>(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, instanceKind, typeTraits => ReadClassMembers(typeTraits, ClassTypeKind.@class)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@struct) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedClasses.Add(ReadNestedClassDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, nameToken => ReadClassMembers<NestedClassTypeDeclare.Builder>(nameToken, ClassTypeKind.@struct)));
+					builder.NestedClasses.Add(ReadNestedTypeDeclare<ClassTypeDeclare>(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, typeTraits => ReadClassMembers(typeTraits, ClassTypeKind.@struct)));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@interface) {
 					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, asyncModifier);
-					builder.NestedInterfaces.Add(ReadNestedInterfaceDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null));
+					builder.NestedInterfaces.Add(ReadNestedTypeDeclare<InterfaceTypeDeclare>(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, partialModifier != null, TypeInstanceKind.None, ReadInterfaceMembers));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {

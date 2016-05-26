@@ -7,9 +7,9 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		T ReadInterfaceMembers<T>(InterfaceTraits traits) where T : InterfaceTypeDeclare.Builder, new()
+		InterfaceTypeDeclare ReadInterfaceMembers(TypeTraits traits)
 		{
-			var builder = new T {
+			var builder = new InterfaceTypeDeclare.Builder {
 				CustomAttributes = traits.CustomAttributes,
 				Name = traits.Name,
 				IsPartial = traits.IsPartial,
@@ -30,7 +30,7 @@ namespace Kaleidoscope.Analysis.CS
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
 				if (token.Type == TokenType.RightBrace) {
-					return builder;
+					return new InterfaceTypeDeclare(builder);
 				}
 				else if (token.Type == TokenType.LeftBracket) {
 					currentAttributes.Add(AttributeObjectReader.Read(block, ref index));

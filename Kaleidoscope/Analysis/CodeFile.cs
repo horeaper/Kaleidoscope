@@ -10,10 +10,15 @@ namespace Kaleidoscope.Analysis
 	public sealed class CodeFile
 	{
 		public readonly TokenBlock Tokens;
-		public readonly ImmutableArray<RootClassTypeDeclare> DefinedClasses;
-		public readonly ImmutableArray<RootInterfaceTypeDeclare> DefinedInterfaces;
+		public readonly ImmutableArray<RootTypeDeclare<ClassTypeDeclare>> DefinedClasses;
+		public readonly ImmutableArray<RootTypeDeclare<InterfaceTypeDeclare>> DefinedInterfaces;
+		public readonly ImmutableArray<RootTypeDeclare<EnumTypeDeclare>> DefinedEnums;
+		public readonly ImmutableArray<RootTypeDeclare<DelegateTypeDeclare>> DefinedDelegates;
 
-		public IEnumerable<InstanceTypeDeclare> DefinedTypes => DefinedClasses.Cast<InstanceTypeDeclare>().Concat(DefinedInterfaces);
+		public IEnumerable<InstanceTypeDeclare> DefinedTypes => DefinedClasses.Select(item => item.Type).Cast<InstanceTypeDeclare>()
+																			  .Concat(DefinedInterfaces.Select(item => item.Type))
+																			  .Concat(DefinedEnums.Select(item => item.Type))
+																			  .Concat(DefinedDelegates.Select(item => item.Type));
 
 		public CodeFile(InfoOutput infoOutput, TokenBlock tokens, LanguageType languageType)
 		{
@@ -30,8 +35,10 @@ namespace Kaleidoscope.Analysis
 			}
 
 			Tokens = tokens;
-			DefinedClasses = ImmutableArray.CreateRange(analysis.DefinedClasses);
-			DefinedInterfaces = ImmutableArray.CreateRange(analysis.DefinedInterfaces);
+			DefinedClasses = ImmutableArray.CreateRange(analysis.DefinedClasses.Select(item => new RootTypeDeclare<ClassTypeDeclare>(item)));
+			DefinedInterfaces = ImmutableArray.CreateRange(analysis.DefinedInterfaces.Select(item => new RootTypeDeclare<InterfaceTypeDeclare>(item)));
+			DefinedEnums = ImmutableArray.CreateRange(analysis.DefinedEnums.Select(item => new RootTypeDeclare<EnumTypeDeclare>(item)));
+			DefinedDelegates = ImmutableArray.CreateRange(analysis.DefinedDelegates.Select(item => new RootTypeDeclare<DelegateTypeDeclare>(item)));
 		}
 
 		public override string ToString()

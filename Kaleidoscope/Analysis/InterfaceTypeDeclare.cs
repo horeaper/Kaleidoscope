@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Kaleidoscope.Analysis
 {
-	public abstract class InterfaceTypeDeclare : InstanceTypeDeclare
+	public sealed class InterfaceTypeDeclare : InstanceTypeDeclare
 	{
 		public readonly bool IsPartial;
 		public readonly ImmutableArray<GenericDeclare> GenericTypes;
@@ -14,7 +14,9 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<MemberPropertyDeclare> Properties;
 		public readonly ImmutableArray<IndexerDeclare> Indexers;
 
-		protected InterfaceTypeDeclare(Builder builder)
+		public override string DisplayName => "interface " + Name.Text;
+
+		public InterfaceTypeDeclare(Builder builder)
 			: base(builder)
 		{
 			IsPartial = builder.IsPartial;
@@ -26,7 +28,7 @@ namespace Kaleidoscope.Analysis
 			Indexers = ImmutableArray.CreateRange(builder.Indexers.Select(item => new IndexerDeclare(item, this)));
 		}
 
-		public new abstract class Builder : InstanceTypeDeclare.Builder
+		public new sealed class Builder : InstanceTypeDeclare.Builder
 		{
 			public bool IsPartial;
 			public IEnumerable<GenericDeclare.Builder> GenericTypes;

@@ -5,7 +5,7 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public abstract class ClassTypeDeclare : InstanceTypeDeclare
+	public sealed class ClassTypeDeclare : InstanceTypeDeclare
 	{
 		public readonly ClassTypeKind TypeKind;
 		public readonly TypeInstanceKind InstanceKind;
@@ -25,12 +25,19 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<IndexerDeclare> Indexers;
 		public readonly ImmutableArray<FieldDeclare> Fields;
 
-		public readonly ImmutableArray<NestedClassTypeDeclare> NestedClasses;
-		public readonly ImmutableArray<NestedInterfaceTypeDeclare> NestedInterfaces;
+		public readonly ImmutableArray<NestedTypeDeclare<ClassTypeDeclare>> NestedClasses;
+		public readonly ImmutableArray<NestedTypeDeclare<InterfaceTypeDeclare>> NestedInterfaces;
+		public readonly ImmutableArray<NestedTypeDeclare<EnumTypeDeclare>> NestedEnums;
+		public readonly ImmutableArray<NestedTypeDeclare<DelegateTypeDeclare>> NestedDelegates;
 
-		public IEnumerable<InstanceTypeDeclare> NestedTypes => NestedClasses.Cast<InstanceTypeDeclare>().Concat(NestedInterfaces);
+		public IEnumerable<InstanceTypeDeclare> DefinedTypes => NestedClasses.Select(item => item.Type).Cast<InstanceTypeDeclare>()
+																			 .Concat(NestedInterfaces.Select(item => item.Type))
+																			 .Concat(NestedEnums.Select(item => item.Type))
+																			 .Concat(NestedDelegates.Select(item => item.Type));
 
-		protected ClassTypeDeclare(Builder builder)
+		public override string DisplayName => TypeKind + " " + Name.Text;
+
+		public ClassTypeDeclare(Builder builder)
 			: base(builder)
 		{
 			TypeKind = builder.TypeKind;
@@ -51,11 +58,13 @@ namespace Kaleidoscope.Analysis
 			Indexers = ImmutableArray.CreateRange(builder.Indexers.Select(item => new IndexerDeclare(item, this)));
 			Fields = ImmutableArray.CreateRange(builder.Fields.Select(item => new FieldDeclare(item, this)));
 
-			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses.Select(item => new NestedClassTypeDeclare(item, this)));
-			NestedInterfaces = ImmutableArray.CreateRange(builder.NestedInterfaces.Select(item => new NestedInterfaceTypeDeclare(item, this)));
+			NestedClasses = ImmutableArray.CreateRange(builder.NestedClasses.Select(item => new NestedTypeDeclare<ClassTypeDeclare>(item, this)));
+			NestedInterfaces = ImmutableArray.CreateRange(builder.NestedInterfaces.Select(item => new NestedTypeDeclare<InterfaceTypeDeclare>(item, this)));
+			NestedEnums = ImmutableArray.CreateRange(builder.NestedEnums.Select(item => new NestedTypeDeclare<EnumTypeDeclare>(item, this)));
+			NestedDelegates = ImmutableArray.CreateRange(builder.NestedDelegates.Select(item => new NestedTypeDeclare<DelegateTypeDeclare>(item, this)));
 		}
 
-		public new abstract class Builder : InstanceTypeDeclare.Builder
+		public new sealed class Builder : InstanceTypeDeclare.Builder
 		{
 			public ClassTypeKind TypeKind;
 			public TypeInstanceKind InstanceKind;
@@ -75,8 +84,10 @@ namespace Kaleidoscope.Analysis
 			public readonly List<IndexerDeclare.Builder> Indexers = new List<IndexerDeclare.Builder>();
 			public readonly List<FieldDeclare.Builder> Fields = new List<FieldDeclare.Builder>();
 
-			public readonly List<NestedClassTypeDeclare.Builder> NestedClasses = new List<NestedClassTypeDeclare.Builder>();
-			public readonly List<NestedInterfaceTypeDeclare.Builder> NestedInterfaces = new List<NestedInterfaceTypeDeclare.Builder>();
+			public readonly List<NestedTypeDeclare<ClassTypeDeclare>.Builder> NestedClasses = new List<NestedTypeDeclare<ClassTypeDeclare>.Builder>();
+			public readonly List<NestedTypeDeclare<InterfaceTypeDeclare>.Builder> NestedInterfaces = new List<NestedTypeDeclare<InterfaceTypeDeclare>.Builder>();
+			public readonly List<NestedTypeDeclare<EnumTypeDeclare>.Builder> NestedEnums = new List<NestedTypeDeclare<EnumTypeDeclare>.Builder>();
+			public readonly List<NestedTypeDeclare<DelegateTypeDeclare>.Builder> NestedDelegates = new List<NestedTypeDeclare<DelegateTypeDeclare>.Builder>();
 		}
 	}
 }

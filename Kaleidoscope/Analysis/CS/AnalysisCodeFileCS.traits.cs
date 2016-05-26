@@ -7,11 +7,7 @@ namespace Kaleidoscope.Analysis.CS
 {
 	partial class AnalysisCodeFileCS
 	{
-		//========================================================================
-		// class/struct
-		//========================================================================
-		
-		class ClassTraits
+		class TypeTraits
 		{
 			public AttributeObject.Builder[] CustomAttributes;
 			public bool IsRoot;
@@ -22,7 +18,7 @@ namespace Kaleidoscope.Analysis.CS
 			public List<ReferenceToManagedType> Inherits;
 		}
 
-		RootClassTypeDeclare ReadRootClassDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isPartial, TypeInstanceKind instanceKind, Func<ClassTraits, RootClassTypeDeclare.Builder> fnReadMembers)
+		RootTypeDeclare<T>.Builder ReadRootTypeDeclare<T>(AttributeObject.Builder[] customAttributes, bool isPublic, bool isPartial, TypeInstanceKind instanceKind, Func<TypeTraits, InstanceTypeDeclare> fnReadType) where T : InstanceTypeDeclare
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -34,7 +30,7 @@ namespace Kaleidoscope.Analysis.CS
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers(new ClassTraits {
+			var type = fnReadType(new TypeTraits {
 				CustomAttributes = customAttributes,
 				IsRoot = true,
 				Name = (TokenIdentifier)nameToken,
@@ -43,14 +39,17 @@ namespace Kaleidoscope.Analysis.CS
 				GenericTypes = generics,
 				Inherits = inherits
 			});
-			builder.OwnerFile = ownerFile;
-			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.Get();
-			builder.IsPublic = isPublic;
-			return new RootClassTypeDeclare(builder);
+
+			return new RootTypeDeclare<T>.Builder {
+				Type = (T)type,
+				OwnerFile = ownerFile,
+				Usings = new UsingBlob(currentUsings.Peek()),
+				Namespace = currentNamespace.Get(),
+				IsPublic = isPublic,
+			};
 		}
 
-		NestedClassTypeDeclare.Builder ReadNestedClassDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isPartial, TypeInstanceKind instanceKind, Func<ClassTraits, NestedClassTypeDeclare.Builder> fnReadMembers)
+		NestedTypeDeclare<T>.Builder ReadNestedTypeDeclare<T>(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isPartial, TypeInstanceKind instanceKind, Func<TypeTraits, InstanceTypeDeclare> fnReadType) where T : InstanceTypeDeclare
 		{
 			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 			if (nameToken.Type != TokenType.Identifier) {
@@ -62,84 +61,21 @@ namespace Kaleidoscope.Analysis.CS
 			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
-			var builder = fnReadMembers(new ClassTraits {
+			var type = fnReadType(new TypeTraits {
 				CustomAttributes = customAttributes,
-				IsRoot = false,
+				IsRoot = true,
 				Name = (TokenIdentifier)nameToken,
 				InstanceKind = instanceKind,
 				IsPartial = isPartial,
 				GenericTypes = generics,
 				Inherits = inherits
 			});
-			builder.AccessModifier = accessModifier;
-			builder.IsNew = isNew;
-			return builder;
-		}
 
-		//========================================================================
-		// interface
-		//========================================================================
-		
-		class InterfaceTraits
-		{
-			public AttributeObject.Builder[] CustomAttributes;
-			public bool IsRoot;
-			public TokenIdentifier Name;
-			public bool IsPartial;
-			public List<GenericDeclare.Builder> GenericTypes;
-			public List<ReferenceToManagedType> Inherits;
-		}
-
-		RootInterfaceTypeDeclare ReadRootInterfaceDeclare(AttributeObject.Builder[] customAttributes, bool isPublic, bool isPartial)
-		{
-			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
-			if (nameToken.Type != TokenType.Identifier) {
-				--index;
-				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
-			}
-
-			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
-			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
-			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
-
-			var builder = ReadInterfaceMembers<RootInterfaceTypeDeclare.Builder>(new InterfaceTraits {
-				CustomAttributes = customAttributes,
-				IsRoot = true,
-				Name = (TokenIdentifier)nameToken,
-				IsPartial = isPartial,
-				GenericTypes = generics,
-				Inherits = inherits
-			});
-			builder.OwnerFile = ownerFile;
-			builder.Usings = new UsingBlob(currentUsings.Peek());
-			builder.Namespace = currentNamespace.Get();
-			builder.IsPublic = isPublic;
-			return new RootInterfaceTypeDeclare(builder);
-		}
-
-		NestedInterfaceTypeDeclare.Builder ReadNestedInterfaceDeclare(AttributeObject.Builder[] customAttributes, AccessModifier accessModifier, bool isNew, bool isPartial)
-		{
-			var nameToken = block.GetToken(index++, Error.Analysis.IdentifierExpected);
-			if (nameToken.Type != TokenType.Identifier) {
-				--index;
-				throw ParseException.AsToken(nameToken, Error.Analysis.IdentifierExpected);
-			}
-
-			var generics = GenericReader.ReadDeclare(block, ref index, Error.Analysis.LeftBraceExpected);
-			var inherits = InheritanceReader.ReadParents(block, ref index, Error.Analysis.LeftBraceExpected);
-			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
-
-			var builder = ReadInterfaceMembers<NestedInterfaceTypeDeclare.Builder>(new InterfaceTraits {
-				CustomAttributes = customAttributes,
-				IsRoot = false,
-				Name = (TokenIdentifier)nameToken,
-				IsPartial = isPartial,
-				GenericTypes = generics,
-				Inherits = inherits
-			});
-			builder.AccessModifier = accessModifier;
-			builder.IsNew = isNew;
-			return builder;
+			return new NestedTypeDeclare<T>.Builder {
+				Type = (T)type,
+				AccessModifier = accessModifier,
+				IsNew = isNew,
+			};
 		}
 	}
 }
