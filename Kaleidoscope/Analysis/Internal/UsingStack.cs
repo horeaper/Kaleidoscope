@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis.Internal
 {

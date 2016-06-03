@@ -98,6 +98,10 @@
 			public const string InterfaceNoNestedType = "interface cannot have nested type";
 			public const string InterfaceMethodNoBody = "interface method cannot declare a body";
 			public const string InterfacePropertyNoBody = "interface property accessor cannot declare a body";
+
+			public const string EnumGenericNotAllowed = "enum cannot have generic type parameters";
+			public const string EnumTypeInvalid = "invalid enum value type";
+			public const string DuplicateEnumMember = "enum member with same signature already declared";
 		}
 	}
 }

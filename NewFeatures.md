@@ -60,12 +60,15 @@ AnotherMethod(ref false);
 ```
 
 ### New "Keyword" generic constraint type
-- class
-- struct
-- interface
-- enum(Type)
-- delegate
-- new
-- cpp
+- `interface`
+- `enum`, `enum(int)`, `enum(ushort)`, etc.
+- `delegate(void(int, string))`, `delegate(int(void))`, etc.
+- `cpp`
 
-The "Type" in `enum` constraint can be any primitive integer type (`byte`, `ushort`, `int`, `long`, etc)
+The type constraint of enum can be any primitive integer type (`byte`, `ushort`, `int`, `long`, etc)
+
+### `struct` inheritance
+struct can inherit from these types:
+
+- other structs
+- C/C++ POD structure

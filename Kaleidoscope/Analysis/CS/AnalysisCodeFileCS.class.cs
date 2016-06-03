@@ -12,8 +12,8 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			var builder = new ClassTypeDeclare.Builder {
 				TypeKind = typeKind,
-				CustomAttributes = traits.CustomAttributes,
 				Name = traits.Name,
+				CustomAttributes = traits.CustomAttributes,
 				InstanceKind = traits.InstanceKind,
 				IsPartial = traits.IsPartial,
 				GenericTypes = traits.GenericTypes,
@@ -168,7 +168,8 @@ namespace Kaleidoscope.Analysis.CS
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@enum) {
-
+					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, partialModifier, asyncModifier);
+					builder.NestedEnums.Add(ReadNestedTypeDeclare<EnumTypeDeclare>(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null, false, TypeInstanceKind.None, ReadEnumMembers));
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@delegate) {

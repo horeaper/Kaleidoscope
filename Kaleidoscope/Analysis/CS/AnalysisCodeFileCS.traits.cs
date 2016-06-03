@@ -9,9 +9,9 @@ namespace Kaleidoscope.Analysis.CS
 	{
 		class TypeTraits
 		{
-			public AttributeObject.Builder[] CustomAttributes;
 			public bool IsRoot;
 			public TokenIdentifier Name;
+			public AttributeObject.Builder[] CustomAttributes;
 			public TypeInstanceKind InstanceKind;
 			public bool IsPartial;
 			public List<GenericDeclare.Builder> GenericTypes;
@@ -31,9 +31,9 @@ namespace Kaleidoscope.Analysis.CS
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
 			var type = fnReadType(new TypeTraits {
-				CustomAttributes = customAttributes,
 				IsRoot = true,
 				Name = (TokenIdentifier)nameToken,
+				CustomAttributes = customAttributes,
 				InstanceKind = instanceKind,
 				IsPartial = isPartial,
 				GenericTypes = generics,
@@ -62,9 +62,9 @@ namespace Kaleidoscope.Analysis.CS
 			GenericReader.ReadConstraint(generics, block, ref index, Error.Analysis.LeftBraceExpected);
 
 			var type = fnReadType(new TypeTraits {
-				CustomAttributes = customAttributes,
-				IsRoot = true,
+				IsRoot = false,
 				Name = (TokenIdentifier)nameToken,
+				CustomAttributes = customAttributes,
 				InstanceKind = instanceKind,
 				IsPartial = isPartial,
 				GenericTypes = generics,

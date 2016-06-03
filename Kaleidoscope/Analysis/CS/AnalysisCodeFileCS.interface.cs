@@ -10,8 +10,8 @@ namespace Kaleidoscope.Analysis.CS
 		InterfaceTypeDeclare ReadInterfaceMembers(TypeTraits traits)
 		{
 			var builder = new InterfaceTypeDeclare.Builder {
-				CustomAttributes = traits.CustomAttributes,
 				Name = traits.Name,
+				CustomAttributes = traits.CustomAttributes,
 				IsPartial = traits.IsPartial,
 				GenericTypes = traits.GenericTypes,
 				Inherits = traits.Inherits
@@ -25,7 +25,6 @@ namespace Kaleidoscope.Analysis.CS
 			Action fnNextMember = () => {
 				currentAttributes.Clear();
 			};
-
 			while (true) {
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 

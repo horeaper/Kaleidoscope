@@ -37,8 +37,8 @@ namespace Kaleidoscope.Analysis
 
 		public sealed class Builder
 		{
-			public AttributeObject.Builder[] CustomAttributes;
 			public TokenIdentifier Name;
+			public AttributeObject.Builder[] CustomAttributes;
 			public TokenBlock DefaultValueContent;
 		}
 	}

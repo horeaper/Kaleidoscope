@@ -256,6 +256,23 @@ namespace Kaleidoscope.SyntaxObject
 		}
 
 		/// <summary>
+		/// 读取到指定的Token，并将index移动到此Token后，返回范围内不包括target
+		/// </summary>
+		public TokenBlock ReadPastSpecificTokens(ref int index, params TokenType[] targets)
+		{
+			var startIndex = index;
+			while (true) {
+				var token = GetToken(index, Error.Analysis.UnexpectedToken);
+				foreach (var item in targets) {
+					if (token.Type == item) {
+						return AsBeginEnd(startIndex, index++);
+					}
+				}
+				++index;
+			}
+		}
+
+		/// <summary>
 		/// 读取到一行结尾，并将index移动到换行Token后，返回范围内不包括换行Token
 		/// </summary>
 		public TokenBlock ReadToLineEnd(ref int index, string errorMessage = null)

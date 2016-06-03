@@ -21,7 +21,7 @@ namespace Kaleidoscope.Analysis
 
 		public new sealed class Builder : InstanceTypeDeclare.Builder
 		{
-			public EnumValueType ValueType;
+			public EnumValueType ValueType = EnumValueType.@int;
 			public readonly List<EnumItemObject.Builder> Items = new List<EnumItemObject.Builder>();
 		}
 	}

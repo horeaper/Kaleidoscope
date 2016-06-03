@@ -168,7 +168,7 @@ namespace Kaleidoscope.Analysis.CS
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
-// 						ReadEnum(customAttributes, isPublic);
+						DefinedEnums.Add(ReadRootTypeDeclare<EnumTypeDeclare>(customAttributes, isPublic, false, TypeInstanceKind.None, ReadEnumMembers));
 						return;
 					case TokenType.@delegate:
 						if (instanceKindModifier != null) {

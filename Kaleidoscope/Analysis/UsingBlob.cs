@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using Kaleidoscope.Analysis;
 
-namespace Kaleidoscope.Analysis
+namespace Kaleidoscope.SyntaxObject
 {
 	/// <summary>
 	/// A group of usings

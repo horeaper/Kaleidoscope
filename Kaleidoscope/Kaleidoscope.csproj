@@ -45,7 +45,7 @@
     <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.traits.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.file.cs" />
-    <Compile Include="Analysis\CS\AnalysisCodeFileCS.others.cs" />
+    <Compile Include="Analysis\CS\AnalysisCodeFileCS.enum.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.util.cs" />
     <Compile Include="Analysis\CS\GenericReader.cs" />
     <Compile Include="Analysis\CS\InheritanceReader.cs" />
@@ -95,7 +95,7 @@
     <Compile Include="SyntaxObject\MethodInstanceKind.cs" />
     <Compile Include="SyntaxObject\ParameterKind.cs" />
     <Compile Include="SyntaxObject\PropertyInstanceKind.cs" />
-    <Compile Include="SyntaxObject\TokenItem.cs" />
+    <Compile Include="SyntaxObject\TokenItems.cs" />
     <Compile Include="SyntaxObject\TypeInstanceKind.cs" />
     <Compile Include="SyntaxObject\TokenBlock.cs" />
     <Compile Include="CodeHub.cs" />
