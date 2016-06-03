@@ -173,7 +173,8 @@ namespace Kaleidoscope.Analysis.CS
 					fnNextMember();
 				}
 				else if (token.Type == TokenType.@delegate) {
-
+					CheckInvalid(sealedModifier, instanceKindModifier, readonlyModifier, partialModifier, asyncModifier);
+					builder.NestedDelegates.Add(ReadNestedDelegateTypeDeclare(currentAttributes.ToArray(), fnGetAccessModifier(), newModifier != null));
 					fnNextMember();
 				}
 				//========================================================================

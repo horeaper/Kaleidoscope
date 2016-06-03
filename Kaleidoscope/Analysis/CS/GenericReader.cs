@@ -131,6 +131,7 @@ namespace Kaleidoscope.Analysis.CS
 						targetItem.NewConstraint = (TokenKeyword)token;
 						++index;
 						//TODO: new(XXXX)
+						//TODO: delegate(XXX)
 					}
 					else {
 						targetItem.TypeConstraints.Add((ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));

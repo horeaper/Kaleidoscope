@@ -71,4 +71,4 @@ The type constraint of enum can be any primitive integer type (`byte`, `ushort`,
 struct can inherit from these types:
 
 - other structs
-- C/C++ POD structure
+- C/C++ structure which contains only primitive (scalar) type members

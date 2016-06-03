@@ -177,7 +177,7 @@ namespace Kaleidoscope.Analysis.CS
 						if (partialModifier != null) {
 							infoOutput.OutputError(ParseException.AsToken(partialModifier, Error.Analysis.PartialWithClassOnly));
 						}
-// 						ReadDelegate(customAttributes, isPublic);
+						DefinedDelegates.Add(ReadRootDelegateTypeDeclare(customAttributes, isPublic));
 						return;
 					default:
 						{

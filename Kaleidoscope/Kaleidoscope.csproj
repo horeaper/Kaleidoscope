@@ -41,6 +41,7 @@
     <Compile Include="Analysis\ConstructorDeclare.cs" />
     <Compile Include="Analysis\ConversionOperatorDeclare.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.class.cs" />
+    <Compile Include="Analysis\CS\AnalysisCodeFileCS.delegate.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.interface.cs" />
     <Compile Include="Analysis\CS\AttributeObjectReader.cs" />
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.traits.cs" />
