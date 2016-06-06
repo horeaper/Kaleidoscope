@@ -44,6 +44,9 @@ namespace Kaleidoscope.Analysis.CS
 						method.BodyContent = block.ReadBraceBlock(ref index);
 					}
 					break;
+				case TokenType.Semicolon:
+					++index;
+					break;
 				default:
 					throw ParseException.AsToken(token, Error.Analysis.MethodBodyExpected);
 			}

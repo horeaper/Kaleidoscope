@@ -528,7 +528,7 @@ namespace System {
 
 			b [didx] = 0;
 			unsafe {
-				fixed (byte *p = &b [0]){
+				fixed (cpp::uint8_t* p = &b [0]){
 					double retVal;
 					if (!ParseImpl (p, out retVal)) {
 						if (!tryParse)
@@ -553,7 +553,7 @@ namespace System {
 		}
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		unsafe private static extern bool ParseImpl (byte *byte_ptr, out double value);
+		unsafe private static extern bool ParseImpl (cpp::uint8_t* byte_ptr, out double value);
 		
 		public static bool TryParse (string s,
 					     NumberStyles style,

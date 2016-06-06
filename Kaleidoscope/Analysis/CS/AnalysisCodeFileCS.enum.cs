@@ -41,7 +41,7 @@ namespace Kaleidoscope.Analysis.CS
 
 			var currentAttributes = new List<AttributeObject.Builder>();
 			while (true) {
-				token = block.GetToken(index, Error.Analysis.RightBraceExpected);
+				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
 				if (token.Type == TokenType.RightBrace) {
 					return new EnumTypeDeclare(builder);

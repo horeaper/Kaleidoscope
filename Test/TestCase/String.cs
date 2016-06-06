@@ -1860,8 +1860,8 @@ namespace System
 
 			String tmp = InternalAllocateStr (this.length - count);
 
-			fixed (char *dest = tmp, src = this) {
-				char *dst = dest;
+			fixed (cpp::char16_t* dest = tmp, src = this) {
+				cpp::char16_t* dst = dest;
 				CharCopy (dst, src, startIndex);
 				int skip = startIndex + count;
 				dst += startIndex;
@@ -2092,7 +2092,7 @@ namespace System
 
 			String tmp = InternalAllocateStr (length);
 			if (length != 0) {
-				fixed (char *dest = tmp, src = str) {
+				fixed (cpp::char16_t* dest = tmp, src = str) {
 					CharCopy (dest, src, length);
 				}
 			}
@@ -2135,7 +2135,7 @@ namespace System
 
 		[CLSCompliant(false)]
 		public static String Concat (Object arg0, Object arg1, Object arg2,
-					     Object arg3, __arglist)
+					     Object arg3, params object[] __arglist)
 		{
 			string s1, s2, s3, s4;
 
@@ -2187,9 +2187,9 @@ namespace System
 				throw new OutOfMemoryException ();
 			String tmp = InternalAllocateStr (nlen);
 
-			fixed (char *dest = tmp, src = str0)
+			fixed (cpp::char16_t* dest = tmp, src = str0)
 				CharCopy (dest, src, str0.length);
-			fixed (char *dest = tmp, src = str1)
+			fixed (cpp::char16_t* dest = tmp, src = str1)
 				CharCopy (dest + str0.Length, src, str1.length);
 
 			return tmp;
@@ -2228,17 +2228,17 @@ namespace System
 			String tmp = InternalAllocateStr (nlen);
 
 			if (str0.Length != 0) {
-				fixed (char *dest = tmp, src = str0) {
+				fixed (cpp::char16_t* dest = tmp, src = str0) {
 					CharCopy (dest, src, str0.length);
 				}
 			}
 			if (str1.Length != 0) {
-				fixed (char *dest = tmp, src = str1) {
+				fixed (cpp::char16_t* dest = tmp, src = str1) {
 					CharCopy (dest + str0.Length, src, str1.length);
 				}
 			}
 			if (str2.Length != 0) {
-				fixed (char *dest = tmp, src = str2) {
+				fixed (cpp::char16_t* dest = tmp, src = str2) {
 					CharCopy (dest + str0.Length + str1.Length, src, str2.length);
 				}
 			}
@@ -2272,22 +2272,22 @@ namespace System
 			String tmp = InternalAllocateStr (str0.length + str1.length + str2.length + str3.length);
 
 			if (str0.Length != 0) {
-				fixed (char *dest = tmp, src = str0) {
+				fixed (cpp::char16_t* dest = tmp, src = str0) {
 					CharCopy (dest, src, str0.length);
 				}
 			}
 			if (str1.Length != 0) {
-				fixed (char *dest = tmp, src = str1) {
+				fixed (cpp::char16_t* dest = tmp, src = str1) {
 					CharCopy (dest + str0.Length, src, str1.length);
 				}
 			}
 			if (str2.Length != 0) {
-				fixed (char *dest = tmp, src = str2) {
+				fixed (cpp::char16_t* dest = tmp, src = str2) {
 					CharCopy (dest + str0.Length + str1.Length, src, str2.length);
 				}
 			}
 			if (str3.Length != 0) {
-				fixed (char *dest = tmp, src = str3) {
+				fixed (cpp::char16_t* dest = tmp, src = str3) {
 					CharCopy (dest + str0.Length + str1.Length + str2.Length, src, str3.length);
 				}
 			}
@@ -2378,8 +2378,8 @@ namespace System
 
 			String tmp = InternalAllocateStr (nlen);
 
-			fixed (char *dest = tmp, src = this, val = value) {
-				char *dst = dest;
+			fixed (cpp::char16_t* dest = tmp, src = this, val = value) {
+				cpp::char16_t* dst = dest;
 				CharCopy (dst, src, startIndex);
 				dst += startIndex;
 				CharCopy (dst, val, value.length);
@@ -2682,7 +2682,7 @@ namespace System
 			if ((uint) idx >= (uint) Length)
 				throw new ArgumentOutOfRangeException ("idx");
 
-			fixed (char * pStr = &start_char) 
+			fixed (cpp::char16_t*  pStr = &start_char) 
 			{
 				pStr [idx] = val;
 			}
@@ -2695,9 +2695,9 @@ namespace System
 		// When modifying it, GetCaseInsensitiveHashCode() should be modified as well.
 		public unsafe override int GetHashCode ()
 		{
-			fixed (char * c = this) {
-				char * cc = c;
-				char * end = cc + length - 1;
+			fixed (cpp::char16_t*  c = this) {
+				cpp::char16_t*  cc = c;
+				cpp::char16_t*  end = cc + length - 1;
 				int h = 0;
 				for (;cc < end; cc += 2) {
 					h = (h << 5) - h + *cc;
@@ -2812,9 +2812,9 @@ namespace System
 
 		internal unsafe int GetCaseInsensitiveHashCode ()
 		{
-			fixed (char * c = this) {
-				char * cc = c;
-				char * end = cc + length - 1;
+			fixed (cpp::char16_t*  c = this) {
+				cpp::char16_t*  cc = c;
+				cpp::char16_t*  end = cc + length - 1;
 				int h = 0;
 				for (;cc < end; cc += 2) {
 					h = (h << 5) - h + Char.ToUpperInvariant (*cc);
@@ -2830,7 +2830,7 @@ namespace System
 		// Certain constructors are redirected to CreateString methods with
 		// matching argument list. The this pointer should not be used.
 
-		private unsafe String CreateString (sbyte* value)
+		private unsafe String CreateString (cpp::int8_t* value)
 		{
 			if (value == null)
 				return Empty;
@@ -2848,12 +2848,12 @@ namespace System
 			return CreateString (value, 0, length, null);
 		}
 
-		private unsafe String CreateString (sbyte* value, int startIndex, int length)
+		private unsafe String CreateString (cpp::int8_t* value, int startIndex, int length)
 		{
 			return CreateString (value, startIndex, length, null);
 		}
 
-		private unsafe String CreateString (sbyte* value, int startIndex, int length, Encoding enc)
+		private unsafe String CreateString (cpp::int8_t* value, int startIndex, int length, Encoding enc)
 		{
 			if (length < 0)
 				throw new ArgumentOutOfRangeException ("length", "Non-negative number required.");
@@ -2887,11 +2887,11 @@ namespace System
 			return enc.GetString (bytes);
 		}
 
-		unsafe string CreateString (char *value)
+		unsafe string CreateString (cpp::char16_t* value)
 		{
 			if (value == null)
 				return Empty;
-			char *p = value;
+			cpp::char16_t* p = value;
 			int i = 0;
 			while (*p != 0) {
 				++i;
@@ -2900,14 +2900,14 @@ namespace System
 			string result = InternalAllocateStr (i);
 
 			if (i != 0) {
-				fixed (char *dest = result) {
+				fixed (cpp::char16_t* dest = result) {
 					CharCopy (dest, value, i);
 				}
 			}
 			return result;
 		}
 
-		unsafe string CreateString (char *value, int startIndex, int length)
+		unsafe string CreateString (cpp::char16_t* value, int startIndex, int length)
 		{
 			if (length == 0)
 				return Empty;
@@ -2920,7 +2920,7 @@ namespace System
 
 			string result = InternalAllocateStr (length);
 
-			fixed (char *dest = result) {
+			fixed (cpp::char16_t* dest = result) {
 				CharCopy (dest, value + startIndex, length);
 			}
 			return result;
@@ -2941,7 +2941,7 @@ namespace System
 
 			string result = InternalAllocateStr (length);
 
-			fixed (char *dest = result, src = val) {
+			fixed (cpp::char16_t* dest = result, src = val) {
 				CharCopy (dest, src + startIndex, length);
 			}
 			return result;
@@ -2953,7 +2953,7 @@ namespace System
 				return Empty;
 			string result = InternalAllocateStr (val.Length);
 
-			fixed (char *dest = result, src = val) {
+			fixed (cpp::char16_t* dest = result, src = val) {
 				CharCopy (dest, src, val.Length);
 			}
 			return result;
@@ -2966,9 +2966,9 @@ namespace System
 			if (count == 0)
 				return Empty;
 			string result = InternalAllocateStr (count);
-			fixed (char *dest = result) {
-				char *p = dest;
-				char *end = p + count;
+			fixed (cpp::char16_t* dest = result) {
+				cpp::char16_t* p = dest;
+				cpp::char16_t* end = p + count;
 				while (p < end) {
 					*p = c;
 					p++;
@@ -2978,7 +2978,7 @@ namespace System
 		}
 
 		/* helpers used by the runtime as well as above or eslewhere in corlib */
-		internal static unsafe void memset (byte *dest, int val, int len)
+		internal static unsafe void memset (cpp::uint8_t* dest, int val, int len)
 		{
 			if (len < 8) {
 				while (len != 0) {
@@ -3024,7 +3024,7 @@ namespace System
 			}
 		}
 
-		static unsafe void memcpy4 (byte *dest, byte *src, int size) {
+		static unsafe void memcpy4 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			/*while (size >= 32) {
 				// using long is better than int and slower than double
 				// FIXME: enable this only on correct alignment or on platforms
@@ -3059,7 +3059,7 @@ namespace System
 				--size;
 			}
 		}
-		static unsafe void memcpy2 (byte *dest, byte *src, int size) {
+		static unsafe void memcpy2 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			while (size >= 8) {
 				((short*)dest) [0] = ((short*)src) [0];
 				((short*)dest) [1] = ((short*)src) [1];
@@ -3078,7 +3078,7 @@ namespace System
 			if (size > 0)
 				((byte*)dest) [0] = ((byte*)src) [0];
 		}
-		static unsafe void memcpy1 (byte *dest, byte *src, int size) {
+		static unsafe void memcpy1 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			while (size >= 8) {
 				((byte*)dest) [0] = ((byte*)src) [0];
 				((byte*)dest) [1] = ((byte*)src) [1];
@@ -3103,7 +3103,7 @@ namespace System
 				((byte*)dest) [0] = ((byte*)src) [0];
 		}
 
-		internal static unsafe void memcpy (byte *dest, byte *src, int size) {
+		internal static unsafe void memcpy (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			// FIXME: if pointers are not aligned, try to align them
 			// so a faster routine can be used. Handle the case where
 			// the pointers can't be reduced to have the same alignment
@@ -3134,43 +3134,43 @@ namespace System
 		}
 
 		/* Used by the runtime */
-		internal static unsafe void bzero (byte *dest, int len) {
+		internal static unsafe void bzero (cpp::uint8_t* dest, int len) {
 			memset (dest, 0, len);
 		}
 
-		internal static unsafe void bzero_aligned_1 (byte *dest, int len) {
+		internal static unsafe void bzero_aligned_1 (cpp::uint8_t* dest, int len) {
 			((byte*)dest) [0] = 0;
 		}
 
-		internal static unsafe void bzero_aligned_2 (byte *dest, int len) {
+		internal static unsafe void bzero_aligned_2 (cpp::uint8_t* dest, int len) {
 			((short*)dest) [0] = 0;
 		}
 
-		internal static unsafe void bzero_aligned_4 (byte *dest, int len) {
+		internal static unsafe void bzero_aligned_4 (cpp::uint8_t* dest, int len) {
 			((int*)dest) [0] = 0;
 		}
 
-		internal static unsafe void bzero_aligned_8 (byte *dest, int len) {
+		internal static unsafe void bzero_aligned_8 (cpp::uint8_t* dest, int len) {
 			((long*)dest) [0] = 0;
 		}
 
-		internal static unsafe void memcpy_aligned_1 (byte *dest, byte *src, int size) {
+		internal static unsafe void memcpy_aligned_1 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			((byte*)dest) [0] = ((byte*)src) [0];
 		}			
 
-		internal static unsafe void memcpy_aligned_2 (byte *dest, byte *src, int size) {
+		internal static unsafe void memcpy_aligned_2 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			((short*)dest) [0] = ((short*)src) [0];
 		}			
 
-		internal static unsafe void memcpy_aligned_4 (byte *dest, byte *src, int size) {
+		internal static unsafe void memcpy_aligned_4 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			((int*)dest) [0] = ((int*)src) [0];
 		}			
 
-		internal static unsafe void memcpy_aligned_8 (byte *dest, byte *src, int size) {
+		internal static unsafe void memcpy_aligned_8 (cpp::uint8_t* dest, cpp::uint8_t* src, int size) {
 			((long*)dest) [0] = ((long*)src) [0];
 		}			
 
-		internal static unsafe void CharCopy (char *dest, char *src, int count) {
+		internal static unsafe void CharCopy (cpp::char16_t* dest, cpp::char16_t* src, int count) {
 			// Same rules as for memcpy, but with the premise that 
 			// chars can only be aligned to even addresses if their
 			// enclosing types are correctly aligned
@@ -3189,7 +3189,7 @@ namespace System
 			memcpy4 ((byte*)dest, (byte*)src, count * 2);
 		}
 
-		internal static unsafe void CharCopyReverse (char *dest, char *src, int count)
+		internal static unsafe void CharCopyReverse (cpp::char16_t* dest, cpp::char16_t* src, int count)
 		{
 			dest += count;
 			src += count;
@@ -3219,20 +3219,26 @@ namespace System
 				CharCopyReverse (dest + targetIndex, src + sourceIndex, count);
 		}
 
-		[CLSCompliant (false), MethodImplAttribute (MethodImplOptions.InternalCall)]
-		unsafe public extern String (char *value);
+		/*
+		[CLSCompliant (false)]
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		unsafe public extern String (cpp::char16_t* value);
 
-		[CLSCompliant (false), MethodImplAttribute (MethodImplOptions.InternalCall)]
-		unsafe public extern String (char *value, int startIndex, int length);
+		[CLSCompliant (false)]
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		unsafe public extern String (cpp::char16_t* value, int startIndex, int length);
 
-		[CLSCompliant (false), MethodImplAttribute (MethodImplOptions.InternalCall)]
-		unsafe public extern String (sbyte *value);
+		[CLSCompliant (false)]
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		unsafe public extern String (cpp::int8_t* value);
 
-		[CLSCompliant (false), MethodImplAttribute (MethodImplOptions.InternalCall)]
-		unsafe public extern String (sbyte *value, int startIndex, int length);
+		[CLSCompliant (false)]
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		unsafe public extern String (cpp::int8_t* value, int startIndex, int length);
 
-		[CLSCompliant (false), MethodImplAttribute (MethodImplOptions.InternalCall)]
-		unsafe public extern String (sbyte *value, int startIndex, int length, Encoding enc);
+		[CLSCompliant (false)]
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		unsafe public extern String (cpp::int8_t* value, int startIndex, int length, Encoding enc);
 
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern String (char [] value, int startIndex, int length);
@@ -3254,5 +3260,6 @@ namespace System
 
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		private extern static int GetLOSLimit ();
+*/
 	}
 }

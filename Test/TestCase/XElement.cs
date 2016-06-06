@@ -48,7 +48,8 @@ namespace System.Xml.Linq
 		}
 
 		XName name;
-		XAttribute attr_first, attr_last;
+		XAttribute attr_first;
+		XAttribute attr_last;
 		bool explicit_is_empty = true;
 
 		public XElement (XName name, object content)

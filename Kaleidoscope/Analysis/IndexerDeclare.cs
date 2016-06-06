@@ -24,7 +24,7 @@ namespace Kaleidoscope.Analysis
 				text.Append(ExplicitInterface.Text);
 				text.Append('.');
 			}
-			text.Append(Name.Text);
+			text.Append("this");
 			text.Append('[');
 			for (int cnt = 0; cnt < Parameters.Length; ++cnt) {
 				text.Append(Parameters[cnt].Text);

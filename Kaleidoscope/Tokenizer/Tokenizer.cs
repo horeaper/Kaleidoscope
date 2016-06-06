@@ -768,15 +768,15 @@ namespace Kaleidoscope.Tokenizer
 							var firstToken = preprocessorToken.ContentTokens[0];
 							var lastToken = preprocessorToken.ContentTokens[preprocessorToken.ContentTokens.Length - 1];
 							var errorText = preprocessorToken.SourceFile.Substring(firstToken.Begin, lastToken.End);
-							infoOutput.OutputWarning(ParseException.AsToken(preprocessorToken, "#error: " + errorText));
+							infoOutput.OutputWarning(ParseWarning.AsToken(preprocessorToken, "#error: " + errorText));
 						}
 						else {
-							infoOutput.OutputWarning(ParseException.AsToken(preprocessorToken, "#error"));
+							infoOutput.OutputWarning(ParseWarning.AsToken(preprocessorToken, "#error"));
 						}
 					}
 					break;
 				case PreprocessorType.@line:
-					infoOutput.OutputWarning(ParseException.AsToken(preprocessorToken, Error.Tokenizer.PreprocessorLineNotSupported));
+					infoOutput.OutputWarning(ParseWarning.AsToken(preprocessorToken, Error.Tokenizer.PreprocessorLineNotSupported));
 					break;
 				case PreprocessorType.@endif:
 				case PreprocessorType.@region:
@@ -1060,7 +1060,7 @@ namespace Kaleidoscope.Tokenizer
 					++index;
 					return '\v';
 				default:
-					infoOutput.OutputWarning(ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence));
+					infoOutput.OutputError(ParseException.AsIndex(source, index, Error.Tokenizer.UnknownEscapeSequence));
 					++index;
 					return source[index];
 			}
@@ -1075,7 +1075,7 @@ namespace Kaleidoscope.Tokenizer
 			return (value >= 'A' && value <= 'Z') ||
 				   (value >= 'a' && value <= 'z') ||
 				   (value >= '0' && value <= '9') ||
-				   (value >= '_');
+				   (value == '_');
 		}
 
 #endregion

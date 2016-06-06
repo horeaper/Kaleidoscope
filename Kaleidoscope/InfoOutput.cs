@@ -12,59 +12,40 @@
 			}
 		}
 
-		public void OutputWarning(ParseException param)
+		public void OutputWarning(ParseWarning param)
 		{
 			lock (this) {
 				OutputWarningWorker(param);
 			}
 		}
 
-		public void OutputMessage(ParseException param)
-		{
-			lock (this) {
-				OutputMessageWorker(param);
-			}
-		}
-
 		protected abstract void OutputErrorWorker(ParseException param);
-		protected abstract void OutputWarningWorker(ParseException param);
-		protected abstract void OutputMessageWorker(ParseException param);
+		protected abstract void OutputWarningWorker(ParseWarning param);
 	}
 
 	public abstract class OutputToText : InfoOutput
 	{
 		protected sealed override void OutputErrorWorker(ParseException e)
 		{
-			if (e.ErrorColumnStart != e.ErrorColumnEnd) {
-				OnOutputError($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart},{e.ErrorLine},{e.ErrorColumnEnd}): error: {e.Message}");
+			if (e.ColumnStart != e.ColumnEnd) {
+				OnOutputError($"{e.SourceFile.FilePath}({e.Line},{e.ColumnStart},{e.Line},{e.ColumnEnd}): error: {e.Message}");
 			}
 			else {
-				OnOutputError($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart}: error: {e.Message}");
+				OnOutputError($"{e.SourceFile.FilePath}({e.Line},{e.ColumnStart}: error: {e.Message}");
 			}
 		}
 
-		protected sealed override void OutputWarningWorker(ParseException e)
+		protected sealed override void OutputWarningWorker(ParseWarning e)
 		{
-			if (e.ErrorColumnStart != e.ErrorColumnEnd) {
-				OnOutputWarning($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart},{e.ErrorLine},{e.ErrorColumnEnd}): warning: {e.Message}");
+			if (e.ColumnStart != e.ColumnEnd) {
+				OnOutputWarning($"{e.SourceFile.FilePath}({e.Line},{e.ColumnStart},{e.Line},{e.ColumnEnd}): warning: {e.Message}");
 			}
 			else {
-				OnOutputWarning($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart}: warning: {e.Message}");
-			}
-		}
-
-		protected sealed override void OutputMessageWorker(ParseException e)
-		{
-			if (e.ErrorColumnStart != e.ErrorColumnEnd) {
-				OnOutputMessage($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart},{e.ErrorLine},{e.ErrorColumnEnd}): message: {e.Message}");
-			}
-			else {
-				OnOutputMessage($"{e.SourceFile.FilePath}({e.ErrorLine},{e.ErrorColumnStart}: message: {e.Message}");
+				OnOutputWarning($"{e.SourceFile.FilePath}({e.Line},{e.ColumnStart}: warning: {e.Message}");
 			}
 		}
 
 		protected abstract void OnOutputError(string text);
 		protected abstract void OnOutputWarning(string text);
-		protected abstract void OnOutputMessage(string text);
 	}
 }

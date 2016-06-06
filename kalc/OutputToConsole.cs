@@ -20,13 +20,5 @@ namespace Kaleidoscope
 			Console.WriteLine(text);
 			Console.ForegroundColor = colorBefore;
 		}
-
-		protected override void OnOutputMessage(string text)
-		{
-			var colorBefore = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Green;
-			Console.WriteLine(text);
-			Console.ForegroundColor = colorBefore;
-		}
 	}
 }

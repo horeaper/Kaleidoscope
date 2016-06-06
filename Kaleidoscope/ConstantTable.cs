@@ -139,10 +139,10 @@ namespace Kaleidoscope
 				new Tuple<TokenType, int>(TokenType.GreatEqual, 2));
 
 			var validPropertyMethodAccessors = ImmutableDictionary.CreateBuilder<AccessModifier, AccessModifier[]>();
-			validPropertyMethodAccessors.Add(AccessModifier.@public, new[] { AccessModifier.@protected, AccessModifier.@private });
+			validPropertyMethodAccessors.Add(AccessModifier.@public, new[] { AccessModifier.@protected, AccessModifier.@internal, AccessModifier.@private });
 			validPropertyMethodAccessors.Add(AccessModifier.@protected, new[] { AccessModifier.@internal, AccessModifier.@private });
 			validPropertyMethodAccessors.Add(AccessModifier.@private, new[] { AccessModifier.@internal });
-			validPropertyMethodAccessors.Add(AccessModifier.@internal, new AccessModifier[0]);
+			validPropertyMethodAccessors.Add(AccessModifier.@internal, new[] { AccessModifier.@private });
 			ValidPropertyMethodAccessors = validPropertyMethodAccessors.ToImmutable();
 		}
 

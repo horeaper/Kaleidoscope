@@ -54,7 +54,10 @@ namespace Kaleidoscope.Analysis.CS
 			while (true) {
 				token = block.GetToken(index++, Error.Analysis.RightBraceExpected);
 
-				if (token.Type == TokenType.RightBrace) {
+				if (token.Type == TokenType.Semicolon) {
+					EnsureEmpty(currentAttributes);
+				}
+				else if (token.Type == TokenType.RightBrace) {
 					return new ClassTypeDeclare(builder);
 				}
 				else if (token.Type == TokenType.LeftBracket) {
@@ -92,7 +95,7 @@ namespace Kaleidoscope.Analysis.CS
 					else {
 						if ((instanceKindModifier?.Type == KeywordType.@static && token.Type == TokenType.@extern) ||
 							(instanceKindModifier?.Type == KeywordType.@extern && token.Type == TokenType.@static)) {
-							infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.ExternImpliesStatic));
+							infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.ExternImpliesStatic));
 							if (token.Type == TokenType.@extern) {
 								instanceKindModifier = (TokenKeyword)token;
 							}
@@ -114,7 +117,7 @@ namespace Kaleidoscope.Analysis.CS
 					}
 				}
 				else if (token.Type == TokenType.@unsafe) {
-					infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
+					infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.partial) {
 					CheckDuplicate(partialModifier, token);
@@ -180,7 +183,7 @@ namespace Kaleidoscope.Analysis.CS
 				//========================================================================
 				// Members
 				//========================================================================
-				else if (token.Text == traits.Name.Text) {
+				else if (token.Text == traits.Name.Text && block.GetToken(index, Error.Analysis.UnexpectedToken).Type == TokenType.LeftParenthesis) {
 					//Constructor
 					CheckInvalid(newModifier, sealedModifier, readonlyModifier, partialModifier);
 					var constructor = new ConstructorDeclare.Builder {
@@ -213,7 +216,6 @@ namespace Kaleidoscope.Analysis.CS
 					}
 
 					//Parameters
-					block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
 					var parameters = ParameterReader.Read(infoOutput, block.ReadParenthesisBlock(ref index), false);
 					if (isStatic && parameters.Count > 0) {
 						infoOutput.OutputError(ParseException.AsToken(constructor.Name, Error.Analysis.StaticConstructorNoParams));
@@ -387,7 +389,7 @@ namespace Kaleidoscope.Analysis.CS
 					}
 					else {
 						//Name
-						var nameContent = TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.None);
+						var nameContent = TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.AllowThis);
 						token = block.GetToken(index, Error.Analysis.SemicolonExpected);
 
 						//Next
@@ -415,7 +417,7 @@ namespace Kaleidoscope.Analysis.CS
 											infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 										}
 									}
-									if (traits.InstanceKind == TypeInstanceKind.@static && method.InstanceKind != MethodInstanceKind.@static) {
+									if (traits.InstanceKind == TypeInstanceKind.@static && (method.InstanceKind != MethodInstanceKind.@static && method.InstanceKind != MethodInstanceKind.@extern)) {
 										infoOutput.OutputError(ParseException.AsTokenBlock(nameContent, Error.Analysis.StaticTypeOnly));
 									}
 									if (traits.InstanceKind != TypeInstanceKind.@abstract && method.InstanceKind == MethodInstanceKind.@abstract) {
@@ -425,17 +427,18 @@ namespace Kaleidoscope.Analysis.CS
 									//Generic
 									int nameTokenIndex = nameContent.Count - 1;
 									if (nameContent.Last.Type == TokenType.RightArrow) {
-										int startIndex = -1;
 										while (nameTokenIndex > 0) {
 											if (nameContent[nameTokenIndex].Type == TokenType.LeftArrow) {
+												--nameTokenIndex;
 												break;
 											}
 											--nameTokenIndex;
 										}
-										if (nameTokenIndex == 0 || nameTokenIndex == nameContent.Count - 1) {
+										if (nameTokenIndex < 0 || nameTokenIndex == nameContent.Count - 1) {
 											throw ParseException.AsToken(nameContent.Last, Error.Analysis.UnexpectedToken);
 										}
 										else {
+											int startIndex = nameTokenIndex + 1;
 											method.GenericTypes = GenericReader.ReadDeclare(nameContent, ref startIndex, null);
 										}
 									}
@@ -528,7 +531,7 @@ namespace Kaleidoscope.Analysis.CS
 									}
 									if (nameContent.Count > 1) {
 										int dotIndex = nameContent.Count - 2;
-										if (dotIndex == 0 || nameContent[dotIndex].Type != TokenType.Dot) {
+										if (dotIndex <= 0 || nameContent[dotIndex].Type != TokenType.Dot) {
 											throw ParseException.AsToken(nameContent[dotIndex], Error.Analysis.UnexpectedToken);
 										}
 										var typeBuilder = new ReferenceToManagedType.Builder {
@@ -599,7 +602,7 @@ namespace Kaleidoscope.Analysis.CS
 											accessModifier = (TokenKeyword)token;
 										}
 										else if (token.Type == TokenType.@unsafe) {
-											infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
+											infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 										}
 										else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.async) {
 											CheckDuplicate(asyncModifier, token);
@@ -710,7 +713,7 @@ namespace Kaleidoscope.Analysis.CS
 									if (instanceKindModifier != null && !Enum.TryParse(instanceKindModifier.Type.ToString(), out field.InstanceKind)) {
 										infoOutput.OutputError(ParseException.AsToken(instanceKindModifier, Error.Analysis.InvalidModifier));
 									}
-									if (traits.InstanceKind == TypeInstanceKind.@static && field.InstanceKind != FieldInstanceKind.@static) {
+									if (traits.InstanceKind == TypeInstanceKind.@static && field.InstanceKind == FieldInstanceKind.None) {
 										infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.StaticTypeOnly));
 									}
 

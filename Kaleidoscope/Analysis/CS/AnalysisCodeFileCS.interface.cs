@@ -48,7 +48,7 @@ namespace Kaleidoscope.Analysis.CS
 					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InterfaceModifierNotAllowed));
 				}
 				else if (token.Type == TokenType.@unsafe) {
-					infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
+					infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 				}
 				else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.inline) {
 					infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InlineNotAllowed));
@@ -174,7 +174,7 @@ namespace Kaleidoscope.Analysis.CS
 										infoOutput.OutputError(ParseException.AsToken(token, Error.Analysis.InterfaceModifierNotAllowed));
 									}
 									else if (token.Type == TokenType.@unsafe) {
-										infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
+										infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 									}
 									else if ((token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.get ||
 											 (token as TokenIdentifier)?.ContextualKeyword == ContextualKeywordType.set)

@@ -105,6 +105,11 @@ namespace Kaleidoscope.Analysis.CS
 						ReadNextTypeDeclare(true, currentAttributes.ToArray());
 						currentAttributes.Clear();
 						break;
+					case TokenType.@internal:
+						++index;
+						ReadNextTypeDeclare(false, currentAttributes.ToArray());
+						currentAttributes.Clear();
+						break;
 					default:
 						ReadNextTypeDeclare(false, currentAttributes.ToArray());
 						currentAttributes.Clear();
@@ -138,7 +143,7 @@ namespace Kaleidoscope.Analysis.CS
 						instanceKindModifier = (TokenKeyword)token;
 						break;
 					case TokenType.@unsafe:
-						infoOutput.OutputWarning(ParseException.AsToken(token, Error.Analysis.UnsafeNotAllowed));
+						infoOutput.OutputWarning(ParseWarning.AsToken(token, Error.Analysis.UnsafeNotAllowed));
 						break;
 					case TokenType.@class:
 						{

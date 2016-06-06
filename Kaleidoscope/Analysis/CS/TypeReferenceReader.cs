@@ -48,6 +48,7 @@ namespace Kaleidoscope.Analysis.CS
 			None,
 			AllowQuestion,
 			AllowAsterisk,
+			AllowThis,
 		}
 
 		public static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
@@ -58,7 +59,7 @@ namespace Kaleidoscope.Analysis.CS
 			while (true) {
 				var token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 
-				if (ConstantTable.Alias.Contains(token.Type) || token.Type == TokenType.Identifier) {
+				if (ConstantTable.Alias.Contains(token.Type) || token.Type == TokenType.Identifier || (style == ContentStyle.AllowThis && token.Type == TokenType.@this)) {
 					if (!AdvanceIndex(block, ref index, ref arrowCount, style)) {
 						break;
 					}
