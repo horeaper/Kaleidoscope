@@ -30,12 +30,13 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<NestedTypeDeclare<EnumTypeDeclare>> NestedEnums;
 		public readonly ImmutableArray<NestedTypeDeclare<DelegateTypeDeclare>> NestedDelegates;
 
-		public IEnumerable<InstanceTypeDeclare> DefinedTypes => NestedClasses.Select(item => item.Type).Cast<InstanceTypeDeclare>()
-																			 .Concat(NestedInterfaces.Select(item => item.Type))
-																			 .Concat(NestedEnums.Select(item => item.Type))
-																			 .Concat(NestedDelegates.Select(item => item.Type));
+		public IEnumerable<NestedInstanceTypeDeclare> DefinedTypes => NestedClasses.Cast<NestedInstanceTypeDeclare>()
+																				   .Concat(NestedInterfaces)
+																				   .Concat(NestedEnums)
+																				   .Concat(NestedDelegates);
 
 		public override string DisplayName => TypeKind + " " + Name.Text;
+		public override IEnumerable<GenericDeclare> DeclaredGenerics => GenericTypes;
 
 		public ClassTypeDeclare(Builder builder)
 			: base(builder)

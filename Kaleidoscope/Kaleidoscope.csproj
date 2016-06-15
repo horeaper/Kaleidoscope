@@ -57,6 +57,7 @@
     <Compile Include="Analysis\CS\TypeReferenceReader.cs" />
     <Compile Include="Analysis\CS\TypeReferenceReader.Managed.cs" />
     <Compile Include="Analysis\CS\UsingReader.cs" />
+    <Compile Include="Analysis\DeclaredNamespaceOrTypeName.cs" />
     <Compile Include="Analysis\DelegateTypeDeclare.cs" />
     <Compile Include="Analysis\DestructorDeclare.cs" />
     <Compile Include="Analysis\EnumItemObject.cs" />
@@ -69,12 +70,16 @@
     <Compile Include="Analysis\MemberMethodDeclare.cs" />
     <Compile Include="Analysis\MemberPropertyDeclare.cs" />
     <Compile Include="Analysis\MethodDeclare.cs" />
+    <Compile Include="Analysis\NestedInstanceTypeDeclare.cs" />
     <Compile Include="Analysis\NestedTypeDeclare.cs" />
     <Compile Include="Analysis\OperatorOverloadDeclare.cs" />
     <Compile Include="Analysis\ParameterObject.cs" />
     <Compile Include="Analysis\PropertyDeclare.cs" />
     <Compile Include="Analysis\PropertyMethodDeclare.cs" />
+    <Compile Include="Analysis\RootInstanceTypeDeclare.cs" />
     <Compile Include="Analysis\RootTypeDeclare.cs" />
+    <Compile Include="Analysis\DeclaredManagedType.cs" />
+    <Compile Include="Analysis\UserTypeDeclare.cs" />
     <Compile Include="SyntaxObject\EnumValueType.cs" />
     <Compile Include="SyntaxObject\FieldInstanceKind.cs" />
     <Compile Include="SyntaxObject\GenericKeywordConstraintType.cs" />
@@ -93,6 +98,7 @@
     <Compile Include="Analysis\UsingCppAliasDirective.cs" />
     <Compile Include="Analysis\UsingCppNamespaceDirective.cs" />
     <Compile Include="LanguageType.cs" />
+    <Compile Include="SyntaxObject\NamespaceOrTypeName.cs" />
     <Compile Include="SyntaxObject\MethodInstanceKind.cs" />
     <Compile Include="SyntaxObject\ParameterKind.cs" />
     <Compile Include="SyntaxObject\PropertyInstanceKind.cs" />

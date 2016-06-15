@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
@@ -15,6 +16,7 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<IndexerDeclare> Indexers;
 
 		public override string DisplayName => "interface " + Name.Text;
+		public override IEnumerable<GenericDeclare> DeclaredGenerics => GenericTypes;
 
 		public InterfaceTypeDeclare(Builder builder)
 			: base(builder)

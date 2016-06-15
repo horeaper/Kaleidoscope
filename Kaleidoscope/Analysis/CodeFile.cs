@@ -15,10 +15,10 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<RootTypeDeclare<EnumTypeDeclare>> DefinedEnums;
 		public readonly ImmutableArray<RootTypeDeclare<DelegateTypeDeclare>> DefinedDelegates;
 
-		public IEnumerable<InstanceTypeDeclare> DefinedTypes => DefinedClasses.Select(item => item.Type).Cast<InstanceTypeDeclare>()
-																			  .Concat(DefinedInterfaces.Select(item => item.Type))
-																			  .Concat(DefinedEnums.Select(item => item.Type))
-																			  .Concat(DefinedDelegates.Select(item => item.Type));
+		public IEnumerable<RootInstanceTypeDeclare> DefinedTypes => DefinedClasses.Cast<RootInstanceTypeDeclare>()
+																				  .Concat(DefinedInterfaces)
+																				  .Concat(DefinedEnums)
+																				  .Concat(DefinedDelegates);
 
 		public CodeFile(InfoOutput infoOutput, TokenBlock tokens, LanguageType languageType)
 		{

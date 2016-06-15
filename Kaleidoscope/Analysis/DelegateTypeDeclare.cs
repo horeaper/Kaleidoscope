@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
@@ -12,6 +13,7 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<ParameterObject> Parameters;
 
 		public override string DisplayName { get; }
+		public override IEnumerable<GenericDeclare> DeclaredGenerics => GenericTypes;
 
 		public DelegateTypeDeclare(Builder builder)
 			: base(builder)

@@ -3,20 +3,19 @@ using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
-	public sealed class NestedTypeDeclare<T> where T : InstanceTypeDeclare
+	public sealed class NestedTypeDeclare<T> : NestedInstanceTypeDeclare where T : InstanceTypeDeclare
 	{
 		public readonly T Type;
 		public readonly ClassTypeDeclare ContainerType;
-		public readonly AccessModifier AccessModifier;
-		public readonly bool IsNew;
 		readonly string m_displayName;
 
+		public override InstanceTypeDeclare InstanceType => Type;
+
 		public NestedTypeDeclare(Builder builder, ClassTypeDeclare containerType)
+			: base(builder)
 		{
 			Type = builder.Type;
 			ContainerType = containerType;
-			AccessModifier = builder.AccessModifier;
-			IsNew = builder.IsNew;
 
 			var text = new StringBuilder();
 			text.Append("[NestedClassTypeDeclare] ");
@@ -36,11 +35,9 @@ namespace Kaleidoscope.Analysis
 			return m_displayName;
 		}
 
-		public sealed class Builder
+		public new sealed class Builder : NestedInstanceTypeDeclare.Builder
 		{
 			public T Type;
-			public AccessModifier AccessModifier;
-			public bool IsNew;
 		}
 	}
 }

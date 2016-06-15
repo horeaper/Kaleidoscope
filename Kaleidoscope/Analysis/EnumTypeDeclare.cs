@@ -11,6 +11,7 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<EnumItemObject> Items;
 
 		public override string DisplayName => "enum " + Name.Text;
+		public override IEnumerable<GenericDeclare> DeclaredGenerics => new GenericDeclare[0];
 
 		public EnumTypeDeclare(Builder builder)
 			: base(builder)

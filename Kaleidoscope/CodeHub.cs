@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Kaleidoscope.Analysis;
 using Kaleidoscope.SyntaxObject;
@@ -14,6 +15,7 @@ namespace Kaleidoscope
 		public InfoOutput InfoOutput { get; }
 
 		public readonly ImmutableArray<CodeFile> AnalyzedFiles;
+		public readonly DeclaredNamespaceOrTypeName RootNamespace;
 
 		public CodeHub(Configuration config, InfoOutput infoOutput)
 		{
@@ -46,6 +48,12 @@ namespace Kaleidoscope
 			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
 
 			//Extract - Get all declared types
+			var rootNsBuilder = new DeclaredNamespaceOrTypeName.Builder();
+			foreach (var rootType in AnalyzedFiles.SelectMany(file => file.DefinedTypes)) {
+				var targetNs = rootNsBuilder.GetContainerByNamespace(rootType.Namespace);
+				targetNs.AddType(InfoOutput, rootType);
+			}
+			RootNamespace = new DeclaredNamespaceOrTypeName(rootNsBuilder, null);
 
 			//Bind - Resolve all ReferenceToType
 

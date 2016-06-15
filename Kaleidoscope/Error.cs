@@ -102,6 +102,9 @@
 			public const string EnumGenericNotAllowed = "enum cannot have generic type parameters";
 			public const string EnumTypeInvalid = "invalid enum value type";
 			public const string DuplicateEnumMember = "enum member with same signature already declared";
+
+			public const string DuplicateTypeDeclare = "type with same signature already declared";
+			public const string DifferGenericDeclare = "partial declarations must have the same type parameter in the same order";
 		}
 	}
 }

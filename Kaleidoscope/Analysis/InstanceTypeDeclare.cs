@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Kaleidoscope.Tokenizer;
 
@@ -8,6 +9,7 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly ImmutableArray<AttributeObject> CustomAttributes;
 		public abstract string DisplayName { get; }
+		public abstract IEnumerable<GenericDeclare> DeclaredGenerics { get; }
 
 		protected InstanceTypeDeclare(Builder builder)
 			: base(builder.Name)

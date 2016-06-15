@@ -1,26 +1,18 @@
-﻿using System.Collections.Immutable;
-using System.Text;
-using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
+﻿using System.Text;
 
 namespace Kaleidoscope.Analysis
 {
-	public sealed class RootTypeDeclare<T> where T : InstanceTypeDeclare
+	public sealed class RootTypeDeclare<T> : RootInstanceTypeDeclare where T : InstanceTypeDeclare
 	{
 		public readonly T Type;
-		public readonly CodeFile OwnerFile;
-		public readonly UsingBlob Usings;
-		public readonly ImmutableArray<TokenIdentifier> Namespace;
-		public readonly bool IsPublic;
 		readonly string m_displayName;
 
+		public override InstanceTypeDeclare InstanceType => Type;
+
 		public RootTypeDeclare(Builder builder)
+			: base(builder)
 		{
 			Type = builder.Type;
-			OwnerFile = builder.OwnerFile;
-			Usings = builder.Usings;
-			Namespace = builder.Namespace.MoveToImmutable();
-			IsPublic = builder.IsPublic;
 
 			var text = new StringBuilder();
 			text.Append("[RootClassTypeDeclare] ");
@@ -36,13 +28,9 @@ namespace Kaleidoscope.Analysis
 			return m_displayName;
 		}
 
-		public sealed class Builder
+		public new sealed class Builder : RootInstanceTypeDeclare.Builder
 		{
 			public T Type;
-			public CodeFile OwnerFile;
-			public UsingBlob Usings;
-			public ImmutableArray<TokenIdentifier>.Builder Namespace;
-			public bool IsPublic;
 		}
 	}
 }

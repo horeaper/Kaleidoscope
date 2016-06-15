@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
+﻿using Kaleidoscope.SyntaxObject;
 
 namespace Kaleidoscope.Analysis
 {
