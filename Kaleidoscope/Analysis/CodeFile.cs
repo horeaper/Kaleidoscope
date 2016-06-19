@@ -25,7 +25,7 @@ namespace Kaleidoscope.Analysis
 			if (infoOutput == null) {
 				throw new ArgumentNullException(nameof(infoOutput));
 			}
-			AnalysisCodeFile analysis = null;
+			AnalysisCodeFile analysis;
 			switch (languageType) {
 				case LanguageType.CS:
 					analysis = new AnalysisCodeFileCS(infoOutput, this, tokens);
@@ -44,6 +44,18 @@ namespace Kaleidoscope.Analysis
 		public override string ToString()
 		{
 			return "[CodeFile] " + Tokens.SourceFile.FileName;
+		}
+
+		public void BindNamespace(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
+		{
+			foreach (var type in DefinedTypes) {
+				foreach (var item in type.Usings.UsingCSNamespaceDirectives) {
+					item.BindNamespace(infoOutput, rootNamespace);
+				}
+				foreach (var item in type.Usings.UsingCppNamespaceDirectives) {
+					item.BindNamespace();
+				}
+			}
 		}
 	}
 }

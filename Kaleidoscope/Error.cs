@@ -106,5 +106,10 @@
 			public const string DuplicateTypeDeclare = "type with same signature already declared";
 			public const string DifferGenericDeclare = "partial declarations must have the same type parameter in the same order";
 		}
+
+		public static class Bind
+		{
+			public const string UsingNamespaceError = "cannot resolve namespace";
+		}
 	}
 }

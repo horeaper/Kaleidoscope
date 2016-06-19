@@ -11,6 +11,8 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<int> ArrayDimensions;	//[,][][,,] -> { 2, 1, 3 }
 		public int ArrayRank => ArrayDimensions.Length;
 
+		public DeclaredManagedType Target { get; private set; }
+
 		public ReferenceToManagedType(Builder builder)
 			: base(builder.Content)
 		{

@@ -12,6 +12,8 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace; 
 		public readonly ReferenceToManagedType Type;
 
+		public DeclaredManagedType Target { get; set; }
+
 		public UsingStaticDirective(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, ReferenceToManagedType type)
 		{
 			OwnerNamespace = ownerNamespace.MoveToImmutable();

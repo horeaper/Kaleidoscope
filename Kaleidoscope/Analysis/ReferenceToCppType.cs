@@ -11,6 +11,8 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<ReferenceToInstance> ArrayItemNumber;    //[12][33][SomeClass.SomeConstant] -> { 12, 33, SomeClass.SomeConstant }
 		public int ArrayRank => ArrayItemNumber.Length;
 
+		public string[] Target { get; private set; }
+
 		public ReferenceToCppType(Builder builder)
 			: base(builder.Content)
 		{

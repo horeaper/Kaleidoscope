@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using Kaleidoscope.Tokenizer;
 
@@ -12,6 +13,8 @@ namespace Kaleidoscope.Analysis
 	{
 		public readonly ImmutableArray<Token> Namespace;
 		readonly string m_displayName;
+
+		public string[] Target { get; private set; }
 
 		internal UsingCppNamespaceDirective(IEnumerable<Token> @namespace)
 		{
@@ -30,6 +33,11 @@ namespace Kaleidoscope.Analysis
 		public override string ToString()
 		{
 			return $"[UsingCppNamespaceDirective] using cpp::{m_displayName};";
+		}
+
+		internal void BindNamespace()
+		{
+			Target = Namespace.Select(item => item.Text).ToArray();
 		}
 	}
 }

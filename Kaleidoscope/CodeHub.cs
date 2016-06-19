@@ -56,6 +56,17 @@ namespace Kaleidoscope
 			RootNamespace = new DeclaredNamespaceOrTypeName(rootNsBuilder, null);
 
 			//Bind - Resolve all ReferenceToType
+			Parallel.ForEach(AnalyzedFiles, file => {
+				file.BindNamespace(InfoOutput, RootNamespace);
+			});
+			Parallel.ForEach(AnalyzedFiles, file => {
+
+			});
+
+			//Break if error
+			if (InfoOutput.IsError) {
+				return;
+			}
 
 			//Arrange - Combine partials
 

@@ -50,6 +50,19 @@ namespace Kaleidoscope.Analysis
 			}
 		}
 
+		public DeclaredNamespaceOrTypeName GetNamespaceOrTypeName(IEnumerable<TokenIdentifier> tokens)
+		{
+			var currentNs = this;
+			foreach (var token in tokens) {
+				var target = currentNs.NamespaceOrTypeName.FirstOrDefault(item => item.Name.Name == token.Text && item.Name.Generics.Length == 0);
+				if (target == null) {
+					return null;
+				}
+				currentNs = target;
+			}
+			return currentNs;
+		}
+
 		public sealed class Builder
 		{
 			public readonly NamespaceOrTypeName.Builder Name = new NamespaceOrTypeName.Builder();
