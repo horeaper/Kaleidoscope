@@ -84,10 +84,12 @@ namespace Kaleidoscope.Analysis.CS
 							block.NextToken(index, TokenType.LeftBrace, Error.Analysis.LeftBraceExpected);
 							++index;
 							currentNamespace.Push(ns);
+							var enclosing = currentUsings.Peek();
 							currentUsings.Push();
+							currentUsings.Peek().Enclosing = enclosing;
 							ReadContent();
-							currentNamespace.Pop();
 							currentUsings.Pop();
+							currentNamespace.Pop();
 							block.NextToken(index, TokenType.RightBrace, Error.Analysis.RightBraceExpected);
 							++index;
 						}

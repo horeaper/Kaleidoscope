@@ -18,7 +18,7 @@ namespace Kaleidoscope.SyntaxObject
 
 		public UsingBlob(Builder builder)
 		{
-			Enclosing = builder.Enclosing;
+			Enclosing = new UsingBlob(builder.Enclosing);
 			UsingCSNamespaceDirectives = ImmutableArray.CreateRange(builder.UsingCSNamespaceDirectives);
 			UsingCSAliasDirectives = ImmutableArray.CreateRange(builder.UsingCSAliasDirectives);
 			UsingCppNamespaceDirectives = ImmutableArray.CreateRange(builder.UsingCppNamespaceDirectives);
@@ -28,23 +28,12 @@ namespace Kaleidoscope.SyntaxObject
 
 		public sealed class Builder
 		{
-			public UsingBlob Enclosing;
+			public Builder Enclosing;
 			public readonly List<UsingCSNamespaceDirective> UsingCSNamespaceDirectives = new List<UsingCSNamespaceDirective>();
 			public readonly List<UsingCSAliasDirective> UsingCSAliasDirectives = new List<UsingCSAliasDirective>();
 			public readonly List<UsingCppNamespaceDirective> UsingCppNamespaceDirectives = new List<UsingCppNamespaceDirective>();
 			public readonly List<UsingCppAliasDirective> UsingCppAliasDirectives = new List<UsingCppAliasDirective>();
 			public readonly List<UsingStaticDirective> UsingStaticDirectives = new List<UsingStaticDirective>();
-
-			public Builder Clone()
-			{
-				var right = new Builder();
-				right.UsingCSNamespaceDirectives.AddRange(UsingCSNamespaceDirectives);
-				right.UsingCSAliasDirectives.AddRange(UsingCSAliasDirectives);
-				right.UsingCppNamespaceDirectives.AddRange(UsingCppNamespaceDirectives);
-				right.UsingCppAliasDirectives.AddRange(UsingCppAliasDirectives);
-				right.UsingStaticDirectives.AddRange(UsingStaticDirectives);
-				return right;
-			}
 		}
 	}
 }

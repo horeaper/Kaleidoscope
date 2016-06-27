@@ -14,7 +14,7 @@ namespace Kaleidoscope.Analysis.Internal
 
 		public void Push()
 		{
-			m_stack.Push(m_stack.Peek().Clone());
+			m_stack.Push(new UsingBlob.Builder());
 		}
 
 		public UsingBlob.Builder Peek()
