@@ -45,7 +45,7 @@ namespace Kaleidoscope.Analysis.CS
 							isInsideBracket = true;
 
 							++index;
-							builder.ArrayItemNumber.Add(InstanceReferenceReader.Read(block, ref index, true));
+							builder.ArrayItemNumber.Add(ReadAsConstant(block, ref index));
 						}
 						else if (token.Type == TokenType.RightBracket) {
 							if (!isInsideBracket) {

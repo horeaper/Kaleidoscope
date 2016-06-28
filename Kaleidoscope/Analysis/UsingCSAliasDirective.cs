@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Kaleidoscope.SyntaxObject;
 using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
@@ -13,8 +12,6 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<TokenIdentifier> OwnerNamespace;
 		public readonly Token Name;
 		public readonly ReferenceToManagedType Type;
-
-		public ManagedTypeReference Target { get; private set; }
 
 		public UsingCSAliasDirective(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, Token name, ReferenceToManagedType type)
 		{

@@ -43,6 +43,21 @@ namespace Kaleidoscope.Analysis.CS
 			}
 		}
 
+		public static ReferenceToConstant ReadAsConstant(TokenBlock block, ref int index)
+		{
+			var token = block.GetToken(index, Error.Analysis.UnexpectedToken);
+			if (token.Type == TokenType.NumberLiteral ||
+				token.Type == TokenType.BooleanLiteral ||
+				token.Type == TokenType.CharacterLiteral ||
+				token.Type == TokenType.StringLiteral)
+			{
+				++index;
+				return new ReferenceToConstantAsLiteral(token);
+			}
+
+			return new ReferenceToConstantAsType(Read(block, ref index, TypeParsingRule.AllowCppType));
+		}
+
 		public enum ContentStyle
 		{
 			None,
@@ -51,7 +66,7 @@ namespace Kaleidoscope.Analysis.CS
 			Cpp,
 		}
 
-		public static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
+		internal static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
 		{
 			var startIndex = index;
 
@@ -101,6 +116,13 @@ namespace Kaleidoscope.Analysis.CS
 
 				switch (token.Type) {
 					case TokenType.Dot:
+						++index;
+						break;
+					case TokenType.DoubleColon:
+					case TokenType.PointerArrow:
+						if (style != ContentStyle.Cpp) {
+							throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
+						}
 						++index;
 						break;
 					case TokenType.LeftArrow:

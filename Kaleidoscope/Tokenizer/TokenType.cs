@@ -166,9 +166,9 @@ namespace Kaleidoscope.Tokenizer
 		Identifier,
 		NumberLiteral,
 		BooleanLiteral,
-		Comment,
-		Character,
+		CharacterLiteral,
 		StringLiteral,
+		Comment,
 		Preprocessor,
 	}
 }

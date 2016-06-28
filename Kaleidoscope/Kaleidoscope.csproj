@@ -50,7 +50,6 @@
     <Compile Include="Analysis\CS\AnalysisCodeFileCS.util.cs" />
     <Compile Include="Analysis\CS\GenericReader.cs" />
     <Compile Include="Analysis\CS\InheritanceReader.cs" />
-    <Compile Include="Analysis\CS\InstanceReferenceReader.cs" />
     <Compile Include="Analysis\CS\MethodBodyReader.cs" />
     <Compile Include="Analysis\CS\ParameterReader.cs" />
     <Compile Include="Analysis\CS\ReferenceReader.Cpp.cs" />
@@ -77,14 +76,12 @@
     <Compile Include="Analysis\ParameterObject.cs" />
     <Compile Include="Analysis\PropertyDeclare.cs" />
     <Compile Include="Analysis\PropertyMethodDeclare.cs" />
+    <Compile Include="Analysis\ReferenceToConstantAsLiteral.cs" />
+    <Compile Include="Analysis\ReferenceToConstantAsType.cs" />
     <Compile Include="Analysis\RootInstanceTypeDeclare.cs" />
     <Compile Include="Analysis\RootTypeDeclare.cs" />
     <Compile Include="Analysis\DeclaredManagedType.cs" />
     <Compile Include="Analysis\UserTypeDeclare.cs" />
-    <Compile Include="SyntaxObject\CppTemplateItemLiteral.cs" />
-    <Compile Include="SyntaxObject\CppTemplateItemType.cs" />
-    <Compile Include="SyntaxObject\CppTemplateItem.cs" />
-    <Compile Include="SyntaxObject\CppTypeReference.cs" />
     <Compile Include="SyntaxObject\EnumValueType.cs" />
     <Compile Include="SyntaxObject\FieldInstanceKind.cs" />
     <Compile Include="SyntaxObject\GenericKeywordConstraintType.cs" />
@@ -93,7 +90,7 @@
     <Compile Include="Analysis\Internal\NamespaceStack.cs" />
     <Compile Include="Analysis\ManagedDeclare.cs" />
     <Compile Include="Analysis\ReferenceToCppType.cs" />
-    <Compile Include="Analysis\ReferenceToInstance.cs" />
+    <Compile Include="Analysis\ReferenceToConstant.cs" />
     <Compile Include="Analysis\ReferenceToManagedType.cs" />
     <Compile Include="Analysis\ReferenceVar.cs" />
     <Compile Include="Analysis\ReferenceVoid.cs" />

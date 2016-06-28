@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -32,6 +33,11 @@ namespace Kaleidoscope.Analysis
 			public bool IsGlobalNamespace;
 			public bool IsNullable;
 			public List<int> ArrayDimensions = new List<int>();
+		}
+
+		internal override void Bind(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, IEnumerable<ClassTypeDeclare> containers, IEnumerable<GenericDeclare> enclosingGenerics, Stack<ReferenceToType> resolveChain)
+		{
+			throw new System.NotImplementedException();
 		}
 	}
 }
