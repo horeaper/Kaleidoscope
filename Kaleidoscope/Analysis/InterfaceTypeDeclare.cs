@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -39,6 +40,13 @@ namespace Kaleidoscope.Analysis
 			public readonly List<MemberMethodDeclare.Builder> Methods = new List<MemberMethodDeclare.Builder>();
 			public readonly List<MemberPropertyDeclare.Builder> Properties = new List<MemberPropertyDeclare.Builder>();
 			public readonly List<IndexerDeclare.Builder> Indexers = new List<IndexerDeclare.Builder>();
+		}
+
+		public void BindParent(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, Stack<ClassTypeDeclare> containers)
+		{
+			foreach (var item in Inherits) {
+				item.Bind(infoOutput, rootNamespace, usings, namespaces, containers, GenericTypes, new Stack<ReferenceToType>());
+			}
 		}
 	}
 }

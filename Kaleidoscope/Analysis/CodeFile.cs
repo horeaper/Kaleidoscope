@@ -57,5 +57,15 @@ namespace Kaleidoscope.Analysis
 				}
 			}
 		}
+
+		public void BindParent(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
+		{
+			foreach (var type in DefinedInterfaces) {
+				type.Type.BindParent(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
+			}
+			foreach (var type in DefinedClasses) {
+				type.Type.BindParent(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
+			}
+		}
 	}
 }

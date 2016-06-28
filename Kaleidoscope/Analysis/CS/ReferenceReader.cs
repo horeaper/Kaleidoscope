@@ -3,7 +3,7 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	public static partial class TypeReferenceReader
+	public static partial class ReferenceReader
 	{
 		public static ReferenceToType Read(TokenBlock block, ref int index, TypeParsingRule parsingRule)
 		{
@@ -47,8 +47,8 @@ namespace Kaleidoscope.Analysis.CS
 		{
 			None,
 			AllowQuestion,
-			AllowAsterisk,
 			AllowThis,
+			Cpp,
 		}
 
 		public static TokenBlock ReadTypeContent(TokenBlock block, ref int index, ContentStyle style)
@@ -59,7 +59,11 @@ namespace Kaleidoscope.Analysis.CS
 			while (true) {
 				var token = block.GetToken(index++, Error.Analysis.IdentifierExpected);
 
-				if (ConstantTable.Alias.Contains(token.Type) || token.Type == TokenType.Identifier || (style == ContentStyle.AllowThis && token.Type == TokenType.@this)) {
+				if (ConstantTable.Alias.Contains(token.Type) ||
+					token.Type == TokenType.Identifier ||
+					(style == ContentStyle.AllowThis && token.Type == TokenType.@this) ||
+					(style == ContentStyle.Cpp && (token.Type == TokenType.NumberLiteral || token.Type == TokenType.StringLiteral) && arrowCount > 0))
+				{
 					if (!AdvanceIndex(block, ref index, ref arrowCount, style)) {
 						break;
 					}
@@ -90,7 +94,7 @@ namespace Kaleidoscope.Analysis.CS
 					style = ContentStyle.None;
 					continue;
 				}
-				if (token.Type == TokenType.Asterisk && style == ContentStyle.AllowAsterisk) {
+				if (token.Type == TokenType.Asterisk && style == ContentStyle.Cpp) {
 					++index;
 					continue;
 				}

@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -11,7 +12,7 @@ namespace Kaleidoscope.Analysis
 		public readonly TypeInstanceKind InstanceKind;
 		public readonly bool IsPartial;
 		public readonly ImmutableArray<GenericDeclare> GenericTypes;
-		public readonly ImmutableArray<ReferenceToManagedType> Inherits;
+		public readonly ImmutableArray<ReferenceToType> Inherits;
 
 		public readonly ConstructorDeclare StaticConstructor;
 		public readonly ImmutableArray<ConstructorDeclare> Constructors;
@@ -71,7 +72,7 @@ namespace Kaleidoscope.Analysis
 			public TypeInstanceKind InstanceKind;
 			public bool IsPartial;
 			public IEnumerable<GenericDeclare.Builder> GenericTypes;
-			public IEnumerable<ReferenceToManagedType> Inherits;
+			public IEnumerable<ReferenceToType> Inherits;
 
 			public ConstructorDeclare.Builder StaticConstructor;
 			public readonly List<ConstructorDeclare.Builder> Constructors = new List<ConstructorDeclare.Builder>();
@@ -89,6 +90,22 @@ namespace Kaleidoscope.Analysis
 			public readonly List<NestedTypeDeclare<InterfaceTypeDeclare>.Builder> NestedInterfaces = new List<NestedTypeDeclare<InterfaceTypeDeclare>.Builder>();
 			public readonly List<NestedTypeDeclare<EnumTypeDeclare>.Builder> NestedEnums = new List<NestedTypeDeclare<EnumTypeDeclare>.Builder>();
 			public readonly List<NestedTypeDeclare<DelegateTypeDeclare>.Builder> NestedDelegates = new List<NestedTypeDeclare<DelegateTypeDeclare>.Builder>();
+		}
+
+		public void BindParent(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, Stack<ClassTypeDeclare> containers)
+		{
+			foreach (var item in Inherits) {
+				item.Bind(infoOutput, rootNamespace, usings, namespaces, containers, GenericTypes, new Stack<ReferenceToType>());
+			}
+
+			containers.Push(this);
+			foreach (var item in NestedClasses) {
+				item.Type.BindParent(infoOutput, rootNamespace, usings, namespaces, containers);
+			}
+			foreach (var item in NestedInterfaces) {
+				item.Type.BindParent(infoOutput, rootNamespace, usings, namespaces, containers);
+			}
+			containers.Pop();
 		}
 	}
 }

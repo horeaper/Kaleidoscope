@@ -310,7 +310,7 @@ namespace Kaleidoscope.Analysis.CS
 					block.NextToken(index++, TokenType.@operator, Error.Analysis.UnexpectedToken);
 
 					//ReturnType
-					conversion.ReturnType = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType);
+					conversion.ReturnType = ReferenceReader.Read(block, ref index, TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType);
 
 					//Parameters
 					block.NextToken(index, TokenType.LeftParenthesis, Error.Analysis.LeftParenthesisExpected);
@@ -329,7 +329,7 @@ namespace Kaleidoscope.Analysis.CS
 				else {
 					//Type
 					--index;
-					var type = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+					var type = ReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 
 					//Next
 					token = block.GetToken(index, Error.Analysis.UnexpectedToken);
@@ -389,7 +389,7 @@ namespace Kaleidoscope.Analysis.CS
 					}
 					else {
 						//Name
-						var nameContent = TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.AllowThis);
+						var nameContent = ReferenceReader.ReadTypeContent(block, ref index, ReferenceReader.ContentStyle.AllowThis);
 						token = block.GetToken(index, Error.Analysis.SemicolonExpected);
 
 						//Next

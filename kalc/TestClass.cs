@@ -24,4 +24,8 @@ namespace Kaleidoscope.Analysis
 	{
 		using AM = AccessModifier;
 	}
+
+	class GenricClass<T>
+	{
+	}
 }

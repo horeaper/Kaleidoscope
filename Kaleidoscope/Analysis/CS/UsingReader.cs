@@ -48,7 +48,7 @@ namespace Kaleidoscope.Analysis.CS
 		public static UsingStaticDirective ReadStatic(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, TokenBlock block)
 		{
 			int index = 0;
-			return new UsingStaticDirective(ownerNamespace, (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
+			return new UsingStaticDirective(ownerNamespace, (ReferenceToManagedType)ReferenceReader.Read(block, ref index, TypeParsingRule.None));
 		}
 
 		public static UsingCSNamespaceDirective ReadCSNamespace(ImmutableArray<TokenIdentifier>.Builder ownerNamespace, TokenBlock block)
@@ -76,7 +76,7 @@ namespace Kaleidoscope.Analysis.CS
 				throw ParseException.AsToken(token, Error.Analysis.UnexpectedToken);
 			}
 
-			var refToType = (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None);
+			var refToType = (ReferenceToManagedType)ReferenceReader.Read(block, ref index, TypeParsingRule.None);
 			return new UsingCSAliasDirective(ownerNamespace, nameToken, refToType);
 		}
 
@@ -105,7 +105,7 @@ namespace Kaleidoscope.Analysis.CS
 				throw ParseException.AsToken(token, Error.Analysis.MissingCppKeyword);
 			}
 
-			var refToType = (ReferenceToCppType)TypeReferenceReader.Read(block, ref startIndex, TypeParsingRule.AllowCppType);
+			var refToType = (ReferenceToCppType)ReferenceReader.Read(block, ref startIndex, TypeParsingRule.AllowCppType);
 			return new UsingCppAliasDirective(nameToken, refToType);
 		}
 	}

@@ -32,7 +32,7 @@ namespace Kaleidoscope.Analysis.CS
 			};
 
 			//Return type
-			builder.ReturnType = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+			builder.ReturnType = ReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowVar | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 
 			//Name
 			var token = block.GetToken(index++, Error.Analysis.UnexpectedToken);

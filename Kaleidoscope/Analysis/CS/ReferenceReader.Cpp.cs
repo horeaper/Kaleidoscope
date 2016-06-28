@@ -3,7 +3,7 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	partial class TypeReferenceReader
+	partial class ReferenceReader
 	{
 		static ReferenceToCppType ReadCppType(TokenBlock block, ref int index, bool isAllowArray)
 		{
@@ -20,7 +20,7 @@ namespace Kaleidoscope.Analysis.CS
 			}
 
 			//Content
-			builder.Content = ReadTypeContent(block, ref index, ContentStyle.AllowAsterisk);
+			builder.Content = ReadTypeContent(block, ref index, ContentStyle.Cpp);
 
 			//Pointer
 			for (int cnt = builder.Content.Count - 1; cnt >= 0; --cnt) {

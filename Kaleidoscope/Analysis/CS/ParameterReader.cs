@@ -45,7 +45,7 @@ namespace Kaleidoscope.Analysis.CS
 						kind = (ParameterKind)Enum.Parse(typeof(ParameterKind), parameterKindModifier.Type.ToString());
 					}
 
-					var returnType = TypeReferenceReader.Read(paremeterBlock, ref index, TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+					var returnType = ReferenceReader.Read(paremeterBlock, ref index, TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 					var managedReturnType = returnType as ReferenceToManagedType;
 					if (kind ==	ParameterKind.@this && managedReturnType == null) {
 						infoOutput.OutputError(ParseException.AsTokenBlock(returnType.Content, Error.Analysis.ParameterThisManagedOnly));

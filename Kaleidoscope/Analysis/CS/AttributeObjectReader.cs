@@ -9,7 +9,7 @@ namespace Kaleidoscope.Analysis.CS
 	{
 		public static AttributeObject.Builder Read(TokenBlock block, ref int index)
 		{
-			var type = (ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None);
+			var type = (ReferenceToManagedType)ReferenceReader.Read(block, ref index, TypeParsingRule.None);
 
 			TokenBlock content = null;
 			var token = block.GetToken(index, Error.Analysis.RightBracketExpected);

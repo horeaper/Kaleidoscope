@@ -11,12 +11,12 @@ namespace Kaleidoscope.Analysis.CS
 			if (token.Type == TokenType.NumberLiteral ||
 				token.Type == TokenType.BooleanLiteral ||
 				token.Type == TokenType.Character ||
-				token.Type == TokenType.String) {
+				token.Type == TokenType.StringLiteral) {
 				++index;
 				return new ReferenceToInstance(block.AsBeginEnd(index, 1), isConstantOnly);
 			}
 
-			return new ReferenceToInstance(TypeReferenceReader.ReadTypeContent(block, ref index, TypeReferenceReader.ContentStyle.None), isConstantOnly);
+			return new ReferenceToInstance(ReferenceReader.ReadTypeContent(block, ref index, ReferenceReader.ContentStyle.None), isConstantOnly);
 		}
 	}
 }

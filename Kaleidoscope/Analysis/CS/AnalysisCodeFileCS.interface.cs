@@ -14,8 +14,21 @@ namespace Kaleidoscope.Analysis.CS
 				CustomAttributes = traits.CustomAttributes,
 				IsPartial = traits.IsPartial,
 				GenericTypes = traits.GenericTypes,
-				Inherits = traits.Inherits
 			};
+
+			//Managed type inheritance only
+			var inherits = new List<ReferenceToManagedType>();
+			foreach (var item in traits.Inherits) {
+				var managedType = item as ReferenceToManagedType;
+				if (managedType == null) {
+					infoOutput.OutputError(ParseException.AsTokenBlock(item.Content, Error.Analysis.CppTypeNotAllowed));
+				}
+				else {
+					inherits.Add(managedType);
+				}
+			}
+			builder.Inherits = inherits;
+
 			var token = block.GetToken(index++, Error.Analysis.LeftBraceExpected);
 			if (token.Type != TokenType.LeftBrace) {
 				throw ParseException.AsToken(token, Error.Analysis.LeftBraceExpected);
@@ -77,7 +90,7 @@ namespace Kaleidoscope.Analysis.CS
 				else {
 					//Type
 					--index;
-					var type = TypeReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
+					var type = ReferenceReader.Read(block, ref index, TypeParsingRule.AllowVoid | TypeParsingRule.AllowCppType | TypeParsingRule.AllowArray);
 
 					//Name
 					var nameToken = block.GetToken(index++, Error.Analysis.UnexpectedToken);

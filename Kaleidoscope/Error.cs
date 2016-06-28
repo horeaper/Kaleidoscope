@@ -110,6 +110,7 @@
 		public static class Bind
 		{
 			public const string UsingNamespaceError = "cannot resolve namespace";
+			public const string CppTypeError = "cannot resolve C++ type reference";
 		}
 	}
 }

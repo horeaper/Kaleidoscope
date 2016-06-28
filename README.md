@@ -8,7 +8,9 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
 - Generated code compiles on any modern C++ compilers (GCC 4.9+, clang 3.4+, VC2015+)
 
 ## What Kaleidoscope CANNOT do?
-- Compile to IL
+- Compile to IL (I'm NOT Mono/Roslyn)
+- Translate IL to C++ code (I'm NOT IL2CPP)
+- Generate assembly directly (I'm NOT IL2ASM)
 
 ## What Kaleidoscope is going to do?
 - Create a new syntax for C# code which looks like F# (They keep asking: "When are you going to remove the curly braces and make C# 100-percent F#?" How about now? ^_^)
@@ -21,12 +23,12 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
 Still working on the basics =_=
 
 - [x] Tokenizer
-- [ ] Analyzer
+- [x] Analyzer
 - [ ] Binder
 - [ ] Abstract Expression 
 - [ ] Structure Generator
 - [ ] Statement Generator
-- [ ] Features
+- [ ] Additional Features
 
 ### And more...
 - Trello page: [https://trello.com/b/kUBGwx7Z](https://trello.com/b/kUBGwx7Z)

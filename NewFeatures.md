@@ -8,7 +8,7 @@ Use `'` (single quote) or `_` (underscore) as digit separator
 100'0000'0000UL
 123_456_789
 3.14_15____926f     // only underscores can be used consecutively
-0xFF'FF_FF'FF       // yes you can mix them
+0xFF'FF_FF'FF       // yes you can mix them!
 ```
 
 Some WRONG (won't compile) examples:
@@ -63,7 +63,7 @@ AnotherMethod(ref false);
 - `interface`
 - `enum`, `enum(int)`, `enum(ushort)`, etc.
 - `delegate(void(int, string))`, `delegate(int(void))`, etc.
-- `cpp`
+- `cpp`, means C++ type only
 
 The type constraint of enum can be any primitive integer type (`byte`, `ushort`, `int`, `long`, etc)
 
@@ -72,3 +72,11 @@ struct can inherit from these types:
 
 - other structs
 - C/C++ structure which contains only primitive (scalar) type members
+
+### Inherit from generics
+```C#
+class MyClass<T> : T where T : ICloneable
+{
+    // Whatever
+}
+```

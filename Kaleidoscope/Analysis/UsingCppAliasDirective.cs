@@ -1,4 +1,5 @@
-﻿using Kaleidoscope.Tokenizer;
+﻿using Kaleidoscope.SyntaxObject;
+using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -11,7 +12,7 @@ namespace Kaleidoscope.Analysis
 		public readonly Token Name;
 		public readonly ReferenceToCppType Type;
 
-		public string[] Target { get; private set; }
+		public CppTypeReference Target { get; private set; }
 
 		public UsingCppAliasDirective(Token name, ReferenceToCppType type)
 		{

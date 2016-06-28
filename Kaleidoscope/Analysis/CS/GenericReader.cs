@@ -134,7 +134,7 @@ namespace Kaleidoscope.Analysis.CS
 						//TODO: delegate(XXX)
 					}
 					else {
-						targetItem.TypeConstraints.Add((ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
+						targetItem.TypeConstraints.Add((ReferenceToManagedType)ReferenceReader.Read(block, ref index, TypeParsingRule.None));
 					}
 
 					//Next constraint

@@ -46,6 +46,9 @@ namespace Kaleidoscope
 			});
 			CheckErrorList(ref errorList);
 			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
+			if (InfoOutput.IsError) {	//break on error
+				return;
+			}
 
 			//Extract - Get all declared types
 			var rootNsBuilder = new DeclaredNamespaceOrTypeName.Builder();
@@ -59,12 +62,12 @@ namespace Kaleidoscope
 			Parallel.ForEach(AnalyzedFiles, file => {
 				file.BindNamespace(InfoOutput, RootNamespace);
 			});
+			foreach (var file in AnalyzedFiles) {
+				file.BindParent(InfoOutput, RootNamespace);
+			}
 			Parallel.ForEach(AnalyzedFiles, file => {
-
 			});
-
-			//Break if error
-			if (InfoOutput.IsError) {
+			if (InfoOutput.IsError) {	//break on error
 				return;
 			}
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace Kaleidoscope.SyntaxObject
 	/// <summary>
 	/// A collection of consecutive tokens
 	/// </summary>
-	public class TokenBlock
+	public class TokenBlock : IEnumerable<Token>
 	{
 		public readonly ImmutableArray<Token> Items;
 
@@ -278,6 +280,20 @@ namespace Kaleidoscope.SyntaxObject
 		public TokenBlock ReadToLineEnd(ref int index, string errorMessage = null)
 		{
 			return ReadPastSpecificToken(ref index, TokenType.NewLine, errorMessage);
+		}
+
+#endregion
+
+#region IEnumerator
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		public IEnumerator<Token> GetEnumerator()
+		{
+			return ((IEnumerable<Token>)Items).GetEnumerator();
 		}
 
 #endregion

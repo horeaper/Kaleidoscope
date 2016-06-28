@@ -15,7 +15,7 @@ namespace Kaleidoscope.Analysis.CS
 			public TypeInstanceKind InstanceKind;
 			public bool IsPartial;
 			public List<GenericDeclare.Builder> GenericTypes;
-			public List<ReferenceToManagedType> Inherits;
+			public List<ReferenceToType> Inherits;
 		}
 
 		RootTypeDeclare<T>.Builder ReadRootTypeDeclare<T>(AttributeObject.Builder[] customAttributes, bool isPublic, bool isPartial, TypeInstanceKind instanceKind, Func<TypeTraits, InstanceTypeDeclare> fnReadType) where T : InstanceTypeDeclare

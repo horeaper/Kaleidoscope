@@ -3,7 +3,7 @@ using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis.CS
 {
-	partial class TypeReferenceReader
+	partial class ReferenceReader
 	{
 		static ReferenceToManagedType ReadManagedType(TokenBlock block, ref int index, bool isAllowArray)
 		{

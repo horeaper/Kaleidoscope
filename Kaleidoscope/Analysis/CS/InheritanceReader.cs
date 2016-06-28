@@ -6,15 +6,15 @@ namespace Kaleidoscope.Analysis.CS
 {
 	public static class InheritanceReader
 	{
-		public static List<ReferenceToManagedType> ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
+		public static List<ReferenceToType> ReadParents(TokenBlock block, ref int index, string eofErrorMessage)
 		{
-			var result = new List<ReferenceToManagedType>();
+			var result = new List<ReferenceToType>();
 
 			var token = block.GetToken(index, eofErrorMessage);
 			if (token.Type == TokenType.Colon) {
 				++index;
 				while (true) {
-					result.Add((ReferenceToManagedType)TypeReferenceReader.Read(block, ref index, TypeParsingRule.None));
+					result.Add(ReferenceReader.Read(block, ref index, TypeParsingRule.AllowCppType));
 
 					token = block.GetToken(index, eofErrorMessage);
 					if (token.Type == TokenType.Comma) {
