@@ -18,7 +18,9 @@ namespace Kaleidoscope.SyntaxObject
 
 		public UsingBlob(Builder builder)
 		{
-			Enclosing = new UsingBlob(builder.Enclosing);
+			if (builder.Enclosing != null) {
+				Enclosing = new UsingBlob(builder.Enclosing);
+			}
 			UsingCSNamespaceDirectives = ImmutableArray.CreateRange(builder.UsingCSNamespaceDirectives);
 			UsingCSAliasDirectives = ImmutableArray.CreateRange(builder.UsingCSAliasDirectives);
 			UsingCppNamespaceDirectives = ImmutableArray.CreateRange(builder.UsingCppNamespaceDirectives);

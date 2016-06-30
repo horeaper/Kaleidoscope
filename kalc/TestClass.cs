@@ -17,7 +17,6 @@ namespace Kaleidoscope.Analysis
 
 	class TestClass
 	{
-		STT am;
 	}
 
 	namespace Test

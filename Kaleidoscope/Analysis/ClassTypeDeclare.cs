@@ -92,18 +92,29 @@ namespace Kaleidoscope.Analysis
 			public readonly List<NestedTypeDeclare<DelegateTypeDeclare>.Builder> NestedDelegates = new List<NestedTypeDeclare<DelegateTypeDeclare>.Builder>();
 		}
 
-		public void BindParent(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, Stack<ClassTypeDeclare> containers)
+		public void BindParents(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, Stack<ClassTypeDeclare> containers)
 		{
 			foreach (var item in Inherits) {
-				item.Bind(infoOutput, rootNamespace, usings, namespaces, containers, GenericTypes, new Stack<ReferenceToType>());
+				var genericTarget = GenericTypes.FirstOrDefault(generic => generic.Text == item.Text);
+				if (genericTarget != null) {
+					if (genericTarget.KeywordConstraint != GenericKeywordConstraintType.@interface) {
+						infoOutput.OutputError(ParseException.AsToken(genericTarget.Name, Error.Bind.GenericMustBeInterface));
+					}
+					else {
+						((ReferenceToManagedType)item).GenericTarget = genericTarget;
+					}
+				}
+				else {
+					item.Bind(new BindContext(infoOutput, rootNamespace, usings, namespaces, containers, new GenericDeclare[0]));
+				}
 			}
 
 			containers.Push(this);
 			foreach (var item in NestedClasses) {
-				item.Type.BindParent(infoOutput, rootNamespace, usings, namespaces, containers);
+				item.Type.BindParents(infoOutput, rootNamespace, usings, namespaces, containers);
 			}
 			foreach (var item in NestedInterfaces) {
-				item.Type.BindParent(infoOutput, rootNamespace, usings, namespaces, containers);
+				item.Type.BindParents(infoOutput, rootNamespace, usings, namespaces, containers);
 			}
 			containers.Pop();
 		}

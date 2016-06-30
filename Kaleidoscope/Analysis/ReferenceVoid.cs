@@ -11,7 +11,7 @@ namespace Kaleidoscope.Analysis
 		{
 		}
 
-		internal override void Bind(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, IEnumerable<ClassTypeDeclare> containers, IEnumerable<GenericDeclare> enclosingGenerics, Stack<ReferenceToType> resolveChain)
+		internal override void Bind(BindContext context)
 		{
 		}
 	}

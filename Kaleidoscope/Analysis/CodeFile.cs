@@ -46,26 +46,41 @@ namespace Kaleidoscope.Analysis
 			return "[CodeFile] " + Tokens.SourceFile.FileName;
 		}
 
-		public void BindNamespace(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
+		public void BindUsing(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
 		{
 			foreach (var type in DefinedTypes) {
 				foreach (var item in type.Usings.UsingCSNamespaceDirectives) {
 					item.BindNamespace(infoOutput, rootNamespace);
 				}
+				foreach (var item in type.Usings.UsingStaticDirectives) {
+					item.Type.Bind(new BindContext(infoOutput, rootNamespace, type.Usings.Enclosing, item.OwnerNamespace, new ClassTypeDeclare[0], null));
+				}
+				foreach (var item in type.Usings.UsingCSAliasDirectives) {
+					item.Type.Bind(new BindContext(infoOutput, rootNamespace, type.Usings.Enclosing, item.OwnerNamespace, new ClassTypeDeclare[0], null));
+				}
+
 				foreach (var item in type.Usings.UsingCppNamespaceDirectives) {
 					item.BindNamespace();
+				}
+				foreach (var item in type.Usings.UsingCppAliasDirectives) {
+					item.Type.Bind(new BindContext(infoOutput, null, null, null, null, null));
 				}
 			}
 		}
 
-		public void BindParent(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
+		public void BindParents(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
 		{
 			foreach (var type in DefinedInterfaces) {
-				type.Type.BindParent(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
+				type.Type.BindParents(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
 			}
 			foreach (var type in DefinedClasses) {
-				type.Type.BindParent(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
+				type.Type.BindParents(infoOutput, rootNamespace, type.Usings, type.Namespace, new Stack<ClassTypeDeclare>());
 			}
+		}
+
+		public void BindTypes(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

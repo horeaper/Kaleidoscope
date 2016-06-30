@@ -14,6 +14,29 @@ namespace Kaleidoscope.Analysis
 			Content = content;
 		}
 
-		internal abstract void Bind(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, IEnumerable<ClassTypeDeclare> containers, IEnumerable<GenericDeclare> enclosingGenerics, Stack<ReferenceToType> resolveChain);
+		internal abstract void Bind(BindContext context);
+	}
+
+	//DO NOT REUSE!
+	class BindContext
+	{
+		public BindContext(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, IEnumerable<ClassTypeDeclare> containers, IEnumerable<GenericDeclare> enclosingGenerics)
+		{
+			InfoOutput = infoOutput;
+			RootNamespace = rootNamespace;
+			Usings = usings;
+			Namespaces = namespaces;
+			Containers = containers;
+			EnclosingGenerics = enclosingGenerics;
+		}
+
+		public readonly InfoOutput InfoOutput;
+		public readonly DeclaredNamespaceOrTypeName RootNamespace;
+		public readonly UsingBlob Usings;
+		public readonly IEnumerable<TokenIdentifier> Namespaces;
+		public readonly IEnumerable<ClassTypeDeclare> Containers;
+		public readonly IEnumerable<GenericDeclare> EnclosingGenerics;
+
+		public readonly Stack<ReferenceToType> ResolveChain = new Stack<ReferenceToType>();
 	}
 }

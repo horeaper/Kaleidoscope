@@ -46,8 +46,8 @@ namespace Kaleidoscope
 			});
 			CheckErrorList(ref errorList);
 			AnalyzedFiles = ImmutableArray.CreateRange(codeFiles);
-			if (InfoOutput.IsError) {	//break on error
-				return;
+			if (InfoOutput.IsError) {
+				throw new KaleidoscopeSystemException();
 			}
 
 			//Extract - Get all declared types
@@ -60,23 +60,24 @@ namespace Kaleidoscope
 
 			//Bind - Resolve all ReferenceToType
 			Parallel.ForEach(AnalyzedFiles, file => {
-				file.BindNamespace(InfoOutput, RootNamespace);
+				file.BindUsing(InfoOutput, RootNamespace);
 			});
 			foreach (var file in AnalyzedFiles) {
-				file.BindParent(InfoOutput, RootNamespace);
+				file.BindParents(InfoOutput, RootNamespace);
 			}
 			Parallel.ForEach(AnalyzedFiles, file => {
+				file.BindTypes(InfoOutput, RootNamespace);
 			});
-			if (InfoOutput.IsError) {	//break on error
-				return;
+			if (InfoOutput.IsError) {
+				throw new KaleidoscopeSystemException();
 			}
 
 			//Arrange - Combine partials
 
-			//Generate - Output transpiled result
+			//Expression - Generate express trees
 		}
 
-#region Utility
+		#region Utility
 
 		void CheckErrorList(ref ConcurrentBag<ParseException> errorList)
 		{

@@ -13,6 +13,7 @@ namespace Kaleidoscope.Analysis
 		public int ArrayRank => ArrayDimensions.Length;
 
 		public ManagedTypeReference Target { get; private set; }
+		public GenericDeclare GenericTarget { get; internal set; }
 
 		public ReferenceToManagedType(Builder builder)
 			: base(builder.Content)
@@ -35,7 +36,7 @@ namespace Kaleidoscope.Analysis
 			public List<int> ArrayDimensions = new List<int>();
 		}
 
-		internal override void Bind(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, IEnumerable<ClassTypeDeclare> containers, IEnumerable<GenericDeclare> enclosingGenerics, Stack<ReferenceToType> resolveChain)
+		internal override void Bind(BindContext context)
 		{
 			throw new System.NotImplementedException();
 		}
