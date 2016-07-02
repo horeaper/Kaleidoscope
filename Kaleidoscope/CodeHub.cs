@@ -77,7 +77,7 @@ namespace Kaleidoscope
 			//Expression - Generate express trees
 		}
 
-		#region Utility
+#region Utility
 
 		void CheckErrorList(ref ConcurrentBag<ParseException> errorList)
 		{

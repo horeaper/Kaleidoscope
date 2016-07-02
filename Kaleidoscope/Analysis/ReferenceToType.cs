@@ -37,6 +37,6 @@ namespace Kaleidoscope.Analysis
 		public readonly IEnumerable<ClassTypeDeclare> Containers;
 		public readonly IEnumerable<GenericDeclare> EnclosingGenerics;
 
-		public readonly Stack<ReferenceToType> ResolveChain = new Stack<ReferenceToType>();
+		public readonly Stack<ReferenceToType> ParentResolveChain = new Stack<ReferenceToType>();
 	}
 }

@@ -10,7 +10,7 @@ namespace Kaleidoscope.Analysis
 	public sealed class DeclaredNamespaceOrTypeName
 	{
 		public readonly DeclaredNamespaceOrTypeName Owner;
-		public readonly NamespaceOrTypeName Name;
+		public readonly NameWithGeneric Name;
 		public readonly bool IsNamespace;
 		public readonly ImmutableArray<DeclaredNamespaceOrTypeName> NamespaceOrTypeName;
 		public readonly ImmutableArray<DeclaredManagedType> Types;
@@ -19,7 +19,7 @@ namespace Kaleidoscope.Analysis
 		public DeclaredNamespaceOrTypeName(Builder builder, DeclaredNamespaceOrTypeName owner)
 		{
 			Owner = owner;
-			Name = new NamespaceOrTypeName(builder.Name);
+			Name = new NameWithGeneric(builder.Name);
 			IsNamespace = builder.IsNamespace;
 			NamespaceOrTypeName = ImmutableArray.CreateRange(builder.NamespaceOrTypeNames.Select(item => new DeclaredNamespaceOrTypeName(item, this)));
 			Types = ImmutableArray.CreateRange(builder.Types.Select(item => new DeclaredManagedType(item, this)));
@@ -65,7 +65,7 @@ namespace Kaleidoscope.Analysis
 
 		public sealed class Builder
 		{
-			public readonly NamespaceOrTypeName.Builder Name = new NamespaceOrTypeName.Builder();
+			public readonly NameWithGeneric.Builder Name = new NameWithGeneric.Builder();
 			public bool IsNamespace;
 			public readonly List<Builder> NamespaceOrTypeNames = new List<Builder>();
 			public readonly List<DeclaredManagedType.Builder> Types = new List<DeclaredManagedType.Builder>();

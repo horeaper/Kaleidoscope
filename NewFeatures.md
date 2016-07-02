@@ -72,11 +72,3 @@ struct can inherit from these types:
 
 - other structs
 - C/C++ structure which contains only primitive (scalar) type members
-
-### Inherit from generics
-```C#
-class MyClass<T> : T where T : ICloneable
-{
-    // Whatever
-}
-```

@@ -45,18 +45,7 @@ namespace Kaleidoscope.Analysis
 		public void BindParents(InfoOutput infoOutput, DeclaredNamespaceOrTypeName rootNamespace, UsingBlob usings, IEnumerable<TokenIdentifier> namespaces, Stack<ClassTypeDeclare> containers)
 		{
 			foreach (var item in Inherits) {
-				var genericTarget = GenericTypes.FirstOrDefault(generic => generic.Text == item.Text);
-				if (genericTarget != null) {
-					if (genericTarget.KeywordConstraint != GenericKeywordConstraintType.@interface) {
-						infoOutput.OutputError(ParseException.AsToken(genericTarget.Name, Error.Bind.GenericMustBeInterface));
-					}
-					else {
-						item.GenericTarget = genericTarget;
-					}
-				}
-				else {
-					item.Bind(new BindContext(infoOutput, rootNamespace, usings, namespaces, containers, new GenericDeclare[0]));
-				}
+				item.Bind(new BindContext(infoOutput, rootNamespace, usings, namespaces, containers, new GenericDeclare[0]));
 			}
 		}
 	}

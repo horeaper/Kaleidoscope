@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Kaleidoscope.SyntaxObject;
-using Kaleidoscope.Tokenizer;
 
 namespace Kaleidoscope.Analysis
 {
@@ -12,7 +11,9 @@ namespace Kaleidoscope.Analysis
 		public readonly ImmutableArray<int> ArrayDimensions;	//[,][][,,] -> { 2, 1, 3 }
 		public int ArrayRank => ArrayDimensions.Length;
 
-		public ManagedTypeReference Target { get; private set; }
+		public NamespaceOrTypeName[] Identifiers { get; private set; }
+
+
 		public GenericDeclare GenericTarget { get; internal set; }
 
 		public ReferenceToManagedType(Builder builder)
@@ -38,6 +39,24 @@ namespace Kaleidoscope.Analysis
 
 		internal override void Bind(BindContext context)
 		{
+			try {
+				BindWorker(context);
+			}
+			catch (ParseException e) {
+				context.InfoOutput.OutputError(e);
+			}
+		}
+
+		void BindWorker(BindContext context)
+		{
+			if (context.ParentResolveChain.Contains(this)) {
+				throw ParseException.AsTokenBlock(Content, Error.Bind.CircularParent);
+			}
+			context.ParentResolveChain.Push(this);
+
+			//TODO: Resolve
+
+			context.ParentResolveChain.Pop();
 			throw new System.NotImplementedException();
 		}
 	}

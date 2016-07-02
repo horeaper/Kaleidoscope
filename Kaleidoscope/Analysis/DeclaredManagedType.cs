@@ -8,14 +8,14 @@ namespace Kaleidoscope.Analysis
 	public sealed class DeclaredManagedType
 	{
 		public readonly DeclaredNamespaceOrTypeName Owner;
-		public readonly NamespaceOrTypeName Name;
+		public readonly NameWithGeneric Name;
 		public readonly ImmutableArray<UserTypeDeclare> Items;
 		public string Fullname { get; }
 
 		public DeclaredManagedType(Builder builder, DeclaredNamespaceOrTypeName owner)
 		{
 			Owner = owner;
-			Name = new NamespaceOrTypeName(builder.Name);
+			Name = new NameWithGeneric(builder.Name);
 			Items = ImmutableArray.CreateRange(builder.Items);
 
 			var text = new StringBuilder();
@@ -36,7 +36,7 @@ namespace Kaleidoscope.Analysis
 
 		public sealed class Builder
 		{
-			public NamespaceOrTypeName.Builder Name = new NamespaceOrTypeName.Builder();
+			public NameWithGeneric.Builder Name = new NameWithGeneric.Builder();
 			public readonly List<UserTypeDeclare> Items = new List<UserTypeDeclare>();
 		}
 	}
