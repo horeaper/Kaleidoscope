@@ -13,10 +13,8 @@ Kaleidoscope transpiles C# code into C++ code, gains the ability to use C++ clas
 - Generate assembly directly (I'm NOT IL2ASM)
 
 ## What Kaleidoscope is going to do?
-- Create a new syntax for C# code which looks like F# (They keep asking: "When are you going to remove the curly braces and make C# 100-percent F#?" How about now? ^_^)
-- Write F# codes (real F# codes!)
-- Android and iOS support
-- Works with Emscripten
+- UWP, Android and iOS support
+- Emscripten support
 - COM compatiability
 
 ## What are the current status of Kaleidoscope?
